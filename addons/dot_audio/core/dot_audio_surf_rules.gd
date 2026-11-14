@@ -178,10 +178,33 @@ func is_surfing(body: Node3D) -> bool:
 			q.exclude = [(body as CollisionObject3D).get_rid()] if body is CollisionObject3D else []
 		var hit := world.direct_space_state.intersect_ray(q)
 		yes = not hit.is_empty() and is_ramp_normal(hit.get("normal", Vector3.UP))
+		if _seen.size() > 256:
+			_seen.clear()
+		_seen[id] = [frame, yes, hit, pos, probe, mask]
+		return yes
 	if _seen.size() > 256:
 		_seen.clear()
 	_seen[id] = [frame, yes]
 	return yes
+
+
+## What a ray straight down from 0.3 m above [param at] to [param depth] below it, seeing [param ray_mask] and
+## not [param body], hits, read from the longer ray [method is_surfing] cast for [param body] at [param at] this
+## physics frame: the same hit when it lies within [param depth], empty when it lies past it or there is none.
+## Null when no such ray was cast (another frame, the body moved, the native probe answered, another mask, or
+## [member probe] shorter than [param depth]). [DotAudioFootsteps] reads its ground from it instead of a second ray.
+func frame_hit(body: Node3D, at: Vector3, depth: float, ray_mask: int) -> Variant:
+	var cached: Variant = _seen.get(body.get_instance_id())
+	if cached == null:
+		return null
+	var c: Array = cached
+	if c.size() < 6 or int(c[0]) != Engine.get_physics_frames() or c[3] != at or int(c[5]) != ray_mask \
+			or float(c[4]) < depth:
+		return null
+	var hit: Dictionary = c[2]
+	if hit.is_empty() or (hit["position"] as Vector3).y >= at.y - depth:
+		return hit
+	return {}
 
 
 func describe() -> Dictionary:

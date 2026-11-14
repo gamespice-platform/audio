@@ -65,6 +65,8 @@ var surface_metas: Array[StringName] = [&"surface", &"dot_fps_surface"]
 var surf_rules: DotAudioSurfRules = null
 
 var _bodies: Dictionary = {}
+var _ground_query: PhysicsRayQueryParameters3D = null
+var _ground_query_body: int = 0
 
 ## dot-sim's native tick ([code]DotSimAudioSteps[/code]): the same steps to the bit (dot-audio's examples/steps_native_parity),
 ## used when the extension is loaded, [member native_enabled] and [member use_native] are on and this node is a
@@ -361,10 +363,23 @@ func _ground_hit(body: Node3D) -> Dictionary:
 	var world := body.get_world_3d()
 	if world == null:
 		return {}
-	var from := body.global_position + Vector3.UP * 0.3
-	var q := PhysicsRayQueryParameters3D.create(from, body.global_position + Vector3.DOWN * ground_probe, ground_mask)
-	if body is CollisionObject3D:
-		q.exclude = [(body as CollisionObject3D).get_rid()]
+	var pos := body.global_position
+	# The surf probe's ray this frame starts at the same point and reaches further: its hit is this ray's.
+	if surf_rules != null:
+		var seen: Variant = surf_rules.frame_hit(body, pos, ground_probe, ground_mask)
+		if seen != null:
+			return seen as Dictionary
+	# One query reused for every ray (a ray per body per tick otherwise allocates an object and an array each time).
+	if _ground_query == null:
+		_ground_query = PhysicsRayQueryParameters3D.new()
+	var q := _ground_query
+	q.from = pos + Vector3.UP * 0.3
+	q.to = pos + Vector3.DOWN * ground_probe
+	q.collision_mask = ground_mask
+	var id := body.get_instance_id()
+	if _ground_query_body != id:
+		_ground_query_body = id
+		q.exclude = [(body as CollisionObject3D).get_rid()] if body is CollisionObject3D else []
 	return world.direct_space_state.intersect_ray(q)
 
 
