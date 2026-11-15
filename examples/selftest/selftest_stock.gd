@@ -408,22 +408,11 @@ func _test_surf() -> void:
 	DotAudioStock.add_to(cat)
 	var m := _manager(cat, 32)
 	var sink := m.sink as DotAudioSinkNull
-	var rules := FakeSurf.new()
+	var rules := _check_surf_rules()
 	var stock_def := DotAudioStock.surf_defs()
 	_check(stock_def.size() == 1 and stock_def[0].looping and DotAudioStock.ids().has(DotAudioStock.SURF_GLIDE_ID), "the glide is a stock looping def")
 	var stream := load(stock_def[0].path) as AudioStream
 	_check(stream != null and stream.get_length() > 1.0, "and its file loads")
-
-	_check(rules.apply_cvar("sv_surf_volume", "9") and is_equal_approx(rules.volume, 9.0), "surf volume has no upper bound")
-	_check(rules.apply_cvar("sv_surf_full_speed", "5000") and rules.full_speed == 5000.0, "surf full speed has no upper bound")
-	var held := rules.volume
-	_check(not rules.apply_cvar("sv_surf_volume", "-1") and rules.volume == held, "a value under the minimum is refused, not clamped")
-	_check(not rules.apply_cvar("sv_surf_sounds", "7") and rules.enabled, "a switch over 1 is refused, not clamped")
-	_check(not rules.apply_cvar("sv_surf_nope", "1") and not rules.apply_cvar("sv_surf_volume", "loud"), "an unknown or non-numeric cvar is refused")
-	_check(rules.apply_values({"quiet_speed": 6, "sv_surf_mute_steps": false, "pitch_high": "1.5"}) == 3 and rules.quiet_speed == 6.0 and not rules.mute_steps and rules.pitch_high == 1.5, "a profile hands over field names, cvar names, bools and strings")
-	rules = FakeSurf.new()
-	_check(rules.shape(rules.quiet_speed - 1.0).x == 0.0 and is_equal_approx(rules.shape(rules.full_speed).x, rules.volume) and rules.shape(30.0).y > rules.shape(10.0).y, "volume and pitch rise with speed, silent below the quiet speed")
-	_check(rules.is_ramp_normal(Vector3(0.7, 0.5, 0).normalized()) and not rules.is_ramp_normal(Vector3.UP) and not rules.is_ramp_normal(Vector3.RIGHT), "a ramp is steeper than walkable and not a wall")
 
 	var steps := DotAudioFootsteps.new()
 	steps.manager = m
@@ -484,6 +473,21 @@ func _test_surf() -> void:
 	glide.queue_free()
 	steps.queue_free()
 	m.queue_free()
+
+
+func _check_surf_rules() -> FakeSurf:
+	var rules := FakeSurf.new()
+	_check(rules.apply_cvar("sv_surf_volume", "9") and is_equal_approx(rules.volume, 9.0), "surf volume has no upper bound")
+	_check(rules.apply_cvar("sv_surf_full_speed", "5000") and rules.full_speed == 5000.0, "surf full speed has no upper bound")
+	var held := rules.volume
+	_check(not rules.apply_cvar("sv_surf_volume", "-1") and rules.volume == held, "a value under the minimum is refused, not clamped")
+	_check(not rules.apply_cvar("sv_surf_sounds", "7") and rules.enabled, "a switch over 1 is refused, not clamped")
+	_check(not rules.apply_cvar("sv_surf_nope", "1") and not rules.apply_cvar("sv_surf_volume", "loud"), "an unknown or non-numeric cvar is refused")
+	_check(rules.apply_values({"quiet_speed": 6, "sv_surf_mute_steps": false, "pitch_high": "1.5"}) == 3 and rules.quiet_speed == 6.0 and not rules.mute_steps and rules.pitch_high == 1.5, "a profile hands over field names, cvar names, bools and strings")
+	rules = FakeSurf.new()
+	_check(rules.shape(rules.quiet_speed - 1.0).x == 0.0 and is_equal_approx(rules.shape(rules.full_speed).x, rules.volume) and rules.shape(30.0).y > rules.shape(10.0).y, "volume and pitch rise with speed, silent below the quiet speed")
+	_check(rules.is_ramp_normal(Vector3(0.7, 0.5, 0).normalized()) and not rules.is_ramp_normal(Vector3.UP) and not rules.is_ramp_normal(Vector3.RIGHT), "a ramp is steeper than walkable and not a wall")
+	return rules
 
 
 func _test_raw_fallback() -> void:
