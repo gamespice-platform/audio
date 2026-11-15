@@ -28,10 +28,10 @@ var enclosure := true:
 		if v != enclosure:
 			enclosure = v
 			changed.emit()
-## Rays in one enclosure sweep (16-32).
+## Rays in one enclosure sweep (16 or more).
 var rays := 24:
 	set(v):
-		v = clampi(v, 16, 32)
+		v = maxi(v, 16)
 		if v != rays:
 			rays = v
 			changed.emit()
@@ -44,20 +44,20 @@ var delay := true:
 ## Metres inside which only the close set plays, and beyond which only the far set does (crossfaded between).
 var near_metres := 25.0:
 	set(v):
-		v = clampf(v, 1.0, 500.0)
+		v = maxf(v, 1.0)
 		if not is_equal_approx(v, near_metres):
 			near_metres = v
 			changed.emit()
 var far_metres := 130.0:
 	set(v):
-		v = clampf(v, 2.0, 2000.0)
+		v = maxf(v, 2.0)
 		if not is_equal_approx(v, far_metres):
 			far_metres = v
 			changed.emit()
-## Scales the enclosure reverb's wet level, 0 none to 2 double.
+## Scales the enclosure reverb's wet level, 0 none, 1 normal, 2 double, no upper bound.
 var reverb := 1.0:
 	set(v):
-		v = clampf(v, 0.0, 2.0)
+		v = maxf(v, 0.0)
 		if not is_equal_approx(v, reverb):
 			reverb = v
 			changed.emit()
@@ -66,7 +66,7 @@ var reverb := 1.0:
 ## on every round.
 var tail_voices := 4:
 	set(v):
-		v = clampi(v, 0, 16)
+		v = maxi(v, 0)
 		if v != tail_voices:
 			tail_voices = v
 			changed.emit()
@@ -87,23 +87,25 @@ func weights(metres: float) -> Vector2:
 	return Vector2(cos(t * PI * 0.5), sin(t * PI * 0.5))
 
 
+## Name, default, range and description of each cvar. A "max" of INF is no upper bound; a switch stays 0 to 1.
+## A value outside the range is refused, never clamped.
 func cvar_specs() -> Array[Dictionary]:
 	return [
 		{"name": CVAR_LAYERS, "value": "1" if layers else "0", "min": 0.0, "max": 1.0,
 			"description": "Layered weapon shots (attack, body, tail; close and far sets): 1 on, 0 the single stock sound"},
 		{"name": CVAR_ENCLOSURE, "value": "1" if enclosure else "0", "min": 0.0, "max": 1.0,
 			"description": "Shots sound different in tight spaces: rays measure the room and pick the tail and reverb"},
-		{"name": CVAR_RAYS, "value": str(rays), "min": 16.0, "max": 32.0,
-			"description": "Rays in one room-measuring sweep, 16 to 32"},
+		{"name": CVAR_RAYS, "value": str(rays), "min": 16.0, "max": INF,
+			"description": "Rays in one room-measuring sweep, 16 or more"},
 		{"name": CVAR_DELAY, "value": "1" if delay else "0", "min": 0.0, "max": 1.0,
 			"description": "Delay a distant shot by the speed of sound"},
-		{"name": CVAR_NEAR, "value": str(near_metres), "min": 1.0, "max": 500.0,
+		{"name": CVAR_NEAR, "value": str(near_metres), "min": 1.0, "max": INF,
 			"description": "Metres inside which only the close shot set plays"},
-		{"name": CVAR_FAR, "value": str(far_metres), "min": 2.0, "max": 2000.0,
+		{"name": CVAR_FAR, "value": str(far_metres), "min": 2.0, "max": INF,
 			"description": "Metres beyond which only the far shot set plays"},
-		{"name": CVAR_REVERB, "value": str(reverb), "min": 0.0, "max": 2.0,
-			"description": "Scale of the room reverb on shots: 0 none, 1 normal, 2 double"},
-		{"name": CVAR_TAIL_VOICES, "value": str(tail_voices), "min": 0.0, "max": 16.0,
+		{"name": CVAR_REVERB, "value": str(reverb), "min": 0.0, "max": INF,
+			"description": "Scale of the room reverb on shots: 0 none, 1 normal, 2 double, higher is louder"},
+		{"name": CVAR_TAIL_VOICES, "value": str(tail_voices), "min": 0.0, "max": INF,
 			"description": "Most room tails sounding at once from one player, 0 for no limit (a rapid-fire weapon in a hall)"},
 	]
 
@@ -158,13 +160,13 @@ func set_cvar(cvar_name: String, value: String) -> bool:
 			else: delay = on
 			return true
 		CVAR_RAYS, CVAR_TAIL_VOICES:
-			if not text.is_valid_int():
+			if not text.is_valid_int() or _refuse_range(cvar_name, text.to_float()):
 				return false
 			if cvar_name == CVAR_RAYS: rays = text.to_int()
 			else: tail_voices = text.to_int()
 			return true
 		CVAR_NEAR, CVAR_FAR, CVAR_REVERB:
-			if not text.is_valid_float():
+			if not text.is_valid_float() or _refuse_range(cvar_name, text.to_float()):
 				return false
 			if cvar_name == CVAR_NEAR: near_metres = text.to_float()
 			elif cvar_name == CVAR_FAR: far_metres = text.to_float()
@@ -179,3 +181,12 @@ func _on_cvar_changed(_old: Variant, new_value: Variant, cvar_name: String) -> v
 
 func _on_replicated_cvar(cvar_name: String, value: String) -> void:
 	var _applied := set_cvar(cvar_name, value)
+
+
+## True, with an error, when [param v] is outside the range [method cvar_specs] gives [param cvar_name].
+func _refuse_range(cvar_name: String, v: float) -> bool:
+	for spec in cvar_specs():
+		if spec["name"] == cvar_name and (v < float(spec["min"]) or v > float(spec["max"])):
+			push_error("%s: %s is outside %s to %s, refused" % [cvar_name, v, spec["min"], spec["max"]])
+			return true
+	return false

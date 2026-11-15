@@ -146,7 +146,9 @@ func _test_shot_playback(shot: DotShotDef, p: DotShotPlayer) -> void:
 
 	var r := DotShotRules.new()
 	_check(r.layers and r.enclosure and r.delay, "the cvars default on")
-	_check(r.set_cvar("snd_shot_rays", "99") and r.rays == 32 and r.set_cvar("snd_shot_rays", "2") and r.rays == 16, "the ray count is clamped to 16-32")
+	_check(r.set_cvar("snd_shot_rays", "99") and r.rays == 99, "the ray count has no upper bound")
+	_check(r.set_cvar("snd_shot_far", "9000") and r.far_metres == 9000.0 and r.set_cvar("snd_shot_reverb", "5") and r.reverb == 5.0, "far distance and reverb have no upper bound")
+	_check(not r.set_cvar("snd_shot_rays", "2") and r.rays == 99, "a ray count under the minimum is refused, not clamped")
 	_check(not r.set_cvar("snd_shot_nope", "1"), "an unknown cvar is refused")
 	r.layers = false
 	p.rules = r
@@ -189,4 +191,4 @@ func _test_shot_tail_cap() -> void:
 	_check(unlimited == 0 or unlimited > peak, "with the cap off the same fire stacks more (%d) than with it (%d)" % [unlimited, peak])
 	var crack := p.fire(gun.id, Vector3(3, 0, 0))
 	_check(crack.ok and int(crack.value) >= 2, "a capped round still plays its crack and body")
-	_check(p.rules.set_cvar("snd_shot_tail_voices", "99") and p.rules.tail_voices == 16 and not p.rules.set_cvar("snd_shot_tail_voices", "x"), "the cap cvar is clamped to 0-16")
+	_check(p.rules.set_cvar("snd_shot_tail_voices", "99") and p.rules.tail_voices == 99 and not p.rules.set_cvar("snd_shot_tail_voices", "x") and not p.rules.set_cvar("snd_shot_tail_voices", "-1"), "the cap cvar has no upper bound and a negative is refused")

@@ -13,7 +13,7 @@ extends "selftest/selftest_synth.gd"
 ## [/codeblock]
 
 const SECTIONS := 25
-const CHECKS := 359
+const CHECKS := 361
 
 func _ready() -> void:
 	DotLog.set_level(DotLog.Level.ERROR)
