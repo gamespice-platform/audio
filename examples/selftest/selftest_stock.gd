@@ -171,6 +171,16 @@ func _test_footsteps() -> void:
 	steps.advance(body, 1.0 / 60.0)
 	_check(heard.is_empty(), "a teleport is not a walk")
 
+	_footsteps_hear_distance(steps, body, m, heard)
+
+	_check_surface_lookup(steps, body)
+	body.queue_free()
+	steps.queue_free()
+	m.queue_free()
+
+
+## Past hear_distance a body is neither stepped nor asked for its ground, and steps again once the listener comes near.
+func _footsteps_hear_distance(steps: DotAudioFootsteps, body: Node3D, m: DotAudioManager, heard: Array) -> void:
 	# The body is some 70 m from a listener at the origin by now.
 	heard.clear()
 	var asked := [0]
@@ -189,11 +199,6 @@ func _test_footsteps() -> void:
 	_check(heard.size() >= 3 and heard.size() <= 6, "and steps again once the listener is near (%d)" % heard.size())
 	m.listener_position = Vector3.ZERO
 	steps.hear_distance = 0.0
-
-	_check_surface_lookup(steps, body)
-	body.queue_free()
-	steps.queue_free()
-	m.queue_free()
 
 ## Surface lookup and track()/keep() bookkeeping, split out of _test_footsteps.
 func _check_surface_lookup(steps: DotAudioFootsteps, body: Node3D) -> void:

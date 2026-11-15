@@ -213,7 +213,7 @@ func _native_load() -> void:
 	last.resize(n)
 	var on := PackedByteArray()
 	on.resize(n)
-	var sliding: Array = []
+	var sliding := Array()
 	sliding.resize(n)
 	var surfer := PackedByteArray()
 	surfer.resize(n)

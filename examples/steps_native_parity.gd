@@ -68,9 +68,18 @@ func _ready() -> void:
 	for i in BODIES:
 		_spawn()
 	_section("%d ticks, %d bodies, script rig against native rig" % [TICKS, BODIES])
+	_drive()
 
 
-func _physics_process(_delta: float) -> void:
+# A scripted run, not a per-frame node: one tick per physics frame (the signal fires just before every
+# _physics_process, as this did when it was one) until the probes are reported.
+func _drive() -> void:
+	while _phase < 2:
+		await get_tree().physics_frame
+		_advance()
+
+
+func _advance() -> void:
 	if _phase == 0:
 		_step_world()
 		_tick += 1

@@ -194,7 +194,7 @@ func _native_load() -> void:
 	_native_keys = _bodies.keys()
 	var state := PackedFloat64Array()
 	state.resize(_native_keys.size() * 6)
-	var grounded: Array = []
+	var grounded := Array()
 	grounded.resize(_native_keys.size())
 	for i in _native_keys.size():
 		var st: Dictionary = _bodies[_native_keys[i]]
