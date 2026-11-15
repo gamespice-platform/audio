@@ -5,7 +5,7 @@
 
 Synthesised from fixed seeds (a falling sine body thump plus low-passed noise for the scuff),
 no recordings and no third-party samples; dedicated to the public domain under CC0 1.0 by the
-dot-audio authors. Three grades so a stumble and a bone-jarring drop differ by more than volume:
+Gamespice audio authors. Three grades so a stumble and a bone-jarring drop differ by more than volume:
 heavier is lower, longer and has a late crunch.
 """
 import os

@@ -5,7 +5,7 @@
 
 Synthesised from a fixed seed, no recordings: noise shaped in the frequency domain (so the loop
 is periodic and has no seam), a soft band around 1.5-6 kHz with a rolled-off low end so there is
-no thump, and a slow shimmer. Dedicated to the public domain under CC0 1.0 by the dot-audio authors.
+no thump, and a slow shimmer. Dedicated to the public domain under CC0 1.0 by the Gamespice audio authors.
 """
 import os
 import subprocess

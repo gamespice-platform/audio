@@ -4,7 +4,7 @@
     python3 -I tools/make_flashlight_stock.py
 
 Synthesised from fixed seeds (filtered noise bursts and damped resonances), no recordings and no
-third-party samples; dedicated to the public domain under CC0 1.0 by the dot-audio authors.
+third-party samples; dedicated to the public domain under CC0 1.0 by the Gamespice audio authors.
 A slide switch is two events: the plunger hitting its stop, then a smaller rattle. "On" is the
 brighter, tighter one; "off" is lower and a little longer, so the two are told apart by ear.
 """

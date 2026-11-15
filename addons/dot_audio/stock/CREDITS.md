@@ -17,7 +17,7 @@ From **Impact Sounds** (1.0) by [Kenney](https://www.kenney.nl), CC0 1.0 ([licen
 
 ## ambience/
 
-`amb_wind.ogg` and `amb_outdoor.ogg` are real field recordings; the other seven beds are synthesised by dot-audio's own `tools/make_ambience.py` (in the repository, not the addon) from fixed seeds: filtered noise, oscillators and scattered synthesised events, no recordings and no third-party samples. Dedicated to the public domain under CC0 1.0 by the dot-audio authors. Each bed is a 32 s seamless stereo loop normalised to −24 LUFS integrated.
+`amb_wind.ogg` and `amb_outdoor.ogg` are real field recordings; the other seven beds are synthesised by dot-audio's own `tools/make_ambience.py` (in the repository, not the addon) from fixed seeds: filtered noise, oscillators and scattered synthesised events, no recordings and no third-party samples. Dedicated to the public domain under CC0 1.0 by the Gamespice audio authors. Each bed is a 32 s seamless stereo loop normalised to −24 LUFS integrated.
 
 | File | What it is |
 | --- | --- |
@@ -77,15 +77,15 @@ Seven looping slide scrapes (`slide_generic`, `slide_concrete`, `slide_metal`, `
 
 ## flashlight/
 
-`flashlight_on.ogg` and `flashlight_off.ogg` are synthesised by `tools/make_flashlight_stock.py` (in the repository, not the addon) from fixed seeds: filtered noise bursts and damped resonances, no recordings and no third-party samples. Dedicated to the public domain under CC0 1.0 by the dot-audio authors.
+`flashlight_on.ogg` and `flashlight_off.ogg` are synthesised by `tools/make_flashlight_stock.py` (in the repository, not the addon) from fixed seeds: filtered noise bursts and damped resonances, no recordings and no third-party samples. Dedicated to the public domain under CC0 1.0 by the Gamespice audio authors.
 
 ## landing/
 
-`landing_light.ogg`, `landing_medium.ogg` and `landing_hard.ogg` are synthesised by `tools/make_landing_stock.py` (in the repository, not the addon) from fixed seeds: a falling sine body thump and low-passed noise, no recordings and no third-party samples. Dedicated to the public domain under CC0 1.0 by the dot-audio authors.
+`landing_light.ogg`, `landing_medium.ogg` and `landing_hard.ogg` are synthesised by `tools/make_landing_stock.py` (in the repository, not the addon) from fixed seeds: a falling sine body thump and low-passed noise, no recordings and no third-party samples. Dedicated to the public domain under CC0 1.0 by the Gamespice audio authors.
 
 ## surf/
 
-`surf_glide.ogg` is synthesised by `tools/make_surf_stock.py` (in the repository, not the addon) from a fixed seed: band-shaped noise around 3 kHz with a slow shimmer, joined into a seamless loop, no recordings and no third-party samples. Dedicated to the public domain under CC0 1.0 by the dot-audio authors. The game plays it quieter and higher the faster a body surfs.
+`surf_glide.ogg` is synthesised by `tools/make_surf_stock.py` (in the repository, not the addon) from a fixed seed: band-shaped noise around 3 kHz with a slow shimmer, joined into a seamless loop, no recordings and no third-party samples. Dedicated to the public domain under CC0 1.0 by the Gamespice audio authors. The game plays it quieter and higher the faster a body surfs.
 
 ## shots/
 
@@ -102,7 +102,7 @@ The layered shots (`attack`, `body`, `tail_*`, `far` per weapon class, plus `sup
 
 ## weapons/cue_*
 
-The 37 reload and handling cues (`cue_mag_out`, `cue_bolt_back`, `cue_cyl_open`, `cue_pump_back` and so on, three variants each) are synthesised by `tools/make_reload_cues.py` using `tools/foley.py` from a fixed seed: damped-resonance strikes, filtered-noise bursts, friction slides and thuds. No recording and no third-party sample is used. Dedicated to the public domain under CC0 1.0 by the dot-audio authors. They are levelled to three loudness tiers (loud -21, mid -24, soft -29 LUFS active, ceiling -2 dB).
+The 37 reload and handling cues (`cue_mag_out`, `cue_bolt_back`, `cue_cyl_open`, `cue_pump_back` and so on, three variants each) are synthesised by `tools/make_reload_cues.py` using `tools/foley.py` from a fixed seed: damped-resonance strikes, filtered-noise bursts, friction slides and thuds. No recording and no third-party sample is used. Dedicated to the public domain under CC0 1.0 by the Gamespice audio authors. They are levelled to three loudness tiers (loud -21, mid -24, soft -29 LUFS active, ceiling -2 dB).
 
 ## Level pass (2026-11-08)
 
