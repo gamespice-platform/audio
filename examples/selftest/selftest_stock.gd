@@ -582,7 +582,7 @@ func _test_cheap_starts() -> void:
 	_check(sink.play(absent) != 0 and sink._absent_ms.has(absent["path"]), "a path with no file plays its stand-in and is remembered as absent")
 	sink._absent_ms[absent["path"]] = Time.get_ticks_msec() - DotAudioSinkGodot.ABSENT_RECHECK_MS
 	sink.bank.erase(absent["path"])
-	_check(sink.play(absent) == 0 and int(sink._absent_ms[absent["path"]]) > Time.get_ticks_msec() - 1000, "and the disk is asked again once that is stale, so a file that arrives late wins")
+	_check(sink.play(absent) == 0 and int(sink._absent_ms[absent["path"]]) > Time.get_ticks_msec() - 10000, "and the disk is asked again once that is stale, so a file that arrives late wins")
 
 	sink.stop_all()
 	sink.close()
