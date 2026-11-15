@@ -33,5 +33,6 @@ extends RefCounted
 # 20: DotAudioFootsteps, DotAudioSlide (and DotAudioSurf) and DotAudioSurfRules run dot-sim's native tick and probe when
 #     present: native_enabled (static), use_native, native_available(), native_sync();
 #     DotAudioSurfRules.native_probe()/native_args().
-const LEVEL := 20
+# 21: DotAudioSurfRules.cvar_specs has no upper bound ("max" INF) on volume, speeds and pitches; apply_cvar refuses an out-of-range value with an error instead of clamping it.
+const LEVEL := 21
 const OLDEST := 1

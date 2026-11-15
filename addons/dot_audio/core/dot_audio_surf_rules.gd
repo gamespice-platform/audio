@@ -71,20 +71,21 @@ func native_args(out: PackedFloat64Array) -> PackedFloat64Array:
 	return out
 
 
-## Name, field, default, description and range of each cvar.
+## Name, field, default, description and range of each cvar. A "max" of INF is no upper bound (volume, speeds and pitches are
+## settings, not limits; a switch stays 0 to 1). A value outside the range is refused, never clamped.
 static func cvar_specs() -> Array[Dictionary]:
 	return [
 		{"name": "sv_surf_sounds", "field": "enabled", "value": "1", "min": 0.0, "max": 1.0,
 			"description": "Whether surfing plays a quiet glide (1) or nothing (0)"},
-		{"name": "sv_surf_volume", "field": "volume", "value": "0.6", "min": 0.0, "max": 2.0,
+		{"name": "sv_surf_volume", "field": "volume", "value": "0.6", "min": 0.0, "max": INF,
 			"description": "Surf glide level: 0 off, 1 stock level"},
-		{"name": "sv_surf_quiet_speed", "field": "quiet_speed", "value": "4", "min": 0.0, "max": 60.0,
+		{"name": "sv_surf_quiet_speed", "field": "quiet_speed", "value": "4", "min": 0.0, "max": INF,
 			"description": "Speed in m/s under which the surf glide is silent"},
-		{"name": "sv_surf_full_speed", "field": "full_speed", "value": "22", "min": 1.0, "max": 200.0,
+		{"name": "sv_surf_full_speed", "field": "full_speed", "value": "22", "min": 1.0, "max": INF,
 			"description": "Speed in m/s at which the surf glide is loudest and highest"},
-		{"name": "sv_surf_pitch_low", "field": "pitch_low", "value": "0.75", "min": 0.25, "max": 2.0,
+		{"name": "sv_surf_pitch_low", "field": "pitch_low", "value": "0.75", "min": 0.25, "max": INF,
 			"description": "Surf glide pitch at the quiet speed"},
-		{"name": "sv_surf_pitch_high", "field": "pitch_high", "value": "1.35", "min": 0.25, "max": 3.0,
+		{"name": "sv_surf_pitch_high", "field": "pitch_high", "value": "1.35", "min": 0.25, "max": INF,
 			"description": "Surf glide pitch at the full speed"},
 		{"name": "sv_surf_mute_steps", "field": "mute_steps", "value": "1", "min": 0.0, "max": 1.0,
 			"description": "Whether footsteps and landings stop while surfing (1) or play as usual (0)"},
@@ -96,7 +97,10 @@ func apply_cvar(cvar_name: String, value: String) -> bool:
 	for spec: Dictionary in cvar_specs():
 		if spec["name"] != cvar_name or not value.is_valid_float():
 			continue
-		var v := clampf(value.to_float(), float(spec["min"]), float(spec["max"]))
+		var v := value.to_float()
+		if v < float(spec["min"]) or v > float(spec["max"]):
+			push_error("%s: %s is outside %s to %s, refused" % [cvar_name, value, spec["min"], spec["max"]])
+			return false
 		var field := String(spec["field"])
 		if field == "enabled" or field == "mute_steps":
 			set(field, v >= 0.5)
