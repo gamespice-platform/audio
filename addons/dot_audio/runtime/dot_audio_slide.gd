@@ -24,10 +24,9 @@ var volume: float = 1.0
 @export_range(0.05, 5.0, 0.05) var ground_probe: float = 0.6
 @export_flags_3d_physics var ground_mask: int = 0xFFFFFFFF
 var surface_metas: Array[StringName] = [&"surface", &"dot_fps_surface"]
-## Farther than this (m) from the manager's listener a body is not asked whether it slides: its loop is
-## stopped and only its position is kept, so a 32-player client pays the question and the ground ray for
-## the few bodies in earshot. Negative: the loop's own max_distance (the sink plays nothing past it)
-## plus [member reach_margin]; 0: every body is asked wherever it is.
+## Farther than this (m) from the listener a body's slide loop is stopped and only its position kept, so a 32-player
+## client pays the ground ray for the few in earshot. Negative: the loop's max_distance plus [member reach_margin];
+## 0: every body is asked wherever it is.
 var reach: float = -1.0
 ## How far past the loop's max_distance a body is still asked (the listener moves between frames).
 var reach_margin: float = 4.0
@@ -35,10 +34,9 @@ var reach_margin: float = 4.0
 # body -> {last, handle, surface, sliding: Callable, opts}
 var _bodies: Dictionary = {}
 
-## dot-sim's native gate ([code]DotSimAudioSteps[/code]): the bodies out of reach, switched off, too slow or not
-## sliding are settled natively, to the bit (dot-audio's examples/steps_native_parity); the rest advance here. Used when the
-## extension is loaded, [member native_enabled] and [member use_native] are on and this node is a plain
-## [DotAudioSlide] or [DotAudioSurf]. On the web, or with no library, the script runs.
+## dot-sim's native gate ([code]DotSimAudioSteps[/code]) settles out-of-reach, off, slow or non-sliding bodies natively,
+## to the bit (examples/steps_native_parity); the rest advance here. Used when the extension is loaded, [member native_enabled]
+## and [member use_native] are on and this is a plain [DotAudioSlide] or [DotAudioSurf]; otherwise (web, no library) the script runs.
 const NATIVE_CLASS := &"DotSimAudioSteps"
 ## Whether the native gate is used when present. On by default: the packed native passes hold the bodies' state
 ## and make about four engine calls a body, measured about twice as fast as this script for footsteps and surf

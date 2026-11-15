@@ -1,22 +1,8 @@
 extends RefCounted
 
-## Decodes a short compressed stream to PCM once, so playing it again costs nothing to start.
-##
-## [b]Why.[/b] Starting an Ogg Vorbis voice builds a decoder (its codebooks) every time, close
-## to a millisecond on the game thread per shot layer; a PCM stream starts in microseconds.
-## The decode runs on a worker thread and the sink swaps the result in when it is ready.
-##
-## [b]Without threads[/b] (the single-threaded web export) there is no worker, and that is where
-## a start costs most (about a millisecond each in the browser, on the one thread that also draws).
-## There the decode is sliced on the game thread instead: [method pump] runs once a frame from
-## [signal SceneTree.process_frame] for at most [member slice_usec], a chunk of Vorbis at a time,
-## and the finished frames become PCM in native calls ([method _wav_native]), never a per-sample
-## loop. Held copies are capped lower there ([constant WEB_BUDGET_BYTES]): the wasm heap is small.
-##
-## A script of its own for the same reason as the raw stream cache: the sink must not name
-## itself from a static function (see that file). The copies are kept here, once per process, so
-## a voice pool outside the sink (a game's own gun voices) shares them through [method copy_for]
-## by this file's path instead of keeping a second cache.
+## Decodes a short compressed stream to PCM once on a worker thread: an Ogg voice start builds a decoder (about 1 ms on the game thread),
+## PCM starts in microseconds. Without threads (web) [method pump] slices it per frame for [member slice_usec], capped at [constant WEB_BUDGET_BYTES].
+## Its own script so the sink never names itself statically; one cache per process, shared by path through [method copy_for].
 
 const CHUNK := 4096
 
@@ -102,13 +88,9 @@ static func decode(stream: AudioStream, rate: int, out: Array) -> void:
 	out.append(wav)
 
 
-## The PCM copy of the short compressed [param stream] once it is decoded, else [param stream]
-## itself; [param key] names it (its path). [b]The first play is the compressed one[/b] and starts
-## the decode on a worker thread; a later play picks the copy up. A copy is at half scale: play it
-## [constant HEADROOM_DB] louder (see [method is_copy]). Never for a stream longer than
-## [param max_seconds] or past [param budget_bytes] held, and not for a loop (the resampled copy's
-## ends are not sample-exact, and a seam clicks): that check is the caller's. Without threads the
-## decode is queued for [method pump] and the budget is at most [constant WEB_BUDGET_BYTES].
+## The PCM copy of [param stream] (named by [param key], its path) once decoded, else [param stream]: the first play is compressed
+## and starts the decode; a copy is half scale, so play it [constant HEADROOM_DB] louder. Never past [param max_seconds] or [param budget_bytes],
+## and never for a loop (its resampled ends click; the caller's check). Without threads [method pump] decodes, capped at [constant WEB_BUDGET_BYTES].
 static func copy_for(key: String, stream: AudioStream, max_seconds: float = 4.0, budget_bytes: int = 64 * 1024 * 1024) -> AudioStream:
 	if _copies.has(key):
 		return _copies[key] as AudioStream

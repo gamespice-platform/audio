@@ -1,22 +1,9 @@
 class_name DotVoiceQueue
 extends Node
 
-## One voice at a time for announcer and medal lines, so they do not talk over each other.
-##
-## [codeblock]
-## var voice := DotVoiceQueue.new()
-## add_child(voice)
-## voice.setup(audio)
-## voice.say(&"medal_headshot", 40)
-## voice.say(&"flag_captured", 80)   # waits its turn, or cuts in if it is far more urgent
-## [/codeblock]
-##
-## A line starts at once when nothing is speaking. While one speaks, a line that outranks it
-## by [member interrupt_margin] cuts it off; any other waits, highest priority first and then
-## in the order said. A line already waiting is not queued twice, the queue is capped (the
-## lowest priority goes first) and a line that waited longer than [member max_wait] is
-## dropped, since an announcement that late is noise. The end of a line is read from
-## [method DotAudioManager.is_playing], so it works the same on the null sink.
+## One voice at a time for announcer and medal lines: `voice.setup(audio)`, then `voice.say(&"medal_headshot", 40)`. A line
+## outranking the speaking one by [member interrupt_margin] cuts it off; others wait, by priority then order, never queued twice,
+## lowest dropped past the cap and stale past [member max_wait]. The end of a line comes from [method DotAudioManager.is_playing].
 
 const PLAYING := &"playing"
 const INTERRUPTED := &"interrupted"

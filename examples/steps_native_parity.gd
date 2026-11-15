@@ -1,19 +1,8 @@
 extends "selftest/selftest_base.gd"
 
-## The native footstep, slide and surf probes against the script, to the bit.
-##
-## One seeded world (a floor, a gap, a walkable slope, a surf ramp, a near-wall, a floor whose shapes name their
-## surfaces) and one set of seeded bodies (plain, CharacterBody3D, with a `grounded` callable, with a fixed surface)
-## walking, running, jumping, teleporting, leaving the tree and being freed, ticked twice a frame: rig A by the script
-## ([code]use_native = false[/code]), rig B through dot-sim's [code]DotSimAudioSteps[/code] and
-## [code]DotSimSurfProbe[/code]. Every [signal DotAudioFootsteps.stepped], slide and surf start and stop, every sound
-## the two sinks were asked for and every body's state must be equal after every tick; then [method
-## DotAudioSurfRules.is_surfing] is asked directly of both over random bodies and rules.
-## With no library it says the native half was skipped; with [code]DOT_SIM_REQUIRE_NATIVE=1[/code] that fails.
-##
-## [codeblock]
-## godot --headless --path . res://examples/steps_native_parity.tscn
-## [/codeblock]
+## The native footstep, slide and surf probes against the script, to the bit: one seeded world and seeded bodies, ticked by the script (rig A) and by
+## dot-sim's DotSimAudioSteps/DotSimSurfProbe (rig B); every step, slide, surf, sink request and body state must match each tick, then [method DotAudioSurfRules.is_surfing]
+## over random input. No library: native half skipped (DOT_SIM_REQUIRE_NATIVE=1 fails). Run: godot --headless --path . res://examples/steps_native_parity.tscn
 
 const TICKS := 420
 const BODIES := 32
@@ -101,7 +90,7 @@ func _finish() -> void:
 	get_tree().quit(1 if _failed > 0 else 0)
 
 
-# --- The world ----------------------------------------------------------------
+# The world.
 
 func _static(at: Vector3, size: Vector3, rot: Vector3, node_name: String) -> StaticBody3D:
 	var b := StaticBody3D.new()
@@ -179,7 +168,7 @@ func _rig(native: bool) -> Dictionary:
 	return {"m": m, "rules": rules, "steps": steps, "slide": slide, "surf": surf, "log": log, "seen": 0}
 
 
-# --- The bodies ---------------------------------------------------------------
+# The bodies.
 
 func _spawn() -> void:
 	var i := _bodies.size()
@@ -246,7 +235,7 @@ func _move(i: int, dt: float) -> void:
 	b.global_position = pos
 
 
-# --- One tick -----------------------------------------------------------------
+# One tick.
 
 func _configure(rig: Dictionary) -> void:
 	var t := _tick

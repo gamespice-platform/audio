@@ -1,14 +1,8 @@
 extends SceneTree
 
-## Offline per-cue loudness, no audio device (the xvfb Dummy driver records silence):
-## `godot --headless --path . --script res://addons/dot_audio/tools/cue_levels.gd -- --table=res://tools/my_cues.gd`.
-## The table script (a RefCounted subclass) is the only per-game part:
-##   rows() -> Array of {id, stream (AudioStream) or path (String), gain_db, bus, sustained, note}
-##     gain_db is everything before the bus: the def's gain plus the level the game runs it at.
-##   buses_db() -> {"Master": dB, "SFX": dB, ...}
-## Effective = stream level + gain_db + bus + Master. Flags: peak over -1 dBFS or 0 (clip risk),
-## silent or missing, more than HOT_DB over or COLD_DB under the median SFX-bus cue, and a
-## sustained cue louder than the target. Exit 1 on a clipping, silent or missing cue.
+## Offline per-cue loudness, no audio device: `godot --headless --path . --script <this> -- --table=res://tools/my_cues.gd`, the table a RefCounted
+## with rows() -> [{id, stream or path, gain_db (def gain plus run level), bus, sustained, note}] and buses_db() -> {bus: dB}. Effective = stream + gain_db + bus + Master;
+## flags clipping (peak over -1 dBFS), silent or missing, HOT_DB/COLD_DB off the median SFX cue, and loud sustained cues. Exit 1 on clipping, silent or missing.
 
 const Meter := preload("cue_meter.gd")
 

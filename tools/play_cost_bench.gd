@@ -1,10 +1,7 @@
 extends Node
 
-## What one play costs the game thread, through the engine sink, with no sound card needed.
-##
-## The engine sink is built by hand because a headless run would pick the null sink, and the
-## cost in question (resolving the stream, taking a player, configuring it) is all in the real one.
-## Prints microseconds per call; compare two builds on the same box.
+## What one play costs the game thread through the engine sink, built by hand since headless would pick the null sink and the cost
+## (resolve the stream, take and configure a player) is in the real one. Prints microseconds per call; compare two builds on one box.
 
 const ROUNDS := 200
 const VOICES := 32
