@@ -2,7 +2,7 @@ extends "selftest/selftest_base.gd"
 
 ## The native footstep, slide and surf probes against the script, to the bit: one seeded world and seeded bodies, ticked by the script (rig A) and by
 ## dot-sim's DotSimAudioSteps/DotSimSurfProbe (rig B); every step, slide, surf, sink request and body state must match each tick, then [method DotAudioSurfRules.is_surfing]
-## over random input. No library: native half skipped (DOT_SIM_REQUIRE_NATIVE=1 fails). Run: godot --headless --path . res://examples/steps_native_parity.tscn
+## over random input. No library: native half skipped (GS_SIM_REQUIRE_NATIVE=1 fails). Run: godot --headless --path . res://examples/steps_native_parity.tscn
 
 const TICKS := 420
 const BODIES := 32
@@ -44,9 +44,9 @@ func _ready() -> void:
 	DotAudioSurfRules.native_enabled = true
 	_native = ClassDB.class_exists(&"DotSimAudioSteps") and ClassDB.class_exists(&"DotSimSurfProbe")
 	if not _native:
-		var required := OS.get_environment("DOT_SIM_REQUIRE_NATIVE") == "1"
+		var required := (OS.get_environment("GS_SIM_REQUIRE_NATIVE") if OS.has_environment("GS_SIM_REQUIRE_NATIVE") else OS.get_environment("DOT_SIM_REQUIRE_NATIVE")) == "1"
 		_line("dot-sim's library is not loaded: the native half is skipped")
-		_check(not required, "DOT_SIM_REQUIRE_NATIVE=1 needs the library")
+		_check(not required, "GS_SIM_REQUIRE_NATIVE=1 needs the library")
 		_check(not DotAudioFootsteps.native_available(), "and the script says so (native_available false)")
 		_finish()
 		return

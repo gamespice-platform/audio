@@ -45,7 +45,7 @@ Read the family [CLAUDE.md](../../CLAUDE.md) first; this file is only what is sp
 | `tools/play_cost_bench.tscn` | what one `play_at()` costs the game thread through the real sink (file, banked, culled), headless; run it before and after touching the sink's start path |
 | `examples/ambience_bus_selftest.tscn` | the Ambience bus follows the Effects slider |
 | `examples/box_sounds_selftest.tscn` | `DotBoxSounds`: slots, stock fallback, effect end, approach edge |
-| `examples/steps_native_parity.tscn` | dot-sim's native footstep, slide and surf passes against the script, to the bit (skips without `addons/dot_sim`, a gitignored link to a dot-sim checkout; `DOT_SIM_REQUIRE_NATIVE=1` fails instead) and their cost beside the script's |
+| `examples/steps_native_parity.tscn` | dot-sim's native footstep, slide and surf passes against the script, to the bit (skips without `addons/dot_sim`, a gitignored link to a dot-sim checkout; `GS_SIM_REQUIRE_NATIVE=1` fails instead) and their cost beside the script's |
 | `examples/exit_leak_probe.tscn` | loads dot-audio as a game's suite does and quits; the suite runs it as a child and reads its stderr |
 
 Paths except `examples/` and the repository's `tools/make_ambience.py` (regenerates the beds) are in `addons/dot_audio/`.
