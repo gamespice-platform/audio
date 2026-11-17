@@ -235,7 +235,7 @@ SPECS = {
     "explosion": (-1.5, mix_layers(
         oga(BANG + "/cannon_0[1-5].ogg", length=1.8, semis=-3),
         oga(S + "/lowFrequency_explosion_00[01].ogg", S + "/explosionCrunch_00[0-4].ogg", length=1.8, floor=0.01), 0.7)),
-    # per-gun reports for the arena pack's guns that a shared class made sound alike
+    # per-gun reports for the FC pack's guns that a shared class made sound alike
     "battle_fire": (-2.0, layered(clips(TAB + "/sks.wav", [2.29, 6.0, 7.8, 9.8, 11.5], 1.2), (90, 38, 0.08, 0.35))),
     "marksman_fire": (-2.0, layered(clips(TAB + "/cz.wav", [0.14, 2.82, 4.05, 5.54], 1.3, -1), (85, 36, 0.09, 0.3))),
     "lmg_fire": (-2.5, layered(chain(clips(LMG, [0.0, 0.21], 0.28, -2), clips(TAB + "/sks.wav", [3.54, 3.76], 0.3, -4),

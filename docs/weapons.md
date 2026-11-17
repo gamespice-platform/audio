@@ -14,7 +14,7 @@ The stock weapon sounds in `addons/dot_audio/stock/weapons/` (84 sounds, 387 fil
 | zee-dot-weapons | 27 | one synthesised stream per class (`ZeeWeaponSound`), pitch jitter only | none, but no dry, no equip, no casing, no shell reload | one reload_out and one reload_in for every gun; one impact for every surface; 9 melee and throws on 3 swing/bash/throw streams |
 | zed-dot-weapons | 16 | zee's synth by class; uzi and tactical SMG on the pistol class, flamethrower on the minigun's, 3 throwables on the default | none | silenced pistol is the same stream as the service pistol |
 
-Games that use a pack (arena, playlot, zombie-zone and the mg- games through `ZeeShotFx` or `ZzViewModel`) have exactly their pack's sounds. dot-weapon itself plays nothing and says so (`used` signals only).
+Games that use a pack (FC, playlot, zombie-zone and the mg- games through `ZeeShotFx` or `ZzViewModel`) have exactly their pack's sounds. dot-weapon itself plays nothing and says so (`used` signals only).
 
 Ranked by how many weapons share a class (the order fixed): rifle 9, melee swing 17 (zee 7, zz-modern 3, medieval 7), shotgun 7, SMG 7, heavy/battle rifle 6, pistol 5, sniper 5, launcher 5, thrown 5, magnum 4, minigun/flamethrower 2, beam 1, charge 1, bow and crossbow 2.
 
@@ -68,7 +68,7 @@ Files are `<name>_<i>.ogg` in `stock/weapons/`; a pack's selftest runs `DotWeapo
 
 | Pack | Weapons | Class | Fire / far | Reload, dry, draw |
 | --- | --- | --- | --- | --- |
-| zee (Arena) | pistol | light | `light_fire`, `light_far` (1911, PPQ, Bersa) | `reload_out/in`, `dry`, `equip` |
+| zee (FC) | pistol | light | `light_fire`, `light_far` (1911, PPQ, Bersa) | `reload_out/in`, `dry`, `equip` |
 | zee | revolver, derringer | magnum | `magnum_fire`, `magnum_far` (.38, .45 down 4 st) | same |
 | zee | machine_pistol, smg | smg | `smg_fire`, `smg_far` (M45, PPSh) | same |
 | zee | carbine, rifle, bullpup, burst_rifle | rifle | `rifle_fire`, `rifle_far` (AR-15, SKS, AK-47) | same |
@@ -97,7 +97,7 @@ Changed 2026-10-28: the heavy class is no longer lever-action: AK-47 and SKS sin
 Per-class reloads: `reload_out/in_<light|smg|rifle|heavy|magnum|sniper>` (2 each), picked by `DotWeaponSound.pick_reload`; the generic `reload_out/in` is the fallback. The two variants of a class are pitch variants of one recording, and the magnum and sniper sets are constructed from the bolt and cock clips, not recorded. Still open: a real recorded revolver and bolt reload, a real recorded pin pull, and the explosion for the grenade is the shared `explosion`.
 
 
-Changed 2026-10-31: nine more fire classes so guns the arena pack made sound alike no longer do: `lmg`, `battle`, `marksman`, `carbine`, `derringer`, `mpistol`, `autoshot`, `grenade`, `rail`, plus new `beam_fire` and `charge_fire` recordings, per-class reloads `reload_out/in_<lmg|launcher|energy>` and a new sniper bolt, and `dry_<light|heavy|energy>` / `equip_<light|heavy|energy>` picked by `DotWeaponSound.pick_feel`. Measured with ffmpeg on the decoded files: every new fire file is within its `DotWeaponSound.BOUNDS` length and peaks between -0.9 and -6.7 dBFS (under the -0.5 clip check). Lengths: lmg 0.31-0.39 s, battle 1.21, marksman 1.38-1.39, carbine 0.54, derringer 0.42-0.53, mpistol 0.20-0.26, autoshot 1.08, grenade 0.26-0.42, rail 0.86-1.46, charge 0.80, beam 0.29-0.45. `autoshot_fire` has 2 variants and `carbine_fire` 3: their source recordings hold that many usable shots. `_far` for seven of them was added 2026-11-10 (below). Nothing was heard by a person.
+Changed 2026-10-31: nine more fire classes so guns the FC pack made sound alike no longer do: `lmg`, `battle`, `marksman`, `carbine`, `derringer`, `mpistol`, `autoshot`, `grenade`, `rail`, plus new `beam_fire` and `charge_fire` recordings, per-class reloads `reload_out/in_<lmg|launcher|energy>` and a new sniper bolt, and `dry_<light|heavy|energy>` / `equip_<light|heavy|energy>` picked by `DotWeaponSound.pick_feel`. Measured with ffmpeg on the decoded files: every new fire file is within its `DotWeaponSound.BOUNDS` length and peaks between -0.9 and -6.7 dBFS (under the -0.5 clip check). Lengths: lmg 0.31-0.39 s, battle 1.21, marksman 1.38-1.39, carbine 0.54, derringer 0.42-0.53, mpistol 0.20-0.26, autoshot 1.08, grenade 0.26-0.42, rail 0.86-1.46, charge 0.80, beam 0.29-0.45. `autoshot_fire` has 2 variants and `carbine_fire` 3: their source recordings hold that many usable shots. `_far` for seven of them was added 2026-11-10 (below). Nothing was heard by a person.
 
 Added 2026-11-01: layered shots (`DotShotDef`, `DotShotPlayer`, `DotAudioEnclosure`, stock in `stock/shots/`). A game plays `shots.fire(DotAudioShotStock.id_of(class), position)` and keeps its single `fire_*` sound as the fallback when `fire` fails (layers off). `ZeeShotFx` in zee-dot-weapons plays them through `ZeeShotLayers`. Checked as spectrograms of close, tight-room, hall and far shots; nothing was heard by a person.
 

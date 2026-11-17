@@ -17,7 +17,7 @@ GODOT = os.path.abspath(os.path.join(ROOT, ".."))
 STOCK = os.path.join(ROOT, "addons/dot_audio/stock/weapons")
 SOUND = os.path.join(GODOT, "dot-weapon/addons/dot_weapon/core/dot_weapon_sound.gd")
 ZEE = os.path.join(GODOT, "zee-dot-weapons/addons/zee_weapons/view/zee_weapon_sound.gd")
-AW = os.path.join(GODOT, "arena-weapons/addons/arena_weapons/aw_weapon_pack.gd")
+AW = os.path.join(GODOT, "fc-weapons/addons/fc_weapons/aw_weapon_pack.gd")
 ZEE_IDS = os.path.join(GODOT, "zee-dot-weapons/addons/zee_weapons/content/zee_weapon_ids.gd")
 
 

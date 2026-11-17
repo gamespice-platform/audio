@@ -46,7 +46,7 @@ A web build in sample playback runs no bus effects, so nothing held the ceiling 
 
 `addons/dot_audio/web/dot_audio_ceiling.js` is the browser's limiter. The engine's Web Audio graph cannot be reached from a script once it exists, so the file wraps the page's `AudioContext` before the engine makes one and hands it a `destination` that is a chain: a `DynamicsCompressorNode` above -3 dBFS (ratio 20, 2 ms attack, 100 ms release), a gain that takes off the makeup gain the Web Audio spec adds to every compressor (otherwise a browser would be about 1.7 dB louder than a desktop), and a `WaveShaperNode` soft clip, oversampled 4x, whose curve never passes -1.5 dBFS. A page loads it before `index.js` (dot-server-deploy's `export-web` copies it beside the build and puts it in both pages).
 
-| Run (arena, 2026-10-12) | Integrated | Peak |
+| Run (FC, 2026-10-12) | Integrated | Peak |
 | --- | --- | --- |
 | Chromium, no ceiling | -20.0 LUFS | +3.4 dBFS float, clipped |
 | Chromium, the ceiling | -20.9 LUFS | -2.0 dBTP, nothing clipped |
