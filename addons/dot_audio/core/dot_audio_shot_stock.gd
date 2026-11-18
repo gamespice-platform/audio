@@ -23,9 +23,10 @@ static func id_of(weapon_class: StringName) -> StringName:
 static func shot(weapon_class: StringName) -> DotShotDef:
 	if not COUNTS.has(weapon_class):
 		return null
+	DotAudioStock.warn_if_missing("shots/%s/attack_0.ogg" % weapon_class)
 	var d := DotShotDef.new()
 	d.id = id_of(weapon_class)
-	var base := directory().path_join(String(weapon_class))
+	var base := "shots/" + String(weapon_class)
 	d.attack = _files(base, "attack", int(COUNTS[weapon_class]))
 	d.body = _files(base, "body", int(COUNTS[weapon_class]))
 	d.tail_small = _files(base, "tail_small", int(COUNTS[weapon_class]))
@@ -34,7 +35,7 @@ static func shot(weapon_class: StringName) -> DotShotDef:
 	d.tail_hall = _files(base, "tail_hall", int(COUNTS[weapon_class]))
 	d.tail_outdoor = _files(base, "tail_outdoor", int(COUNTS[weapon_class]))
 	d.far = _files(base, "far", int(COUNTS[weapon_class]))
-	var quiet := directory().path_join("suppressed")
+	var quiet := "shots/suppressed"
 	d.suppressed_body = _files(quiet, "body", SUPPRESSED_COUNT)
 	d.suppressed_far = _files(quiet, "far", SUPPRESSED_COUNT)
 	if weapon_class == &"sniper" or weapon_class == &"shotgun" or weapon_class == &"heavy":
@@ -54,8 +55,10 @@ static func shots() -> Array[DotShotDef]:
 	return out
 
 
+## [param folder] is relative to stock/; each file goes through [method DotAudioStock.resolve], so a build without it
+## (the client shell) finds it in [member DotAudioStock.fallback_roots], and a missing one fails at its own path.
 static func _files(folder: String, layer: String, count: int) -> PackedStringArray:
 	var out := PackedStringArray()
 	for i in count:
-		out.append(folder.path_join("%s_%d.ogg" % [layer, i]))
+		out.append(DotAudioStock.resolve(folder.path_join("%s_%d.ogg" % [layer, i])))
 	return out

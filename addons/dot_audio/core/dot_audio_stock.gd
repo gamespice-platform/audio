@@ -79,6 +79,22 @@ static func resolve(rel: String) -> String:
 	return here
 
 
+## True when [param rel] under stock/ exists here or in a fallback root.
+static func has(rel: String) -> bool:
+	return _present(resolve(rel))
+
+
+## Logs, once per [param rel], that a stock file is in neither this build nor any fallback root: the sound is then silent.
+static func warn_if_missing(rel: String) -> void:
+	if has(rel) or _warned.has(rel):
+		return
+	_warned[rel] = true
+	DotLog.warn("dot_audio", "stock sound missing: not in this build nor in fallback_roots", {"file": rel, "roots": fallback_roots.size()})
+
+
+static var _warned := {}
+
+
 static func _present(path: String) -> bool:
 	return ResourceLoader.exists(path) or FileAccess.file_exists(path)
 

@@ -42,15 +42,15 @@ static func id_of(sound: StringName) -> StringName:
 
 static func defs() -> Array[DotAudioDef]:
 	var out: Array[DotAudioDef] = []
-	var dir := directory()
 	for sound: StringName in COUNTS:
+		DotAudioStock.warn_if_missing("weapons/%s_0.ogg" % sound)
 		var d := DotAudioDef.new()
 		d.id = id_of(sound)
 		d.kind = DotAudioDef.Kind.POSITIONAL_3D
 		d.bus = &"SFX"
 		var variants := PackedStringArray()
 		for i in int(COUNTS[sound]):
-			variants.append(dir.path_join("%s_%d.ogg" % [sound, i]))
+			variants.append(DotAudioStock.resolve("weapons/%s_%d.ogg" % [sound, i]))
 		d.path = variants[0]
 		d.variants = variants
 		d.gain_db = _RELOAD_GAIN if String(sound).begins_with("reload_in_") or String(sound).begins_with("reload_out_") else float(_GAIN.get(sound, 0.0))
