@@ -645,6 +645,40 @@ func _test_sliced_decode() -> void:
 	pcm.slice_always = false
 
 
+func _test_warm() -> void:
+	_section("Warming loads and decodes the files before their first play, nothing dropped")
+	var pcm: GDScript = DotAudioSinkGodot._PCM
+	pcm.clear()
+	pcm.slice_always = true
+	var host := Node.new()
+	add_child(host)
+	var cat := DotAudioCatalogue.new()
+	DotAudioStock.add_to(cat, false)
+	var mgr := DotAudioManager.new()
+	mgr.catalogue = cat
+	mgr.register_as_service = false
+	var sink := DotAudioSinkGodot.new(mgr, 4)
+	mgr.sink = sink
+	host.add_child(mgr)
+	var ids: Array = [DotAudioStock.footstep_id(&"wood"), DotAudioStock.footstep_id(&"metal"), &"no_such_id"]
+	var queued := mgr.warm(ids)
+	_check(queued > 0 and pcm.warm_pending() > 0, "queued %d files, %d pending; the unknown id is skipped" % [queued, pcm.warm_pending()])
+	_check(mgr.warm(ids) == 0, "a second warm of the same ids queues nothing")
+	var frames := 0
+	while pcm.warm_pending() > 0 and frames < 4000:
+		await get_tree().process_frame
+		frames += 1
+	var st: Dictionary = pcm.warm_stats()
+	_check(pcm.warm_pending() == 0 and int(st["copied"]) == queued, "every queued file ends decoded (%d of %d, %d frames)" % [int(st["copied"]), queued, frames])
+	var def := cat.find(DotAudioStock.footstep_id(&"wood"))
+	var first := def.variants[0] if not def.variants.is_empty() else def.path
+	_check(sink._resolved.has(first) and pcm._copies.has(first), "the first variant is resolved and held as PCM before any play")
+	pcm.clear()
+	_check(pcm.warm_pending() == 0, "clear() drops the warm queue")
+	pcm.slice_always = false
+	host.queue_free()
+
+
 func _cheap_stream(host: Node, handle: int) -> AudioStream:
 	for child in host.get_children():
 		if int(child.get_meta(&"dot_audio_handle", 0)) == handle:

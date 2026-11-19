@@ -35,5 +35,6 @@ extends RefCounted
 #     DotAudioSurfRules.native_probe()/native_args().
 # 21: DotAudioSurfRules.cvar_specs has no upper bound ("max" INF) on volume, speeds and pitches; apply_cvar refuses an out-of-range value with an error instead of clamping it.
 # 22: DotShotRules.cvar_specs has no upper bound ("max" INF) on rays, near, far, reverb and tail_voices; set_cvar refuses an out-of-range value with an error instead of clamping it.
-const LEVEL := 22
+# 23: DotAudioPcm.warm, DotAudioSinkGodot.warm_streams, DotAudioSink.warm and DotAudioManager.warm(ids): load and decode the files behind ids before their first play, a slice per frame, nothing dropped.
+const LEVEL := 23
 const OLDEST := 1

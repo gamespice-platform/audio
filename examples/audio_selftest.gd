@@ -12,8 +12,8 @@ extends "selftest/selftest_synth.gd"
 ## godot --headless --path . res://examples/audio_selftest.tscn
 ## [/codeblock]
 
-const SECTIONS := 25
-const CHECKS := 361
+const SECTIONS := 26
+const CHECKS := 366
 
 func _ready() -> void:
 	DotLog.set_level(DotLog.Level.ERROR)
@@ -48,6 +48,7 @@ func _run() -> void:
 	_test_raw_fallback()
 	_test_cheap_starts()
 	await _test_sliced_decode()
+	await _test_warm()
 	_test_hurt_sound()
 	_test_voice_queue()
 	_test_nothing_kept_alive_at_exit()

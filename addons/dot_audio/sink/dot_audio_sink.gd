@@ -30,6 +30,12 @@ func play(_request: Dictionary) -> int:
 	return 0
 
 
+## Gets the files at [param paths] ready before the first play: load and decode. Returns how many
+## were queued. A sink with nothing to prepare returns 0.
+func warm(_paths: Array) -> int:
+	return 0
+
+
 ## Stops one playback. A handle that has already finished is not an error.
 func stop(_handle: int) -> void:
 	pass

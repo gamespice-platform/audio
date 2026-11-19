@@ -340,6 +340,25 @@ func _release(handle: int) -> void:
 		_concurrent[id] = maxi(0, int(_concurrent.get(id, 1)) - 1)
 
 
+## Gets the files behind [param ids] ready before their first play: every variant is loaded and
+## decoded by the sink, a slice per frame. Unknown ids are skipped. Returns how many files were
+## queued; nothing is capped, so pass every footstep, landing and impact id a map can play.
+func warm(ids: Array) -> int:
+	if catalogue == null or sink == null:
+		return 0
+	var paths: Array = []
+	for id: Variant in ids:
+		var def := catalogue.find(StringName(id))
+		if def == null:
+			continue
+		if not def.path.is_empty() and not paths.has(def.path):
+			paths.append(def.path)
+		for v in def.variants:
+			if not paths.has(v):
+				paths.append(v)
+	return sink.warm(paths)
+
+
 func _process(_delta: float) -> void:
 	_reap()
 

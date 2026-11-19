@@ -35,6 +35,15 @@ const SLICE_CHUNK := 2048
 ## Without threads, the held copies never pass this, whatever a caller's budget.
 const WEB_BUDGET_BYTES := 24 * 1024 * 1024
 
+## Warm-up: game-thread microseconds a frame may spend loading streams and starting decodes (at least one item a
+## frame). 0 is no limit: everything queued is handled the frame it is queued.
+static var warm_usec := 1500
+## Warm-up queue: [key or path, stream or null, resolver] rows, oldest first.
+static var _warm: Array = []
+static var _warm_connected := false
+static var _warm_total := 0
+static var _warm_kept := 0
+
 ## Stored at half scale and played [constant HEADROOM_DB] louder: a decoder overshoots full
 ## scale on a loud transient (1.27 measured on a stock step), and 16 bits would clip what the
 ## float mix carries through to the limiter.
@@ -247,6 +256,103 @@ static func _wav_native(frames: PackedVector2Array, rate: int) -> AudioStreamWAV
 	return wav
 
 
+## Queues [param items] (an [AudioStream] with a resource path, or a path String that [param resolver]
+## turns into one) so each is loaded and its PCM copy decoded before it is first played, a frame at a time
+## within [member warm_usec]: the first shot, reload or footstep then finds both ready instead of paying the
+## load and the decoder start on the frame it is heard. Nothing is capped; a decode the pool has no room for
+## waits its turn. Returns the items queued (repeats and streams already copied do not count). Poll
+## [method warm_pending] for the end.
+static func warm(items: Array, resolver: Callable = Callable(), max_seconds: float = 4.0, budget_bytes: int = 64 * 1024 * 1024) -> int:
+	var queued := 0
+	for item: Variant in items:
+		var key := ""
+		var stream: AudioStream = null
+		if item is AudioStream:
+			stream = item as AudioStream
+			key = stream.resource_path
+		elif item is String or item is StringName:
+			key = String(item)
+		if key.is_empty() or _copies.has(key) or _skipped.has(key) or _warm_has(key):
+			continue
+		_warm.append([key, stream, resolver, max_seconds, budget_bytes])
+		_warm_total += 1
+		queued += 1
+	if queued > 0 and not _warm_connected:
+		var tree := Engine.get_main_loop() as SceneTree
+		if tree != null:
+			tree.process_frame.connect(_warm_tick)
+			_warm_connected = true
+	return queued
+
+
+## Items [method warm] still has to load or decode.
+static func warm_pending() -> int:
+	return _warm.size()
+
+
+## Streams [method warm] has handled, and how many of them it holds a copy of: {"queued", "copied"}.
+static func warm_stats() -> Dictionary:
+	return {"queued": _warm_total, "copied": _warm_kept, "pending": _warm.size()}
+
+
+static func _warm_has(key: String) -> bool:
+	for row: Array in _warm:
+		if row[0] == key:
+			return true
+	return false
+
+
+static func _warm_tick() -> void:
+	warm_step(warm_usec)
+
+
+## One round of [method warm]: handles queued items for [param usec] microseconds (0: all; at least one), in order.
+## Runs once a frame on its own; a suite calls it to finish now.
+static func warm_step(usec: int) -> void:
+	collect(false)
+	var until := Time.get_ticks_usec() + usec
+	var i := 0
+	while i < _warm.size():
+		var row: Array = _warm[i]
+		var key: String = row[0]
+		if _copies.has(key) or _skipped.has(key):
+			_warm_finish(i, _copies.has(key))
+			continue
+		if _jobs.has(key) or _slices.has(key):
+			i += 1  # decoding; collected or pumped elsewhere
+			continue
+		var stream := row[1] as AudioStream
+		if stream == null:
+			var resolver: Callable = row[2]
+			stream = resolver.call(key) as AudioStream if resolver.is_valid() else null
+			if stream == null:
+				_warm_finish(i, false)
+				continue
+			row[1] = stream
+		var sliced := slice_always or not threaded()
+		if (sliced and _slices.size() >= SLICE_QUEUE) or (not sliced and _jobs.size() >= JOBS):
+			i += 1  # no room yet: the next frame's turn
+		else:
+			var _s := copy_for(key, stream, float(row[3]), int(row[4]))
+			if _jobs.has(key) or _slices.has(key):
+				i += 1
+			else:
+				_warm_finish(i, _copies.has(key))  # taken at once, or refused (too long, over budget)
+		if usec > 0 and Time.get_ticks_usec() >= until:
+			break
+	if _warm.is_empty() and _warm_connected:
+		_warm_connected = false
+		var tree := Engine.get_main_loop() as SceneTree
+		if tree != null and tree.process_frame.is_connected(_warm_tick):
+			tree.process_frame.disconnect(_warm_tick)
+
+
+static func _warm_finish(index: int, copied: bool) -> void:
+	_warm.remove_at(index)
+	if copied:
+		_warm_kept += 1
+
+
 ## True for a copy [method copy_for] handed out, which plays [constant HEADROOM_DB] louder.
 static func is_copy(stream: AudioStream) -> bool:
 	return stream is AudioStreamWAV and _is_copy.has(stream)
@@ -281,6 +387,14 @@ static func clear() -> void:
 	_is_copy.clear()
 	_skipped.clear()
 	_bytes = 0
+	_warm.clear()
+	_warm_total = 0
+	_warm_kept = 0
+	if _warm_connected:
+		_warm_connected = false
+		var tree := Engine.get_main_loop() as SceneTree
+		if tree != null and tree.process_frame.is_connected(_warm_tick):
+			tree.process_frame.disconnect(_warm_tick)
 
 
 static func threaded() -> bool:

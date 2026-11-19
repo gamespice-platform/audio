@@ -174,6 +174,30 @@ func _pcm_for(path: String, stream: AudioStream) -> AudioStream:
 	return _PCM.copy_for(path, stream, pcm_max_seconds, pcm_budget_bytes)
 
 
+## Resolves each path now (the load, the first-use hitch) and queues its PCM decode a slice per
+## frame ([method DotAudioPcm.warm]), so the first play finds both done. Returns how many queued.
+func warm(paths: Array) -> int:
+	var ready: Array = []
+	for p: Variant in paths:
+		var path := str(p)
+		if path.is_empty():
+			continue
+		if _resolved.get(path) == null:
+			var stream := stream_at(path)
+			if stream == null:
+				continue
+			_resolved[path] = stream
+		ready.append(path)
+	var resolver := func(path: String) -> AudioStream: return _resolved.get(path) as AudioStream
+	return _PCM.warm(ready, resolver, pcm_max_seconds, pcm_budget_bytes)
+
+
+## Queues the PCM decode of streams already in hand (a pack's loaded sounds), a slice per frame, keyed by their
+## resource_path, with no sink needed: [method DotAudioPcm.warm]. Returns how many were queued.
+static func warm_streams(streams: Array, max_seconds: float = 4.0, budget_bytes: int = 64 * 1024 * 1024) -> int:
+	return _PCM.warm(streams, Callable(), max_seconds, budget_bytes)
+
+
 ## Waits for the decodes still running, so the worker pool shuts down with none of them left.
 func close() -> void:
 	_PCM.collect(true)
