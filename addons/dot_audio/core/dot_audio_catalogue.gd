@@ -4,8 +4,8 @@ extends Resource
 
 ## Every sound a game has, as a document a server can check without a sound card.
 ##
-## [b]It validates without loading anything.[/b] Same shape as dot-loadout's schema and
-## dot-user-avatar's: a dedicated server with no audio device, and a headless suite, both
+## [b]It validates without loading anything.[/b] Same shape as GameSpice Loadout's schema and
+## GameSpice User Avatar's: a dedicated server with no audio device, and a headless suite, both
 ## check the whole catalogue and neither touches a file. What that buys is that a typo in a
 ## sound id fails a boot rather than producing silence in a firefight.
 

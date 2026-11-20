@@ -1,6 +1,6 @@
 extends RefCounted
 
-## dot-audio's API level. The rule for bumping it is on [DotAddonApi].
+## GameSpice Audio's API level. The rule for bumping it is on [DotAddonApi].
 ##
 ## LEVEL rises by one for anything a game could call that did not exist before. OLDEST is
 ## raised to LEVEL when something a game could have called is removed or changes meaning,
@@ -30,7 +30,7 @@ extends RefCounted
 # 17: sink/dot_audio_pcm.gd copy_for/is_copy/collect/clear: the decoded copies kept once per process, for a voice pool outside the sink.
 # 18: dot_audio_pcm.gd pump()/slice_usec: without threads (the web export) the decode is sliced on the game thread, not skipped.
 # 19: DotAudioSlide.reach and reach_margin (DotAudioSurf inherits them): a body out of earshot of the listener is not asked.
-# 20: DotAudioFootsteps, DotAudioSlide (and DotAudioSurf) and DotAudioSurfRules run dot-sim's native tick and probe when
+# 20: DotAudioFootsteps, DotAudioSlide (and DotAudioSurf) and DotAudioSurfRules run GameSpice Sim's native tick and probe when
 #     present: native_enabled (static), use_native, native_available(), native_sync();
 #     DotAudioSurfRules.native_probe()/native_args().
 # 21: DotAudioSurfRules.cvar_specs has no upper bound ("max" INF) on volume, speeds and pitches; apply_cvar refuses an out-of-range value with an error instead of clamping it.

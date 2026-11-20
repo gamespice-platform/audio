@@ -48,7 +48,7 @@ var default_surface: StringName = &"concrete"
 ## Seconds in the air before touching down makes a landing.
 @export_range(0.0, 2.0, 0.01) var landing_air_time: float = 0.3
 ## Meta keys a collider (or the hit shape) may name its surface under, first match wins.
-## `dot_fps_surface` is dot-player-controller's own, so a map that already tells the movement
+## `dot_fps_surface` is GameSpice Player Controller's own, so a map that already tells the movement
 ## what it is made of tells the footsteps too.
 var surface_metas: Array[StringName] = [&"surface", &"dot_fps_surface"]
 
@@ -68,7 +68,7 @@ var _bodies: Dictionary = {}
 var _ground_query: PhysicsRayQueryParameters3D = null
 var _ground_query_body: int = 0
 
-## dot-sim's native tick ([code]DotSimAudioSteps[/code]): the same steps to the bit (dot-audio's examples/steps_native_parity),
+## GameSpice Sim's native tick ([code]DotSimAudioSteps[/code]): the same steps to the bit (GameSpice Audio's examples/steps_native_parity),
 ## used when the extension is loaded, [member native_enabled] and [member use_native] are on and this node is a
 ## plain [DotAudioFootsteps] (a subclass may change any part of a step). On the web, or with no library, the script runs.
 const NATIVE_CLASS := &"DotSimAudioSteps"

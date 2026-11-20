@@ -107,7 +107,7 @@ func _catalogue() -> DotAudioCatalogue:
 func _test_honesty_about_the_device() -> void:
 	_section("The engine says there is a sound card when there is not")
 
-	# The bug dot-voice found, asserted here so this addon cannot regress into believing
+	# The bug GameSpice Voice found, asserted here so this addon cannot regress into believing
 	# any of the plausible answers.
 	_check(AudioServer.get_mix_rate() > 0.0, "a headless run reports a mix rate")
 	_check(AudioServer.get_bus_count() > 0, "and a bus layout")

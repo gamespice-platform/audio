@@ -1,7 +1,7 @@
 extends "selftest/selftest_base.gd"
 
 ## The native footstep, slide and surf probes against the script, to the bit: one seeded world and seeded bodies, ticked by the script (rig A) and by
-## dot-sim's DotSimAudioSteps/DotSimSurfProbe (rig B); every step, slide, surf, sink request and body state must match each tick, then [method DotAudioSurfRules.is_surfing]
+## GameSpice Sim's DotSimAudioSteps/DotSimSurfProbe (rig B); every step, slide, surf, sink request and body state must match each tick, then [method DotAudioSurfRules.is_surfing]
 ## over random input. No library: native half skipped (GS_SIM_REQUIRE_NATIVE=1 fails). Run: godot --headless --path . res://examples/steps_native_parity.tscn
 
 const TICKS := 420

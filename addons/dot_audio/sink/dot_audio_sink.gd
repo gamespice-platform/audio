@@ -3,7 +3,7 @@ extends RefCounted
 
 ## Where a sound actually goes. The seam that lets the whole path run headless.
 ##
-## [b]This exists for the same reason dot-voice's `DotVoiceSource` does, and because of a
+## [b]This exists for the same reason GameSpice Voice's `DotVoiceSource` does, and because of a
 ## bug that addon found: `AudioServer` reports a working sound card when there is
 ## none.[/b] In a headless run `get_mix_rate()` is 44100, `get_input_device_list()` is
 ## `["Default"]` and `get_output_latency()` is 0.0. Only `get_driver_name()` says

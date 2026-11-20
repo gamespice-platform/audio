@@ -34,7 +34,7 @@ The obvious implementation (`AudioStreamPlayer.new()`, `play()`, `queue_free()` 
 
 ### A path, not a stream
 
-`DotAudioDef.path` is a `String`. A mounted pack's `class_name` globals are not registered in the host (the reason dot-props names a prop's script by path), so a catalogue that `preload`s cannot describe delivered content. It also lets a server validate a catalogue for files it does not have, which is most servers. A def with no file at all must set `generated`: the sink makes the sound (game-hungario's `HungrySoundSink` is why it exists).
+`DotAudioDef.path` is a `String`. A mounted pack's `class_name` globals are not registered in the host (the reason GameSpice Props names a prop's script by path), so a catalogue that `preload`s cannot describe delivered content. It also lets a server validate a catalogue for files it does not have, which is most servers. A def with no file at all must set `generated`: the sink makes the sound (game-hungario's `HungrySoundSink` is why it exists).
 
 ### Culling is in the manager, not the sink
 
@@ -54,7 +54,7 @@ When the pool is full, the lowest-priority voice below the incoming one is stopp
 
 ### A missing sound is silence, not an error
 
-An unknown id, a file that is not there, a pack still downloading: all refusals, logged at debug, none of them errors. **Audio never changes the simulation**, which is what makes dropping it safe (dot-fx's rule too). A red line per shot on a client whose content is still arriving is how a real error stops being read.
+An unknown id, a file that is not there, a pack still downloading: all refusals, logged at debug, none of them errors. **Audio never changes the simulation**, which is what makes dropping it safe (GameSpice FX's rule too). A red line per shot on a client whose content is still arriving is how a real error stops being read.
 
 ### Looping copies the stream
 
@@ -80,7 +80,7 @@ It does not break "ships no audio": that rule is about what a `DotAudioDef` may 
 - **DSP and effect design.** Reverb zones, filters and sends are the engine's buses.
 - **Per-voice fades.** The shipped fade goes through the bus, which is what almost every game wants and costs nothing per voice. A game that eases a voice itself calls `shape()` each frame; `_ramp` is the subclass point for sample-accurate stem control.
 - **A music stem player.** Layered stems in phase need one stream and a mix, which is a different class. `play_music` crossfades whole tracks.
-- **Voice chat.** dot-voice: capture, codecs, jitter buffers and routing are a different problem.
+- **Voice chat.** GameSpice Voice: capture, codecs, jitter buffers and routing are a different problem.
 
 ## Voice queue (API level 16)
 

@@ -1,6 +1,6 @@
 extends Node
 
-## Loads dot-audio the way a game's suite does and quits: run as a child process by
+## Loads GameSpice Audio the way a game's suite does and quits: run as a child process by
 ## audio_selftest's "nothing keeps a game alive at exit" section, which reads its stderr.
 ##
 ## [b]The order is the test.[/b] A [DotAudioDef] preloaded first, and only then a script naming

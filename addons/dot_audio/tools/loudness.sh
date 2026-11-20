@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Plays a game under xvfb, records its master mix and measures it against the family's
-# loudness standard (docs/loudness.md in dot-audio): integrated loudness, true peak, loudness
+# loudness standard (docs/loudness.md in GameSpice Audio): integrated loudness, true peak, loudness
 # range, and the RMS of every 3 s window, so a stretch of digital silence shows as well as a
 # mix that clips.
 #

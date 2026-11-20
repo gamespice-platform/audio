@@ -688,8 +688,8 @@ func _cheap_stream(host: Node, handle: int) -> AudioStream:
 
 # Section 14
 
-## Loading dot-audio must not keep a game alive at exit (a static var once held preloaded scripts). Only a
-## process's own exit shows it, so a child loads dot-audio in the order that did it and this reads its stderr.
+## Loading GameSpice Audio must not keep a game alive at exit (a static var once held preloaded scripts). Only a
+## process's own exit shows it, so a child loads GameSpice Audio in the order that did it and this reads its stderr.
 func _test_nothing_kept_alive_at_exit() -> void:
 	_section("Nothing kept alive at exit")
 	var output: Array = []

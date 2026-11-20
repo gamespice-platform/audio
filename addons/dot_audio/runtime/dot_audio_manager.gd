@@ -61,14 +61,14 @@ signal music_changed(from_id: StringName, to_id: StringName)
 ##
 ## [b]Culling happens here rather than in the sink[/b] because it is the cheapest place:
 ## a sound refused for distance costs one vector subtraction, and a sound accepted for
-## distance costs a stream load, a voice and a position update every frame. dot-audio
+## distance costs a stream load, a voice and a position update every frame. GameSpice Audio
 ## would otherwise spend most of a sixty-four-player server's pool on things nobody can
 ## hear.
 var listener_position: Vector3 = Vector3.ZERO
 
 ## Where the random choices come from. Anything with [code]unit_at(index)[/code].
 ##
-## A dot-core [DotRandomStream], when a game passes one — and then a shot's pitch and variant are
+## A GameSpice Core [DotRandomStream], when a game passes one — and then a shot's pitch and variant are
 ## the same on the server and on every client watching, which is what makes an audio bug
 ## reproducible. Without one it falls back to the engine's generator and says so.
 var roll_source: Object = null
@@ -103,7 +103,7 @@ func setup() -> DotResult:
 	if sink == null:
 		# The honest capability question, asked once. AudioServer reports a working sound
 		# card when there is none -- a mix rate, a device list and a latency, all
-		# plausible -- and only get_driver_name() says "Dummy". dot-voice found that, and
+		# plausible -- and only get_driver_name() says "Dummy". GameSpice Voice found that, and
 		# a check built on any of the others passes on a machine with no audio at all.
 		if DotAudioSink.device_present():
 			sink = DotAudioSinkGodot.new(self, voices)
@@ -149,7 +149,7 @@ func play(id: StringName, volume_scale: float = 1.0, pitch_scale: float = 1.0) -
 
 ## Plays a sound in the world. A 2D game passes [code]Vector3(x, 0, y)[/code].
 ##
-## The XZ convention is the family's: dot-npc maps a 2D world onto that plane so its
+## The XZ convention is the family's: GameSpice NPC maps a 2D world onto that plane so its
 ## senses, steering and navigation run unchanged, and one request shape then serves both.
 func play_at(
 	id: StringName, position: Vector3, volume_scale: float = 1.0, pitch_scale: float = 1.0

@@ -1,7 +1,7 @@
 @tool
 extends EditorPlugin
 
-## Editor entry point for dot-audio. Registers inspector types only.
+## Editor entry point for GameSpice Audio. Registers inspector types only.
 ##
 ## No autoloads: a listen server and its client in one process are two managers with two
 ## listeners and two mixers, and a global would make them one.

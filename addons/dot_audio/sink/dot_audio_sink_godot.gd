@@ -211,7 +211,7 @@ func close() -> void:
 ## is the addon's release zip: tracked files only, so a sound arrives as [code]x.ogg[/code]
 ## and [code]x.ogg.import[/code] with no [code].godot/imported/[/code] output behind it. On a
 ## build exported before that sound existed, the importer follows the marker to nothing and
-## the sound is silence. Every file dot-audio itself ships (the stock footsteps and beds)
+## the sound is silence. Every file GameSpice Audio itself ships (the stock footsteps and beds)
 ## would be silent for a player until a new shell, which is exactly what addon packs exist
 ## to avoid. So when the marker's output is missing and the source file is in the pack, it is
 ## decoded from its bytes (Ogg Vorbis, WAV or MP3), once per path. The existence and marker

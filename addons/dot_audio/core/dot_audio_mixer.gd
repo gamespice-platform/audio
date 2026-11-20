@@ -15,7 +15,7 @@ extends DotConfig
 ## a slider that reaches -60 dB instead of silence is one where a player who dragged it to
 ## the bottom can still hear the game.
 ##
-## It is a [DotConfig], so dot-ui generates the screen and dot-settings persists it with
+## It is a [DotConfig], so GameSpice UI generates the screen and GameSpice Settings persists it with
 ## nothing here knowing either exists.
 
 ## Linear amplitudes, 0..1. What a slider carries.

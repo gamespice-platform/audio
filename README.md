@@ -1,6 +1,6 @@
 [![Audio - GameSpice addon](docs/banner.png)](https://moddingcommunity.com/a/52-gs-audio)
 
-Game audio for Godot 4.7+ that decides what is heard, how loud, how many sounds at once, and what happens when there is no sound card. Part of the [dot-*](https://github.com/gamespice-platform) family. It needs only [dot-core](https://github.com/gamespice-platform/core).
+Game audio for Godot 4.7+ that decides what is heard, how loud, how many sounds at once, and what happens when there is no sound card. Part of the [GameSpice](https://github.com/gamespice-platform) family. It needs only [GameSpice Core](https://github.com/gamespice-platform/core).
 
 ## Install
 
@@ -48,7 +48,7 @@ In a headless run Godot reports a 44100 Hz mix rate and a "Default" device, as i
 
 ## Volume
 
-`DotAudioMixer` sliders carry a linear amplitude from 0 to 1, and `linear_to_db` converts it. Zero means a muted bus. It is a `DotConfig`, so dot-ui can generate a settings screen and dot-settings can save it.
+`DotAudioMixer` sliders carry a linear amplitude from 0 to 1, and `linear_to_db` converts it. Zero means a muted bus. It is a `DotConfig`, so GameSpice UI can generate a settings screen and GameSpice Settings can save it.
 
 ## Limits per sound
 

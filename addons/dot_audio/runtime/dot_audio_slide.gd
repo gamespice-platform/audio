@@ -34,7 +34,7 @@ var reach_margin: float = 4.0
 # body -> {last, handle, surface, sliding: Callable, opts}
 var _bodies: Dictionary = {}
 
-## dot-sim's native gate ([code]DotSimAudioSteps[/code]) settles out-of-reach, off, slow or non-sliding bodies natively,
+## GameSpice Sim's native gate ([code]DotSimAudioSteps[/code]) settles out-of-reach, off, slow or non-sliding bodies natively,
 ## to the bit (examples/steps_native_parity); the rest advance here. Used when the extension is loaded, [member native_enabled]
 ## and [member use_native] are on and this is a plain [DotAudioSlide] or [DotAudioSurf]; otherwise (web, no library) the script runs.
 const NATIVE_CLASS := &"DotSimAudioSteps"

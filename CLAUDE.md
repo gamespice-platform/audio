@@ -1,10 +1,10 @@
-# dot-audio
+# GameSpice Audio
 
 Audio as a catalogue of ids: a pool with priorities, concurrency caps, cooldowns, a distance cull, music crossfades and ducking, and a synthesiser for games with no audio files yet; plus the family's footsteps by surface, ambience beds per map and zone, the loudness standard (−17 LUFS, −1 dBTP) with its master limiter, and the tool that measures a game against it. The whole path runs on a machine with no speakers.
 
 Read the family [CLAUDE.md](../../CLAUDE.md) first; this file is only what is specific to audio.
 
-**The distributable is `addons/dot_audio/`.** It requires [dot-core](../dot-core) and nothing else (`ln -s ../../dot-core/addons/dot_core addons/dot_core`, gitignored).
+**The distributable is `addons/dot_audio/`.** It requires [GameSpice Core](../dot-core) and nothing else (`ln -s ../../dot-core/addons/dot_core addons/dot_core`, gitignored).
 
 ## Read before
 
@@ -46,7 +46,7 @@ Read the family [CLAUDE.md](../../CLAUDE.md) first; this file is only what is sp
 | `examples/ambience_bus_selftest.tscn` | the Ambience bus follows the Effects slider |
 | `examples/box_sounds_selftest.tscn` | `DotBoxSounds`: slots, stock fallback, effect end, approach edge |
 | `examples/steps_native_parity.tscn` | dot-sim's native footstep, slide and surf passes against the script, to the bit (skips without `addons/dot_sim`, a gitignored link to a dot-sim checkout; `GS_SIM_REQUIRE_NATIVE=1` fails instead) and their cost beside the script's |
-| `examples/exit_leak_probe.tscn` | loads dot-audio as a game's suite does and quits; the suite runs it as a child and reads its stderr |
+| `examples/exit_leak_probe.tscn` | loads GameSpice Audio as a game's suite does and quits; the suite runs it as a child and reads its stderr |
 
 Paths except `examples/` and the repository's `tools/make_ambience.py` (regenerates the beds) are in `addons/dot_audio/`.
 

@@ -33,7 +33,7 @@ Before that line it prints how far the camera went while recording (`capture cam
 
 Four things about it are decisions:
 
-- **xvfb, never headless and never Movie Maker.** Both run the Dummy audio driver, where `DotAudioSink.device_present()` is false and dot-audio plays nothing. A recording of either is silence that proves nothing.
+- **xvfb, never headless and never Movie Maker.** Both run the Dummy audio driver, where `DotAudioSink.device_present()` is false and GameSpice Audio plays nothing. A recording of either is silence that proves nothing.
 - **The recorder is moved to the end of Master when recording starts.** A game's setup adds the limiter after the script adds anything, and a meter in front of the limiter measures a mix nobody hears.
 - **Wall-clock time, not `--fixed-fps`.** Audio is mixed in real time; a game stepped at a fixed rate on a slow software renderer plays its events sparser than they happen.
 - **The local player is driven through its own inputs, by a pilot where blind keys are not enough.** The stand-in holds W, sprints, jumps and turns, and turns wide when the camera has not moved for 0.6 s (it walked into a wall). A game it still cannot play brings `tools/loudness_pilot.gd`, which `loudness.sh` passes as `--pilot`: `drive(capture, ms)` every frame, playing through the capture's `key`, `turn`, `click` and `point` (input events and a warped pointer, so the game's sampler and bindings read them as they read a player), and `describe()`, printed as `capture pilot:`, says what the player did. game-fatal-contact (walks off walls, fires bursts), game-playlot (spawns and punts props) and game-hungario (a pointer-steered monster that eats and flees) have one. Nothing in a pilot moves a body directly.
@@ -44,7 +44,7 @@ A game whose main scene is a menu or a lobby that waits for a click records the 
 
 A web build in sample playback runs no bus effects, so nothing held the ceiling there. Measured 2026-10-12 in headless Chromium on a web export of game-fatal-contact (its offline match, the recording tapped between the engine and the speakers): **+3.4 dBFS in float, 187 clipped samples in 40 s.** The same game on desktop, recorded with `loudness.sh --web` (the limiter taken off Master), reads +0.7 dBTP and 1.5 LU louder than with it: the desktop limiter was doing real work at the family level, and the browser had none.
 
-`addons/dot_audio/web/dot_audio_ceiling.js` is the browser's limiter. The engine's Web Audio graph cannot be reached from a script once it exists, so the file wraps the page's `AudioContext` before the engine makes one and hands it a `destination` that is a chain: a `DynamicsCompressorNode` above -3 dBFS (ratio 20, 2 ms attack, 100 ms release), a gain that takes off the makeup gain the Web Audio spec adds to every compressor (otherwise a browser would be about 1.7 dB louder than a desktop), and a `WaveShaperNode` soft clip, oversampled 4x, whose curve never passes -1.5 dBFS. A page loads it before `index.js` (dot-server-deploy's `export-web` copies it beside the build and puts it in both pages).
+`addons/dot_audio/web/dot_audio_ceiling.js` is the browser's limiter. The engine's Web Audio graph cannot be reached from a script once it exists, so the file wraps the page's `AudioContext` before the engine makes one and hands it a `destination` that is a chain: a `DynamicsCompressorNode` above -3 dBFS (ratio 20, 2 ms attack, 100 ms release), a gain that takes off the makeup gain the Web Audio spec adds to every compressor (otherwise a browser would be about 1.7 dB louder than a desktop), and a `WaveShaperNode` soft clip, oversampled 4x, whose curve never passes -1.5 dBFS. A page loads it before `index.js` (GameSpice Server Deploy's `export-web` copies it beside the build and puts it in both pages).
 
 | Run (FC, 2026-10-12) | Integrated | Peak |
 | --- | --- | --- |
@@ -54,7 +54,7 @@ A web build in sample playback runs no bus effects, so nothing held the ceiling 
 | The same 3 dB hotter | -12.8 -> -14.1 LUFS | +1.1 -> -1.9 dBTP |
 | The same 10 dB quieter | -25.6 -> -25.6 LUFS | -9.4 -> -9.4 dBFS (unity below the threshold) |
 
-The two live runs are different stretches of play (the local player does not move under Chromium's software renderer), so compare their peaks, not their loudness; the offline rows are the same signal both ways. A script-side guard was tried first and dropped: summing what each voice dot-audio starts could reach (file peak, gain, bus chain, distance) cut 150 voices a run by up to 12 dB and still let +0.1 dBTP through, because the estimate is the worst case for every voice at once and the loudest sounds in two games (zee-dot-weapons' reports) never pass through dot-audio at all. The page sees everything the engine plays.
+The two live runs are different stretches of play (the local player does not move under Chromium's software renderer), so compare their peaks, not their loudness; the offline rows are the same signal both ways. A script-side guard was tried first and dropped: summing what each voice GameSpice Audio starts could reach (file peak, gain, bus chain, distance) cut 150 voices a run by up to 12 dB and still let +0.1 dBTP through, because the estimate is the worst case for every voice at once and the loudest sounds in two games (zee-dot-weapons' reports) never pass through GameSpice Audio at all. The page sees everything the engine plays.
 
 ## Footsteps: `DotAudioFootsteps`
 
@@ -63,7 +63,7 @@ One node per game; `track(body)` for the player, other players and bots.
 - **A step is distance, not time or animation.** Every 1.5 m at a walk to 2.3 m at a run, measured on the ground plane, so a body moved by netcode interpolation or a navigation agent steps at the rate it really moves.
 - **Slow is silent.** Under `quiet_speed` (1.4 m/s) nothing plays; sneaking is a mechanic in a hiding game.
 - **A landing after `landing_air_time` in the air is one full step**, a teleport (over 4 m in a frame) is nothing.
-- **The surface comes from the ground collider**: the hit shape's or its `surface` meta (or dot-player-controller's `dot_fps_surface`), or a parent's, a `surface_<name>` group, or a surface word in the node name, folded through `DotAudioStock.surface_of` (so `stone`, `asphalt` and `Floor_Tile` are concrete). Anything else is `default_surface`, which a game sets per map.
+- **The surface comes from the ground collider**: the hit shape's or its `surface` meta (or GameSpice Player Controller's `dot_fps_surface`), or a parent's, a `surface_<name>` group, or a surface word in the node name, folded through `DotAudioStock.surface_of` (so `stone`, `asphalt` and `Floor_Tile` are concrete). Anything else is `default_surface`, which a game sets per map.
 - **`stepped(body, surface, loudness)`** is what a listening bot hears, so a game needs no second footstep system for its AI.
 
 ## Ambience: `DotAudioAmbience`

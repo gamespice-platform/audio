@@ -4,10 +4,10 @@ extends Resource
 
 ## One sound, as a document. Names a file by path and never loads one.
 ##
-## [b]This addon ships no audio and never holds an [AudioStream].[/b] Same rule as dot-ui's
-## "ships no art", and here it has a second, harder reason: a game delivered as a dot-cloud
+## [b]This addon ships no audio and never holds an [AudioStream].[/b] Same rule as GameSpice UI's
+## "ships no art", and here it has a second, harder reason: a game delivered as a GameSpice Cloud
 ## pack is mounted at runtime, and **a mounted pack's `class_name` globals are not
-## registered in the host** — measured, in this family, and it is why dot-props names a
+## registered in the host** — measured, in this family, and it is why GameSpice Props names a
 ## prop's script by PATH. A catalogue that `preload`s its streams cannot describe delivered
 ## content at all, and a catalogue that holds loaded streams cannot be validated on a
 ## server that does not have them.

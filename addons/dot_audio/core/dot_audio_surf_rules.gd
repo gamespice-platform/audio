@@ -34,7 +34,7 @@ var _seen: Dictionary = {}
 var _query: PhysicsRayQueryParameters3D = null
 var _query_body: int = 0
 
-## dot-sim's native probe ([code]DotSimSurfProbe[/code]): the same ray, ramp test and per-frame cache, used when
+## GameSpice Sim's native probe ([code]DotSimSurfProbe[/code]): the same ray, ramp test and per-frame cache, used when
 ## the extension is loaded, [member native_enabled] and [member use_native] are on and these rules are plain
 ## [DotAudioSurfRules]. Footsteps and the surf glide share it through [method native_probe].
 const NATIVE_CLASS := &"DotSimSurfProbe"

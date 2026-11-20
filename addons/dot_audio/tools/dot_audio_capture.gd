@@ -8,7 +8,7 @@ extends SceneTree
 ## [/codeblock]
 ##
 ## [b]Under xvfb, never headless and never Movie Maker.[/b] Both run the Dummy audio driver,
-## where [method DotAudioSink.device_present] is false and dot-audio plays nothing at all, so a
+## where [method DotAudioSink.device_present] is false and GameSpice Audio plays nothing at all, so a
 ## recording of either is silence that proves nothing. xvfb gives a real driver.
 ##
 ## [b]Recorded off the Master bus, after everything on it.[/b] An [AudioEffectRecord] is

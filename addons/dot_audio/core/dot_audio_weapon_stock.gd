@@ -2,8 +2,8 @@ class_name DotAudioWeaponStock
 extends RefCounted
 
 ## The family's stock weapon sounds as [DotAudioDef]s: every file in stock/weapons/ (CC0 slices, see
-## stock/CREDITS.md), ids `weapon_<name>` with variants. Packs that do not link dot-audio read the
-## same files by path (dot-weapon's DotWeaponSound); keep [constant COUNTS] and its probing in step.
+## stock/CREDITS.md), ids `weapon_<name>` with variants. Packs that do not link GameSpice Audio read the
+## same files by path (GameSpice Weapon's DotWeaponSound); keep [constant COUNTS] and its probing in step.
 
 const PREFIX := "weapon_"
 
