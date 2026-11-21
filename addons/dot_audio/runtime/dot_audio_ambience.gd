@@ -1,10 +1,10 @@
-class_name DotAudioAmbience
+class_name GSAudioAmbience
 extends Node
 
 ## The ambience layer: one bed for the map, and zones that swap it where the listener is.
 ##
 ## [codeblock]
-## var amb := DotAudioAmbience.new()
+## var amb := GSAudioAmbience.new()
 ## amb.manager = audio_manager
 ## add_child(amb)
 ## amb.set_map_bed(&"amb_outdoor")                                  # on every map load
@@ -15,7 +15,7 @@ extends Node
 ## as broken rather than as quiet (the first play test's complaint). A map that names no bed
 ## gets [member fallback_bed].
 ##
-## [b]Crossfaded through [method DotAudioManager.shape].[/b] The manager's own fade is a
+## [b]Crossfaded through [method GSAudioManager.shape].[/b] The manager's own fade is a
 ## subclass point that does nothing by default, so the bed's level is eased here, per frame,
 ## in play()'s units; a stolen or ended bed is started again on the next check.
 ##
@@ -28,7 +28,7 @@ const MAX_DRIVE := 16.0
 
 signal bed_changed(from_id: StringName, to_id: StringName)
 
-var manager: DotAudioManager = null
+var manager: GSAudioManager = null
 
 ## Whose position picks the zone. Empty uses the manager's listener_position.
 var listener: Node3D = null
@@ -82,7 +82,7 @@ func set_map_bed(id: StringName, map_level: float = -1.0, lively: bool = false) 
 
 
 ## The map's ambience profile (its document's `ambient.level` and `ambient.lively`, which
-## [DotAmbienceDirector.on_map] forwards). Used unless [method set_map_bed] was given its own.
+## [GSAmbienceDirector.on_map] forwards). Used unless [method set_map_bed] was given its own.
 func set_map_profile(map_level: float, lively: bool) -> void:
 	_profile_level = maxf(map_level, 0.0)
 	_profile_lively = lively
@@ -142,7 +142,7 @@ func _gain() -> float:
 
 func _process(delta: float) -> void:
 	if manager == null:
-		manager = DotRegistry.get_node_service(DotAudioManager.SERVICE) as DotAudioManager
+		manager = GSRegistry.get_node_service(GSAudioManager.SERVICE) as GSAudioManager
 		if manager == null:
 			return
 	_since_check += delta
@@ -176,7 +176,7 @@ func _switch(to: StringName, fade: float) -> void:
 		_start(to, fade if fade >= 0.0 else fade_seconds)
 	if from != to:
 		bed_changed.emit(from, to)
-		DotLog.debug(CHANNEL, "ambience", {"from": String(from), "to": String(to)})
+		GSLog.debug(CHANNEL, "ambience", {"from": String(from), "to": String(to)})
 
 
 func _start(id: StringName, fade: float) -> void:

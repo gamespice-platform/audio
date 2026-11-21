@@ -1,9 +1,9 @@
-class_name DotAudioWeaponStock
+class_name GSAudioWeaponStock
 extends RefCounted
 
-## The family's stock weapon sounds as [DotAudioDef]s: every file in stock/weapons/ (CC0 slices, see
+## The family's stock weapon sounds as [GSAudioDef]s: every file in stock/weapons/ (CC0 slices, see
 ## stock/CREDITS.md), ids `weapon_<name>` with variants. Packs that do not link GameSpice Audio read the
-## same files by path (GameSpice Weapon's DotWeaponSound); keep [constant COUNTS] and its probing in step.
+## same files by path (GameSpice Weapon's GSWeaponSound); keep [constant COUNTS] and its probing in step.
 
 const PREFIX := "weapon_"
 
@@ -33,24 +33,24 @@ const _RELOAD_GAIN := -2.0
 
 
 static func directory() -> String:
-	return DotAudioStock.directory().path_join("weapons")
+	return GSAudioStock.directory().path_join("weapons")
 
 
 static func id_of(sound: StringName) -> StringName:
 	return StringName(PREFIX + String(sound))
 
 
-static func defs() -> Array[DotAudioDef]:
-	var out: Array[DotAudioDef] = []
+static func defs() -> Array[GSAudioDef]:
+	var out: Array[GSAudioDef] = []
 	for sound: StringName in COUNTS:
-		DotAudioStock.warn_if_missing("weapons/%s_0.ogg" % sound)
-		var d := DotAudioDef.new()
+		GSAudioStock.warn_if_missing("weapons/%s_0.ogg" % sound)
+		var d := GSAudioDef.new()
 		d.id = id_of(sound)
-		d.kind = DotAudioDef.Kind.POSITIONAL_3D
+		d.kind = GSAudioDef.Kind.POSITIONAL_3D
 		d.bus = &"SFX"
 		var variants := PackedStringArray()
 		for i in int(COUNTS[sound]):
-			variants.append(DotAudioStock.resolve("weapons/%s_%d.ogg" % [sound, i]))
+			variants.append(GSAudioStock.resolve("weapons/%s_%d.ogg" % [sound, i]))
 		d.path = variants[0]
 		d.variants = variants
 		d.gain_db = _RELOAD_GAIN if String(sound).begins_with("reload_in_") or String(sound).begins_with("reload_out_") else float(_GAIN.get(sound, 0.0))
@@ -65,13 +65,13 @@ static func defs() -> Array[DotAudioDef]:
 		d.unit_size = 12.0 if shot else 3.0
 		# A distant report is the one meant to be heard from far away.
 		d.max_distance = 600.0 if far else 260.0 if shot else 40.0
-		d.tags = [&"weapon", DotAudioCatalogue.STOCK_TAG]
+		d.tags = [&"weapon", GSAudioCatalogue.STOCK_TAG]
 		out.append(d)
 	return out
 
 
 ## Adds every weapon def the catalogue does not already have. Returns how many.
-static func add_to(catalogue: DotAudioCatalogue) -> int:
+static func add_to(catalogue: GSAudioCatalogue) -> int:
 	var added := 0
 	for d in defs():
 		if catalogue.has(d.id):

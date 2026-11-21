@@ -18,7 +18,7 @@ func _initialize() -> void:
 
 
 func _run(args: PackedStringArray) -> int:
-	var probe := DotAudioAmbience.new()
+	var probe := GSAudioAmbience.new()
 	var bed_level := probe.level
 	var map_level := 1.0
 	var lively := "--lively" in args
@@ -28,7 +28,7 @@ func _run(args: PackedStringArray) -> int:
 			bed_level = a.get_slice("=", 1).to_float()
 		elif a.begins_with("--map-level="):
 			map_level = a.get_slice("=", 1).to_float()
-	var mixer := DotAudioMixer.new()
+	var mixer := GSAudioMixer.new()
 	var bus := float(mixer.levels().get(&"Ambience", 1.0)) * mixer.master
 	var rules := _game_rules()
 	var cfg_volume := clampf(rules.volume * map_level, 0.0, 1.0)
@@ -38,9 +38,9 @@ func _run(args: PackedStringArray) -> int:
 
 	var bad := 0
 	var worst_bed := {"rms": -INF}
-	var dir := DotAudioStock.directory().path_join("ambience")
+	var dir := GSAudioStock.directory().path_join("ambience")
 	probe.birds = lively
-	for id: StringName in DotAudioStock.BEDS:
+	for id: StringName in GSAudioStock.BEDS:
 		probe.set_map_bed(id)
 		var plays := probe.bed_at(Vector3.ZERO)
 		var m := _measure(dir.path_join(String(plays) + ".ogg"))
@@ -56,11 +56,11 @@ func _run(args: PackedStringArray) -> int:
 			worst_bed = row
 	probe.free()
 
-	var made := DotAmbienceSet.load_dir(DotAudioStock.moods_directory())
+	var made := GSAmbienceSet.load_dir(GSAudioStock.moods_directory())
 	if not made.ok:
 		print("  no stock mood set: %s" % made.error.message)
 		return 1
-	var moodset: DotAmbienceSet = made.value
+	var moodset: GSAmbienceSet = made.value
 	var tally := _measure_moods(moodset, rules, cfg_volume, bus, detail)
 	var worst_mood: Dictionary = tally["worst"]
 	var busiest: Dictionary = tally["busiest"]
@@ -81,12 +81,12 @@ func _run(args: PackedStringArray) -> int:
 
 
 ## Walks every stock mood: its beds' summed power and its one-shot rate and peak.
-func _measure_moods(moodset: DotAmbienceSet, rules: DotAmbienceRules, cfg_volume: float, bus: float, detail: bool) -> Dictionary:
+func _measure_moods(moodset: GSAmbienceSet, rules: GSAmbienceRules, cfg_volume: float, bus: float, detail: bool) -> Dictionary:
 	var bad := 0
 	var worst_mood := {"rms": -INF}
 	var busiest := {"per_min": -1.0}
 	for mood_name: String in moodset.names():
-		var mood: DotAmbienceMood = moodset.moods[mood_name]
+		var mood: GSAmbienceMood = moodset.moods[mood_name]
 		var power := 0.0
 		for bed: Dictionary in mood.beds:
 			var m := _measure(bed["file"])
@@ -117,7 +117,7 @@ func _measure_moods(moodset: DotAmbienceSet, rules: DotAmbienceRules, cfg_volume
 
 
 ## The game's server defaults: the first `res://game/*_ambience.gd` with a static `make_rules()`.
-func _game_rules() -> DotAmbienceRules:
+func _game_rules() -> GSAmbienceRules:
 	var d := DirAccess.open("res://game")
 	if d != null:
 		for f in d.get_files():
@@ -126,10 +126,10 @@ func _game_rules() -> DotAmbienceRules:
 			var s: Variant = load("res://game".path_join(f))
 			if s is GDScript and (s as GDScript).get_script_method_list().any(func(m: Dictionary) -> bool: return m["name"] == "make_rules"):
 				var r: Variant = (s as GDScript).call(&"make_rules")
-				if r is DotAmbienceRules:
-					(r as DotAmbienceRules).set_meta(&"from", f)
+				if r is GSAmbienceRules:
+					(r as GSAmbienceRules).set_meta(&"from", f)
 					return r
-	return DotAmbienceRules.new()
+	return GSAmbienceRules.new()
 
 
 ## Peak and RMS in dBFS of a file, decoded by ffmpeg; empty when it cannot be.

@@ -1,5 +1,5 @@
 @tool
-class_name DotAudioDef
+class_name GSAudioDef
 extends Resource
 
 ## One sound, as a document. Names a file by path and never loads one.
@@ -67,7 +67,7 @@ enum Kind {
 ## twice in a frame, and the second one is inaudible and still costs a voice.
 @export_range(0, 60000, 1) var cooldown_ms: int = 0
 
-## Higher wins when the pool is full. See [DotAudioSink].
+## Higher wins when the pool is full. See [GSAudioSink].
 ##
 ## A footstep losing to a gunshot is correct. A gunshot losing to a footstep because the
 ## footstep started first is the failure mode of every fixed pool with no priority.
@@ -97,7 +97,7 @@ enum Kind {
 ## addon nearly refused it.[/b] game-hungario bakes its entire bank arithmetically at
 ## boot — a sine sweep with a hash-derived noise component under an envelope, ten cues, no
 ## files — which is the best thing about that game's audio: it ships nothing and works
-## everywhere. It is also the first thing to use [DotAudioSink] for what the seam is
+## everywhere. It is also the first thing to use [GSAudioSink] for what the seam is
 ## actually for, and [method validate] turned it down on the first run for naming no file.
 ##
 ## With this set, the id is the whole contract: dot-audio decides whether the sound should
@@ -106,32 +106,32 @@ enum Kind {
 @export var generated: bool = false
 
 
-func validate() -> DotResult:
+func validate() -> GSResult:
 	if id == &"":
-		return DotResult.fail(DotError.CODE_INVALID, "a sound with no id")
+		return GSResult.fail(GSError.CODE_INVALID, "a sound with no id")
 	if path.is_empty() and variants.is_empty() and not generated:
-		return DotResult.fail(
-			DotError.CODE_INVALID,
+		return GSResult.fail(
+			GSError.CODE_INVALID,
 			"'%s' names no file and is not marked generated" % id,
 			"set `generated` when the sink makes the sound rather than loading it"
 		)
 	if pitch_max < pitch_min:
-		return DotResult.fail(
-			DotError.CODE_INVALID, "'%s' has a maximum pitch below its minimum" % id
+		return GSResult.fail(
+			GSError.CODE_INVALID, "'%s' has a maximum pitch below its minimum" % id
 		)
 	if looping and max_concurrent == 1 and cooldown_ms > 0:
 		# Not fatal, but it is always a mistake: a looping sound starts once and the
 		# cooldown can only ever stop it being restarted after it is deliberately stopped.
-		DotLog.warn(
+		GSLog.warn(
 			"audio", "a looping sound with a cooldown", {"id": String(id)}
 		)
 	if kind != Kind.FLAT and max_distance > 0.0 and max_distance < unit_size:
-		return DotResult.fail(
-			DotError.CODE_INVALID,
+		return GSResult.fail(
+			GSError.CODE_INVALID,
 			"'%s' is culled closer than it reaches full volume" % id,
 			"max_distance %.1f, unit_size %.1f" % [max_distance, unit_size]
 		)
-	return DotResult.success(null)
+	return GSResult.success(null)
 
 
 ## The path to use for one playback, chosen from [member variants] when there are any.

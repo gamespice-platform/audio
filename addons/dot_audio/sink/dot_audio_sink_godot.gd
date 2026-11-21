@@ -1,5 +1,5 @@
-class_name DotAudioSinkGodot
-extends DotAudioSink
+class_name GSAudioSinkGodot
+extends GSAudioSink
 
 ## The engine sink: a fixed pool of players, reused, with priority stealing.
 ##
@@ -24,7 +24,7 @@ var capacity: int = 32
 ##
 ## [code]{String path: AudioStream}[/code] and [code]{StringName id: AudioStream}[/code],
 ## in one dictionary — a path entry stands in for one variant, an id entry for the def as
-## a whole. [DotAudioSynth.bank] builds both; anything that can produce an [AudioStream]
+## a whole. [GSAudioSynth.bank] builds both; anything that can produce an [AudioStream]
 ## can fill it, and nothing here cares where one came from.
 ##
 ## [b]It is consulted AFTER the filesystem, and that order is the design.[/b] A deployment
@@ -89,7 +89,7 @@ func play(request: Dictionary) -> int:
 	if looping:
 		stream = _looped(stream)
 
-	var kind := int(request.get("kind", DotAudioDef.Kind.FLAT))
+	var kind := int(request.get("kind", GSAudioDef.Kind.FLAT))
 	var player := _take(kind, int(request.get("priority", 50)))
 	if player == null:
 		return 0
@@ -141,7 +141,7 @@ func _stream_for(request: Dictionary) -> AudioStream:
 			stream = bank[id] as AudioStream
 	if stream == null:
 		# A pack not downloaded yet, or a build with no audio, is legitimate and never changes the simulation.
-		DotLog.debug("audio", "no such stream", {"path": path, "id": String(id)})
+		GSLog.debug("audio", "no such stream", {"path": path, "id": String(id)})
 	return stream
 
 
@@ -150,12 +150,12 @@ func _configure(player: Node, kind: int, request: Dictionary) -> void:
 	player.volume_db = float(request.get("volume_db", 0.0))
 	player.pitch_scale = float(request.get("pitch", 1.0))
 	match kind:
-		DotAudioDef.Kind.POSITIONAL_3D:
+		GSAudioDef.Kind.POSITIONAL_3D:
 			var p3 := player as AudioStreamPlayer3D
 			p3.global_position = request.get("position", Vector3.ZERO)
 			p3.unit_size = float(request.get("unit_size", 10.0))
 			p3.max_distance = float(request.get("max_distance", 0.0))
-		DotAudioDef.Kind.POSITIONAL_2D:
+		GSAudioDef.Kind.POSITIONAL_2D:
 			var p2 := player as AudioStreamPlayer2D
 			var pos: Vector3 = request.get("position", Vector3.ZERO)
 			# The family's 2D world is the XZ plane, so one request shape serves both.
@@ -175,7 +175,7 @@ func _pcm_for(path: String, stream: AudioStream) -> AudioStream:
 
 
 ## Resolves each path now (the load, the first-use hitch) and queues its PCM decode a slice per
-## frame ([method DotAudioPcm.warm]), so the first play finds both done. Returns how many queued.
+## frame ([method GSAudioPcm.warm]), so the first play finds both done. Returns how many queued.
 func warm(paths: Array) -> int:
 	var ready: Array = []
 	for p: Variant in paths:
@@ -193,7 +193,7 @@ func warm(paths: Array) -> int:
 
 
 ## Queues the PCM decode of streams already in hand (a pack's loaded sounds), a slice per frame, keyed by their
-## resource_path, with no sink needed: [method DotAudioPcm.warm]. Returns how many were queued.
+## resource_path, with no sink needed: [method GSAudioPcm.warm]. Returns how many were queued.
 static func warm_streams(streams: Array, max_seconds: float = 4.0, budget_bytes: int = 64 * 1024 * 1024) -> int:
 	return _PCM.warm(streams, Callable(), max_seconds, budget_bytes)
 
@@ -239,7 +239,7 @@ static func stream_at(path: String) -> AudioStream:
 		"mp3":
 			raw = AudioStreamMP3.load_from_file(path)
 	if raw != null:
-		DotLog.debug("audio", "decoded from its own bytes (no imported output)", {"path": path})
+		GSLog.debug("audio", "decoded from its own bytes (no imported output)", {"path": path})
 		_RAW.streams[path] = raw
 	return raw
 
@@ -357,13 +357,13 @@ func _take(kind: int, priority: int) -> Node:
 func _make(kind: int) -> Node:
 	var player: Node
 	match kind:
-		DotAudioDef.Kind.POSITIONAL_3D:
+		GSAudioDef.Kind.POSITIONAL_3D:
 			var p3 := AudioStreamPlayer3D.new()
 			# No area lookup: the default mask asks the physics space which Area3D each voice
 			# is in on every physics tick it plays, and nothing in the family routes audio by area.
 			p3.area_mask = 0
 			player = p3
-		DotAudioDef.Kind.POSITIONAL_2D:
+		GSAudioDef.Kind.POSITIONAL_2D:
 			player = AudioStreamPlayer2D.new()
 		_:
 			player = AudioStreamPlayer.new()
@@ -374,10 +374,10 @@ func _make(kind: int) -> Node:
 
 func _kind_of(player: Node) -> int:
 	if player is AudioStreamPlayer3D:
-		return DotAudioDef.Kind.POSITIONAL_3D
+		return GSAudioDef.Kind.POSITIONAL_3D
 	if player is AudioStreamPlayer2D:
-		return DotAudioDef.Kind.POSITIONAL_2D
-	return DotAudioDef.Kind.FLAT
+		return GSAudioDef.Kind.POSITIONAL_2D
+	return GSAudioDef.Kind.FLAT
 
 
 func _on_finished(player: Node) -> void:

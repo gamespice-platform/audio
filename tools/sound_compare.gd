@@ -22,13 +22,13 @@ func _ready() -> void:
 	_build_ui()
 
 
-func _defs() -> Array[DotAudioDef]:
-	return DotAudioStock.slide_defs()
+func _defs() -> Array[GSAudioDef]:
+	return GSAudioStock.slide_defs()
 
 
-## Pitch and linear volume exactly as DotAudioSlide.advance computes them.
+## Pitch and linear volume exactly as GSAudioSlide.advance computes them.
 static func shape_at(speed: float) -> Vector2:
-	var slide := DotAudioSlide.new()
+	var slide := GSAudioSlide.new()
 	var t := clampf((speed - slide.quiet_speed) / maxf(slide.full_speed - slide.quiet_speed, 0.01), 0.0, 1.0)
 	var pitch := lerpf(1.0 - slide.min_pitch_drop, 1.0, t) + 0.1 * maxf(speed / slide.full_speed - 1.0, 0.0)
 	slide.free()
@@ -64,7 +64,7 @@ func _build_ui() -> void:
 		box.add_child(row)
 
 
-func _play(d: DotAudioDef, speed: float) -> void:
+func _play(d: GSAudioDef, speed: float) -> void:
 	var stream := load(d.path) as AudioStream
 	if stream == null:
 		push_error("sound_compare: cannot load %s" % d.path)
@@ -89,7 +89,7 @@ func _next() -> void:
 		_player.stop()
 		return
 	var item: Array = _queue.pop_front()
-	print("%s at %.0f m/s" % [(item[0] as DotAudioDef).id, item[1]])
+	print("%s at %.0f m/s" % [(item[0] as GSAudioDef).id, item[1]])
 	_play(item[0], item[1])
 	_timer.start(SECONDS_PER_STEP)
 

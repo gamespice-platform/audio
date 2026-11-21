@@ -1,7 +1,7 @@
-class_name DotHurtSound
+class_name GSHurtSound
 extends RefCounted
 ## The grunt a player makes when hurt: louder and lower for a heavy hit, quieter and higher for a graze, and none when the hit is lethal (the death or down cry owns that moment, and the two stacked are one muddy noise).
-## Pure numbers plus one call; a game passes its [DotAudioManager] (or anything with `play(id, volume, pitch)`).
+## Pure numbers plus one call; a game passes its [GSAudioManager] (or anything with `play(id, volume, pitch)`).
 
 ## Damage at which the grunt is full volume and lowest.
 const FULL_DAMAGE := 40.0

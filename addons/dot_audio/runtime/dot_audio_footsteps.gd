@@ -1,11 +1,11 @@
-class_name DotAudioFootsteps
+class_name GSAudioFootsteps
 extends Node
 
 ## Footsteps for every body that walks: the player, other players, bots. One node per game.
 ##
 ## [codeblock]
-## var steps := DotAudioFootsteps.new()
-## steps.manager = audio_manager            # or found through DotRegistry
+## var steps := GSAudioFootsteps.new()
+## steps.manager = audio_manager            # or found through GSRegistry
 ## steps.default_surface = &"grass"         # the map's ground, for colliders that say nothing
 ## add_child(steps)
 ## steps.track(player_body)                 # a CharacterBody3D, or any Node3D
@@ -21,7 +21,7 @@ extends Node
 ##
 ## [b]The surface comes from what is underfoot.[/b] A ray down from the body finds the
 ## collider; its `surface` or `dot_fps_surface` meta (or a parent's, three levels up), a `surface_<name>` group,
-## or its node name ("Floor_Wood") names it, folded through [method DotAudioStock.surface_of];
+## or its node name ("Floor_Wood") names it, folded through [method GSAudioStock.surface_of];
 ## anything else is [member default_surface], which a game sets per map.
 ##
 ## [b]Never on a server.[/b] It only plays; [signal stepped] tells a game what was heard,
@@ -30,7 +30,7 @@ extends Node
 ## A step, with the surface and how loud it was (0..1 of a run).
 signal stepped(body: Node3D, surface: StringName, loudness: float)
 
-var manager: DotAudioManager = null
+var manager: GSAudioManager = null
 
 ## The ground of the current map, for colliders that name no surface.
 var default_surface: StringName = &"concrete"
@@ -61,17 +61,17 @@ var surface_metas: Array[StringName] = [&"surface", &"dot_fps_surface"]
 @export_flags_3d_physics var ground_mask: int = 0xFFFFFFFF
 
 # body -> {last: Vector3, travelled: float, air: float, grounded: bool, surface: StringName, opts}
-## When set, a body on a surf ramp makes no steps or landings ([DotAudioSurf] plays its glide).
-var surf_rules: DotAudioSurfRules = null
+## When set, a body on a surf ramp makes no steps or landings ([GSAudioSurf] plays its glide).
+var surf_rules: GSAudioSurfRules = null
 
 var _bodies: Dictionary = {}
 var _ground_query: PhysicsRayQueryParameters3D = null
 var _ground_query_body: int = 0
 
-## GameSpice Sim's native tick ([code]DotSimAudioSteps[/code]): the same steps to the bit (GameSpice Audio's examples/steps_native_parity),
+## GameSpice Sim's native tick ([code]GSSimAudioSteps[/code]): the same steps to the bit (GameSpice Audio's examples/steps_native_parity),
 ## used when the extension is loaded, [member native_enabled] and [member use_native] are on and this node is a
-## plain [DotAudioFootsteps] (a subclass may change any part of a step). On the web, or with no library, the script runs.
-const NATIVE_CLASS := &"DotSimAudioSteps"
+## plain [GSAudioFootsteps] (a subclass may change any part of a step). On the web, or with no library, the script runs.
+const NATIVE_CLASS := &"GSSimAudioSteps"
 ## Whether the native tick is used when present. On by default: the packed native passes hold the bodies' state
 ## and make about four engine calls a body, measured about twice as fast as this script for footsteps and surf
 ## (examples/steps_native_parity prints both).
@@ -140,8 +140,8 @@ func _physics_process(delta: float) -> void:
 	if _bodies.is_empty():
 		return
 	if manager == null:
-		manager = DotRegistry.get_node_service(DotAudioManager.SERVICE) as DotAudioManager
-	if use_native and native_available() and get_script() == DotAudioFootsteps:
+		manager = GSRegistry.get_node_service(GSAudioManager.SERVICE) as GSAudioManager
+	if use_native and native_available() and get_script() == GSAudioFootsteps:
 		_native_pass(delta)
 		return
 	_native_release()
@@ -305,7 +305,7 @@ func _step(body: Node3D, st: Dictionary, loudness: float) -> void:
 		surface = surface_under(body)
 	stepped.emit(body, surface, loudness)
 	if manager != null:
-		manager.play_at(DotAudioStock.footstep_id(surface), body.global_position, loudness)
+		manager.play_at(GSAudioStock.footstep_id(surface), body.global_position, loudness)
 
 
 ## The surface under a body: what the ground collider says, else [member default_surface].
@@ -315,7 +315,7 @@ func surface_under(body: Node3D) -> StringName:
 		var s := surface_of_collider(hit.get("collider"), int(hit.get("shape", -1)), surface_metas)
 		if s != &"":
 			return s
-	return DotAudioStock.surface_of(String(default_surface))
+	return GSAudioStock.surface_of(String(default_surface))
 
 
 ## What a collider says it is made of: the hit shape's `surface` meta, then `surface` meta on
@@ -334,7 +334,7 @@ static func surface_of_collider(
 		if shape_node != null:
 			for key in metas:
 				if shape_node.has_meta(key):
-					var from_shape := DotAudioStock.surface_of(str(shape_node.get_meta(key)))
+					var from_shape := GSAudioStock.surface_of(str(shape_node.get_meta(key)))
 					if from_shape != &"":
 						return from_shape
 	var node := collider as Node
@@ -342,16 +342,16 @@ static func surface_of_collider(
 	while node != null and depth < 4:
 		for key in metas:
 			if node.has_meta(key):
-				var s := DotAudioStock.surface_of(str(node.get_meta(key)))
+				var s := GSAudioStock.surface_of(str(node.get_meta(key)))
 				if s != &"":
 					return s
 		for g in node.get_groups():
 			var gs := String(g)
 			if gs.begins_with("surface_"):
-				var s := DotAudioStock.surface_of(gs.trim_prefix("surface_"))
+				var s := GSAudioStock.surface_of(gs.trim_prefix("surface_"))
 				if s != &"":
 					return s
-		var by_name := DotAudioStock.surface_of(String(node.name))
+		var by_name := GSAudioStock.surface_of(String(node.name))
 		if by_name != &"":
 			return by_name
 		node = node.get_parent()

@@ -20,31 +20,31 @@ Read the family [CLAUDE.md](../../CLAUDE.md) first; this file is only what is sp
 
 | Path | What |
 | --- | --- |
-| `core/dot_audio_def.gd` | `DotAudioDef`: one sound; a path, variants, pitch range, limits, `looping`, `generated` |
-| `core/dot_audio_catalogue.gd` | `DotAudioCatalogue`: `validate()` (the document), `missing_files()` (the disk) |
-| `core/dot_audio_mixer.gd` | `DotAudioMixer`: sliders and the `linear_to_db` curve, a `DotConfig` |
-| `core/dot_audio_synth.gd` | `DotAudioSynth`: thirteen role voices baked to `AudioStreamWAV` |
-| `sink/` | `DotAudioSink` (`device_present()`), `DotAudioSinkGodot` (pool, stealing, `bank`), `DotAudioSinkNull`, `dot_audio_raw_streams.gd` (`stream_at`'s cache, by path), `dot_audio_pcm.gd` (the off-thread decode of a short compressed stream to PCM; sliced on the game thread without threads) |
-| `core/dot_audio_stock.gd` | `DotAudioStock`: the stock footsteps and beds as defs, `add_to`, surface names and aliases |
-| `core/dot_audio_loudness.gd` | `DotAudioLoudness`: the standard's numbers, `install_limiter` |
-| `runtime/dot_audio_footsteps.gd` | `DotAudioFootsteps`: steps by distance and surface for any number of bodies; `stepped` |
-| `runtime/dot_voice_queue.gd` | `DotVoiceQueue`: one announcer/medal line at a time; `say(id, priority)` plays, queues (priority then order, deduped, capped, stale dropped) or cuts in past `interrupt_margin`; `tick(dt)` for suites |
-| `runtime/dot_audio_ambience.gd` | `DotAudioAmbience`: a bed per map, zones by box, equal-power crossfades |
-| `runtime/dot_ambience.gd` | `DotAmbience`: moods (looping beds plus sparse random one-shots), crossfade on a change, `pause`/`duck`/`hush` holders, `describe()`; `runtime/dot_ambience_roof.gd` (`DotAmbienceRoof`: upward ray with hysteresis; the game feeds `set_indoors`), `core/dot_ambience_{config,set,mood,moods}.gd` are its settings, sound-set reader and map-to-mood table |
-| `runtime/dot_ambience_director.gd`, `core/dot_ambience_rules.gd` | `DotAmbienceDirector`: map to mood, roof, settings and the server's rules, over `stock/moods/` (the shared eight-mood set) |
-| `core/dot_audio_weapon_stock.gd` | `DotAudioWeaponStock`: the 84 stock weapon sounds as `weapon_<name>` defs; `COUNTS` must match `stock/weapons/` |
-| `core/dot_shot_def.gd`, `core/dot_shot_rules.gd`, `core/dot_audio_shot_stock.gd`, `runtime/dot_shot_player.gd`, `runtime/dot_audio_enclosure.gd` | layered shots: `DotShotDef` (layers as a Resource), `DotShotPlayer` (plan/fire, no repeat, distance crossfade and delay), `DotAudioEnclosure` (rays to room size and openness, tail class, `ShotReverb` bus), `DotShotRules` (`snd_shot_*`), the stock set from `tools/make_shot_layers.py`; `DotAudioShotStock.COUNTS` must match `stock/shots/` |
+| `core/dot_audio_def.gd` | `GSAudioDef`: one sound; a path, variants, pitch range, limits, `looping`, `generated` |
+| `core/dot_audio_catalogue.gd` | `GSAudioCatalogue`: `validate()` (the document), `missing_files()` (the disk) |
+| `core/dot_audio_mixer.gd` | `GSAudioMixer`: sliders and the `linear_to_db` curve, a `GSConfig` |
+| `core/dot_audio_synth.gd` | `GSAudioSynth`: thirteen role voices baked to `AudioStreamWAV` |
+| `sink/` | `GSAudioSink` (`device_present()`), `GSAudioSinkGodot` (pool, stealing, `bank`), `GSAudioSinkNull`, `dot_audio_raw_streams.gd` (`stream_at`'s cache, by path), `dot_audio_pcm.gd` (the off-thread decode of a short compressed stream to PCM; sliced on the game thread without threads) |
+| `core/dot_audio_stock.gd` | `GSAudioStock`: the stock footsteps and beds as defs, `add_to`, surface names and aliases |
+| `core/dot_audio_loudness.gd` | `GSAudioLoudness`: the standard's numbers, `install_limiter` |
+| `runtime/dot_audio_footsteps.gd` | `GSAudioFootsteps`: steps by distance and surface for any number of bodies; `stepped` |
+| `runtime/dot_voice_queue.gd` | `GSVoiceQueue`: one announcer/medal line at a time; `say(id, priority)` plays, queues (priority then order, deduped, capped, stale dropped) or cuts in past `interrupt_margin`; `tick(dt)` for suites |
+| `runtime/dot_audio_ambience.gd` | `GSAudioAmbience`: a bed per map, zones by box, equal-power crossfades |
+| `runtime/dot_ambience.gd` | `GSAmbience`: moods (looping beds plus sparse random one-shots), crossfade on a change, `pause`/`duck`/`hush` holders, `describe()`; `runtime/dot_ambience_roof.gd` (`GSAmbienceRoof`: upward ray with hysteresis; the game feeds `set_indoors`), `core/dot_ambience_{config,set,mood,moods}.gd` are its settings, sound-set reader and map-to-mood table |
+| `runtime/dot_ambience_director.gd`, `core/dot_ambience_rules.gd` | `GSAmbienceDirector`: map to mood, roof, settings and the server's rules, over `stock/moods/` (the shared eight-mood set) |
+| `core/dot_audio_weapon_stock.gd` | `GSAudioWeaponStock`: the 84 stock weapon sounds as `weapon_<name>` defs; `COUNTS` must match `stock/weapons/` |
+| `core/dot_shot_def.gd`, `core/dot_shot_rules.gd`, `core/dot_audio_shot_stock.gd`, `runtime/dot_shot_player.gd`, `runtime/dot_audio_enclosure.gd` | layered shots: `GSShotDef` (layers as a Resource), `GSShotPlayer` (plan/fire, no repeat, distance crossfade and delay), `GSAudioEnclosure` (rays to room size and openness, tail class, `ShotReverb` bus), `GSShotRules` (`snd_shot_*`), the stock set from `tools/make_shot_layers.py`; `GSAudioShotStock.COUNTS` must match `stock/shots/` |
 | `stock/` | CC0 footsteps, interface cues, announcer and body hits (Kenney) and generated beds; `CREDITS.md` |
 | `web/dot_audio_ceiling.js` | the browser's limiter, loaded by a page before the engine |
 | `tools/loudness.sh`, `tools/dot_audio_capture.gd` | record a game under xvfb and measure it; run from a game's root; a game's `tools/loudness_pilot.gd` drives its player |
 | `tools/ambience_levels.gd` | headless table of the Ambience bus at a game's defaults (stock beds and moods through the gain chain, ffmpeg file levels, one-shots per minute); run from a game's root with `--script`; exit 1 over -30 dBFS RMS or 3 one-shots a minute |
 | `tools/sound_compare.tscn` | ear-check the `slide_*` loops at several speeds; `-- --levels` (headless) prints each loop's peak/RMS via ffmpeg |
-| `runtime/dot_audio_manager.gd` | `DotAudioManager`: ids in, limits, `listener_position`, `roll_source`, `play_music`, `duck`, `shape`/`voice` a playing handle |
-| `dot_audio_api.gd` | the API level (`DotAddonApi`); bump `LEVEL` for anything a game can newly call |
+| `runtime/dot_audio_manager.gd` | `GSAudioManager`: ids in, limits, `listener_position`, `roll_source`, `play_music`, `duck`, `shape`/`voice` a playing handle |
+| `dot_audio_api.gd` | the API level (`GSAddonApi`); bump `LEVEL` for anything a game can newly call |
 | `examples/audio_selftest.tscn` | the main suite (sections from `examples/selftest/`); needs no sound card |
 | `tools/play_cost_bench.tscn` | what one `play_at()` costs the game thread through the real sink (file, banked, culled), headless; run it before and after touching the sink's start path |
 | `examples/ambience_bus_selftest.tscn` | the Ambience bus follows the Effects slider |
-| `examples/box_sounds_selftest.tscn` | `DotBoxSounds`: slots, stock fallback, effect end, approach edge |
+| `examples/box_sounds_selftest.tscn` | `GSBoxSounds`: slots, stock fallback, effect end, approach edge |
 | `examples/steps_native_parity.tscn` | dot-sim's native footstep, slide and surf passes against the script, to the bit (skips without `addons/dot_sim`, a gitignored link to a dot-sim checkout; `GS_SIM_REQUIRE_NATIVE=1` fails instead) and their cost beside the script's |
 | `examples/exit_leak_probe.tscn` | loads GameSpice Audio as a game's suite does and quits; the suite runs it as a child and reads its stderr |
 
@@ -58,20 +58,20 @@ A green run prints "3 ObjectDB instances were leaked at exit": `--verbose` names
 
 ## Rules that bite
 
-- Only `DotAudioSink.device_present()` (the driver name) says whether there is a device; never the mix rate or device list. [design](docs/design.md#the-sink-is-a-seam-because-the-engine-lies)
+- Only `GSAudioSink.device_present()` (the driver name) says whether there is a device; never the mix rate or device list. [design](docs/design.md#the-sink-is-a-seam-because-the-engine-lies)
 - The null sink runs the real limits; keep logic in the manager, not the Godot sink. [design](docs/design.md#the-sink-is-a-seam-because-the-engine-lies)
 - A def names a file by path and never loads or preloads it; a def with no file sets `generated`. [design](docs/design.md#a-path-not-a-stream)
 - Cull by distance in the manager; the game sets `listener_position` every frame. [design](docs/design.md#culling-is-in-the-manager-not-the-sink)
 - A full pool steals only lower priority, else refuses. [design](docs/design.md#stealing-goes-downwards-only)
 - Ducking is reference-counted per holder, never a boolean. [design](docs/design.md#ducking-is-reference-counted)
-- Variants and pitch come from a roll; give `roll_source` a `DotRandomStream` for reproducible sound. [design](docs/design.md#variation-belongs-in-the-document)
+- Variants and pitch come from a roll; give `roll_source` a `GSRandomStream` for reproducible sound. [design](docs/design.md#variation-belongs-in-the-document)
 - A missing sound is a debug-logged refusal, never an error. [design](docs/design.md#a-missing-sound-is-silence-not-an-error)
 - Change a playing voice with `manager.shape(h, volume_scale, pitch_scale)` (play()'s units, def gain and rolled pitch kept), never by restarting it or subclassing the Godot sink. [design](docs/design.md#a-playing-voice-is-shaped-in-plays-units)
 - The native footstep, slide and surf passes (dot-sim `audio`, `native_enabled` on by default, the script on the web or with no library) hold the bodies' state in Rust while the tracked set is unchanged: `_bodies` keeps `opts`, `on`, `handle` and `surface`, but `last`, `travelled`, `air` and `grounded` go stale. Call `native_sync()` before reading them. Every change to the set (`track`, `untrack`, a `keep` that adds or drops a body, a public `advance`) hands the state back first. Hand state over in packed arrays and per-body indices, never in per-body dictionaries: an engine access costs more through the extension than from GDScript. Measured on PH 2026-11-13 for 32 bodies (`steps_native_parity`): steps 466 against 221, surf 177 against 82, slide 418 against 377 us per tick.
-- Starting a compressed voice is the cost, not mixing it: the engine sets a decoder up on every `play()` (about a millisecond for a stock step, measured). So `DotAudioSinkGodot` decodes a non-looping stream of at most `pcm_max_seconds` to PCM on a worker thread after its first play and starts later plays from that; the copy is stored at half scale and made up on the player, because a decoder overshoots full scale. Without threads (the single-threaded web export, where a start costs most) the decode is sliced instead: `pump()` runs from `process_frame` for at most `slice_usec`, converts in native calls only (never a per-sample script loop on the game thread), and the copies are capped at `WEB_BUDGET_BYTES`. Keep new start paths going through `_stream_for`, and keep `close()` collecting the tasks.
-- `DotAudioFootsteps.hear_distance` is off by default because `stepped` is a signal rules may read; a game whose steps are only heard sets it.
+- Starting a compressed voice is the cost, not mixing it: the engine sets a decoder up on every `play()` (about a millisecond for a stock step, measured). So `GSAudioSinkGodot` decodes a non-looping stream of at most `pcm_max_seconds` to PCM on a worker thread after its first play and starts later plays from that; the copy is stored at half scale and made up on the player, because a decoder overshoots full scale. Without threads (the single-threaded web export, where a start costs most) the decode is sliced instead: `pump()` runs from `process_frame` for at most `slice_usec`, converts in native calls only (never a per-sample script loop on the game thread), and the copies are capped at `WEB_BUDGET_BYTES`. Keep new start paths going through `_stream_for`, and keep `close()` collecting the tasks.
+- `GSAudioFootsteps.hear_distance` is off by default because `stepped` is a signal rules may read; a game whose steps are only heard sets it.
 - No `static var` written by its own static function in a script that extends another (the sinks): the engine's 4.7.2 exit teardown then kept a game's whole run alive at exit. Such a cache is a script of its own (`sink/dot_audio_raw_streams.gd`). [history](docs/history.md#a-static-cache-kept-a-games-whole-run-alive-at-exit-2026-10-12)
-- A process that ran `stream_at` calls `DotAudioSinkGodot.clear_streams()` before `quit()` (after the last manager left the tree), or the cached streams are "resources still in use" at exit. [history](docs/history.md#a-static-cache-kept-a-games-whole-run-alive-at-exit-2026-10-12)
+- A process that ran `stream_at` calls `GSAudioSinkGodot.clear_streams()` before `quit()` (after the last manager left the tree), or the cached streams are "resources still in use" at exit. [history](docs/history.md#a-static-cache-kept-a-games-whole-run-alive-at-exit-2026-10-12)
 - Loop a copy of the stream, never the shared one. [design](docs/design.md#looping-copies-the-stream)
 - Reap where a count is consulted, not only in `_process` (which stops while paused). [design](docs/design.md#reaping-happens-at-the-point-of-refusal)
 - A real file always outranks the synth bank; which voice stands in for which id is the game's `sound_recipes()`. [design](docs/design.md#the-synthesiser-is-consulted-after-the-filesystem-never-before)
@@ -82,10 +82,10 @@ A green run prints "3 ObjectDB instances were leaked at exit": `--verbose` names
 - Trust a level only from a run whose `capture camera:` line shows the local player moving; a game the stand-in cannot play brings `tools/loudness_pilot.gd` (`drive(capture, ms)` through the capture's `key`/`turn`/`click`/`point`, never moving a body). [loudness](docs/loudness.md#measuring-addonsdot_audiotoolsloudnesssh)
 - Set a game's level in its catalogue; `limit_master` is a backstop (not on the web: sample playback runs no bus effects) and `loudness_trim_db` a measured nudge added to every voice's gain. [loudness](docs/loudness.md#how-it-is-held)
 - A web page loads `web/dot_audio_ceiling.js` before the engine: the browser's limiter, since the engine's does not run there. [loudness](docs/loudness.md#the-browsers-ceiling)
-- A sound path resolves through `DotAudioSinkGodot.stream_at` (the import, else the file's own bytes when an addon pack brought no imported output); never `load()` a def's path directly. [loudness](docs/loudness.md#the-stock-set)
+- A sound path resolves through `GSAudioSinkGodot.stream_at` (the import, else the file's own bytes when an addon pack brought no imported output); never `load()` a def's path directly. [loudness](docs/loudness.md#the-stock-set)
 - A footstep is distance on the ground, silent under `quiet_speed`; a surface comes from the collider (`surface` meta, `surface_<name>` group, node name) else the map's `default_surface`. [loudness](docs/loudness.md#footsteps-dotaudiofootsteps)
 - Every map sets a bed (`set_map_bed`); nothing may be digital silence. Beds are −24 LUFS; regenerate with `tools/make_ambience.py`, never edit an `.ogg` by hand. [loudness](docs/loudness.md#the-stock-set)
 
-- `DotAmbience` is stepped by `advance(delta)`; `_process` only calls it. Its content is a sound set (`moods.json`) a game ships and a server owner may add to (`sound_dir`); the addon ships none. [ambience](docs/ambience.md)
+- `GSAmbience` is stepped by `advance(delta)`; `_process` only calls it. Its content is a sound set (`moods.json`) a game ships and a server owner may add to (`sound_dir`); the addon ships none. [ambience](docs/ambience.md)
 
 Deliberately not here: game audio beyond the stock set, DSP, per-voice fades (`_ramp` is the subclass point), a stem player, voice chat. [design](docs/design.md#deliberately-not-here)

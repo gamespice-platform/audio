@@ -6,11 +6,11 @@ extends "selftest_base.gd"
 func _test_ambience_and_loudness() -> void:
 	_section("A world is never silent, and never clips")
 
-	var cat := DotAudioCatalogue.new()
-	DotAudioStock.add_to(cat)
+	var cat := GSAudioCatalogue.new()
+	GSAudioStock.add_to(cat)
 	var m := _manager(cat, 16)
-	var sink := m.sink as DotAudioSinkNull
-	var amb := DotAudioAmbience.new()
+	var sink := m.sink as GSAudioSinkNull
+	var amb := GSAudioAmbience.new()
 	amb.manager = m
 	amb.fade_seconds = 1.0
 	add_child(amb)
@@ -26,13 +26,13 @@ func _test_ambience_and_loudness() -> void:
 	_check(amb.current_bed() == &"amb_wind", "and a map without the profile loses them again")
 	amb.set_map_bed(&"amb_outdoor", 2.0, true)
 	_check(amb.current_bed() == &"amb_outdoor" and is_equal_approx(amb._gain(), amb.level * 2.0), "set_map_bed can carry the profile itself")
-	_check(is_equal_approx(amb.drive, 1.0) and is_equal_approx(amb.level, DotAudioAmbience.DEFAULT_LEVEL), "drive defaults to 1 and level to 0.35, so loudness is unchanged")
+	_check(is_equal_approx(amb.drive, 1.0) and is_equal_approx(amb.level, GSAudioAmbience.DEFAULT_LEVEL), "drive defaults to 1 and level to 0.35, so loudness is unchanged")
 	amb.drive = 2.0
 	_check(is_equal_approx(amb._gain(), amb.level * 2.0 * 2.0), "drive multiplies the profile gain")
 	amb.drive = 99.0
-	_check(is_equal_approx(amb.drive, DotAudioAmbience.MAX_DRIVE), "drive is clamped")
+	_check(is_equal_approx(amb.drive, GSAudioAmbience.MAX_DRIVE), "drive is clamped")
 	amb.drive = 1.0
-	var dir_node := DotAmbienceDirector.new()
+	var dir_node := GSAmbienceDirector.new()
 	dir_node.beds = amb
 	amb.set_map_bed(&"amb_outdoor")
 	dir_node.on_map(&"doc_map", {"ambient": {"level": 1.8, "lively": true}})
@@ -81,26 +81,26 @@ func _test_ambience_and_loudness() -> void:
 	m.queue_free()
 
 
-func _loudness_limiter(cat: DotAudioCatalogue) -> void:
+func _loudness_limiter(cat: GSAudioCatalogue) -> void:
 	var before := AudioServer.get_bus_effect_count(0)
-	var lim := DotAudioLoudness.install_limiter(-2.0)
-	var again := DotAudioLoudness.install_limiter(1.5)
+	var lim := GSAudioLoudness.install_limiter(-2.0)
+	var again := GSAudioLoudness.install_limiter(1.5)
 	_check(
 		lim != null and lim == again and AudioServer.get_bus_effect_count(0) == before + 1,
 		"one limiter on Master however often a manager is set up"
 	)
 	_check(
-		is_equal_approx(again.ceiling_db, DotAudioLoudness.LIMITER_CEILING_DB)
+		is_equal_approx(again.ceiling_db, GSAudioLoudness.LIMITER_CEILING_DB)
 		and is_equal_approx(again.pre_gain_db, 1.5),
 		"at the family ceiling, with the game's trim as its pre-gain"
 	)
 	_check(
-		DotAudioLoudness.LIMITER_CEILING_DB < DotAudioLoudness.TRUE_PEAK_CEILING,
+		GSAudioLoudness.LIMITER_CEILING_DB < GSAudioLoudness.TRUE_PEAK_CEILING,
 		"the sample ceiling sits under the true-peak ceiling"
 	)
 	_check(
-		DotAudioLoudness.band_of(-17.0) == 0 and DotAudioLoudness.band_of(-25.0) == -1
-		and DotAudioLoudness.band_of(-12.0) == 1,
+		GSAudioLoudness.band_of(-17.0) == 0 and GSAudioLoudness.band_of(-25.0) == -1
+		and GSAudioLoudness.band_of(-12.0) == 1,
 		"and a measurement reads against the band"
 	)
 	AudioServer.remove_bus_effect(0, AudioServer.get_bus_effect_count(0) - 1)
@@ -110,7 +110,7 @@ func _loudness_limiter(cat: DotAudioCatalogue) -> void:
 	var th := trimmed.play(&"footstep_wood", 0.5)
 	_check(
 		is_equal_approx(float(trimmed.voice(th).get("volume_db", 99.0)),
-			DotAudioStock.footstep_defs()[1].gain_db + 4.0 + linear_to_db(0.5)),
+			GSAudioStock.footstep_defs()[1].gain_db + 4.0 + linear_to_db(0.5)),
 		"the trim is on every voice, so a browser without bus effects hears it too"
 	)
 	trimmed.queue_free()
@@ -152,10 +152,10 @@ func _test_creepy_ambience() -> void:
 
 	_creepy_set_checks(dir, doc)
 
-	var cat := DotAudioCatalogue.new()
+	var cat := GSAudioCatalogue.new()
 	var m := _manager(cat, 16)
-	var sink := m.sink as DotAudioSinkNull
-	var amb := DotAmbience.new()
+	var sink := m.sink as GSAudioSinkNull
+	var amb := GSAmbience.new()
 	amb.manager = m
 	amb.seed_random(7)
 	amb.config.crossfade_seconds = 2.0
@@ -194,32 +194,32 @@ func _test_creepy_ambience() -> void:
 
 
 func _creepy_set_checks(dir: String, doc: Dictionary) -> void:
-	var loaded := DotAmbienceSet.load_dir(dir)
-	var set: DotAmbienceSet = loaded.value if loaded.ok else null
+	var loaded := GSAmbienceSet.load_dir(dir)
+	var set: GSAmbienceSet = loaded.value if loaded.ok else null
 	_check(loaded.ok and set != null and set.names() == PackedStringArray(["alpha", "beta"]), "a set reads its moods and drops the one with no file")
 	_check(set != null and set.dropped.size() == 3, "and names the files it lacked (%d)" % (set.dropped.size() if set != null else -1))
-	_check(set != null and (set.moods[&"alpha"] as DotAmbienceMood).oneshots[0]["files"].size() == 2, "a one-shot keeps the files that exist")
-	_check(not DotAmbienceSet.load_dir("user://amb_nowhere").ok, "a directory that is not there is a DotResult failure, not a crash")
+	_check(set != null and (set.moods[&"alpha"] as GSAmbienceMood).oneshots[0]["files"].size() == 2, "a one-shot keeps the files that exist")
+	_check(not GSAmbienceSet.load_dir("user://amb_nowhere").ok, "a directory that is not there is a GSResult failure, not a crash")
 	DirAccess.make_dir_recursive_absolute("user://amb_selftest_bad")
 	var badf := FileAccess.open("user://amb_selftest_bad/moods.json", FileAccess.WRITE)
 	badf.store_string("[1,2")
 	badf.close()
-	var bad_res := DotAmbienceSet.load_dir("user://amb_selftest_bad")
-	_check(not bad_res.ok and bad_res.error.code == DotError.CODE_PARSE, "a malformed document is a parse failure")
+	var bad_res := GSAmbienceSet.load_dir("user://amb_selftest_bad")
+	_check(not bad_res.ok and bad_res.error.code == GSError.CODE_PARSE, "a malformed document is a parse failure")
 
 	DirAccess.make_dir_recursive_absolute(dir.path_join("folk"))
 	_write_wav(dir.path_join("folk/bed_low.wav"))
 	_write_wav(dir.path_join("folk/knock.wav"))
 	DirAccess.remove_absolute(dir.path_join("moods.json"))
-	var folk := DotAmbienceSet.load_dir(dir)
-	var fm: DotAmbienceMood = folk.value.moods.get(&"folk") if folk.ok else null
+	var folk := GSAmbienceSet.load_dir(dir)
+	var fm: GSAmbienceMood = folk.value.moods.get(&"folk") if folk.ok else null
 	_check(fm != null and fm.beds.size() == 1 and fm.oneshots.size() == 1, "with no document a folder is a mood: bed* is a bed, the rest one-shots")
 	var jf := FileAccess.open(dir.path_join("moods.json"), FileAccess.WRITE)
 	jf.store_string(JSON.stringify(doc))
 	jf.close()
 
 
-func _creepy_oneshots(amb: DotAmbience, m: DotAudioManager, heard: Array) -> void:
+func _creepy_oneshots(amb: GSAmbience, m: GSAudioManager, heard: Array) -> void:
 	for i in 20:
 		amb.advance(1.0)
 	var db := -99.0
@@ -255,7 +255,7 @@ func _creepy_oneshots(amb: DotAmbience, m: DotAudioManager, heard: Array) -> voi
 	amb.config.frequency = 1.0
 
 
-func _creepy_crossfade(amb: DotAmbience, sink: DotAudioSinkNull, first: int) -> void:
+func _creepy_crossfade(amb: GSAmbience, sink: GSAudioSinkNull, first: int) -> void:
 	_check(amb.set_mood(&"beta").ok and amb.mood() == &"beta", "the mood changes")
 	amb.advance(0.5)
 	_check(sink.count_of(&"ambience/beta/bed0") == 1 and amb.describe()["beds"] == 2, "the new bed starts while the old one is still audible (a crossfade)")
@@ -265,7 +265,7 @@ func _creepy_crossfade(amb: DotAmbience, sink: DotAudioSinkNull, first: int) -> 
 	_check(first == 1, "one bed per mood bed")
 
 
-func _creepy_overrides(amb: DotAmbience) -> void:
+func _creepy_overrides(amb: GSAmbience) -> void:
 	amb.config.mood = "alpha"
 	amb.advance(0.1)
 	_check(amb.mood() == &"alpha", "the override wins over the game's request")
@@ -282,7 +282,7 @@ func _creepy_overrides(amb: DotAmbience) -> void:
 	amb.config.allowed_moods = ""
 
 
-func _creepy_holders(amb: DotAmbience, heard: Array) -> void:
+func _creepy_holders(amb: GSAmbience, heard: Array) -> void:
 	amb.duck(&"fight", 0.3)
 	amb.duck(&"other", 0.6)
 	_check(is_equal_approx(amb.target_level(), amb.config.volume * 0.3), "ducking takes the lowest scale")
@@ -319,23 +319,23 @@ func _creepy_holders(amb: DotAmbience, heard: Array) -> void:
 	_check(is_equal_approx(amb._level, 0.25), "volume is live")
 
 
-func _creepy_config_and_votes(amb: DotAmbience) -> void:
+func _creepy_config_and_votes(amb: GSAmbience) -> void:
 	var d := amb.describe()
 	_check(d["mood"] == "beta" and d["beds"] >= 1 and d.has("next_oneshot_in") and d["oneshots_played"] > 0, "describe() says what is playing and what is next")
 	_check(amb.describe_lines()[0].contains("beta"), "and describe_lines() reads it")
 
-	var cfg := DotAmbienceConfig.new()
+	var cfg := GSAmbienceConfig.new()
 	var applied := cfg.apply_dictionary({"enabled": false, "volume": 0.2, "frequency": 2.0, "mood": "swamp", "allowed_moods": "swamp,cave_tunnel", "sound_dir": "/x"})
-	_check(not cfg.enabled and is_equal_approx(cfg.volume, 0.2) and cfg.allowed() == PackedStringArray(["swamp", "cave_tunnel"]) and cfg.sound_dir == "/x", "the config is a DotConfig: a dictionary layer sets every field (%s)" % str(applied))
+	_check(not cfg.enabled and is_equal_approx(cfg.volume, 0.2) and cfg.allowed() == PackedStringArray(["swamp", "cave_tunnel"]) and cfg.sound_dir == "/x", "the config is a GSConfig: a dictionary layer sets every field (%s)" % str(applied))
 	_check(cfg.env_prefix() == "DOT_AMBIENCE_" and cfg.cli_prefix() == "--ambience-", "with its own environment and command-line prefixes")
 
-	_check(DotAmbienceMoods.vote(["d1_town.Street", "canals_slime_outside", "storm_rain"]) == DotAmbienceMoods.CITY_RUINS, "soundscape names vote for a mood")
-	_check(DotAmbienceMoods.vote(["prison.general_dripping_tunnel", "coast.util_windgusts"]) == DotAmbienceMoods.INTERIOR_HORROR, "the first table row breaks a tie")
-	_check(DotAmbienceMoods.vote(["xyzzy"], &"indoor_hall") == &"indoor_hall", "and a name that matches nothing gives the fallback")
-	_check(DotAmbienceMoods.vote(DotAmbienceMoods.names_in({"soundscapes": [{"soundscape": "bedroom_rain"}], "ambient": [{"message": "ambient/wind/windgust.wav", "stand_in": "wind"}]})) != &"", "a map's sounds block is read for names")
+	_check(GSAmbienceMoods.vote(["d1_town.Street", "canals_slime_outside", "storm_rain"]) == GSAmbienceMoods.CITY_RUINS, "soundscape names vote for a mood")
+	_check(GSAmbienceMoods.vote(["prison.general_dripping_tunnel", "coast.util_windgusts"]) == GSAmbienceMoods.INTERIOR_HORROR, "the first table row breaks a tie")
+	_check(GSAmbienceMoods.vote(["xyzzy"], &"indoor_hall") == &"indoor_hall", "and a name that matches nothing gives the fallback")
+	_check(GSAmbienceMoods.vote(GSAmbienceMoods.names_in({"soundscapes": [{"soundscape": "bedroom_rain"}], "ambient": [{"message": "ambient/wind/windgust.wav", "stand_in": "wind"}]})) != &"", "a map's sounds block is read for names")
 
 
-func _creepy_indoors(amb: DotAmbience) -> void:
+func _creepy_indoors(amb: GSAmbience) -> void:
 	amb.set_mood(&"alpha")
 	amb.indoor_mood = &"beta"
 	amb.advance(0.1)
@@ -353,7 +353,7 @@ func _creepy_indoors(amb: DotAmbience) -> void:
 	amb.indoor_mood = &""
 	var merged := amb.mood_def(&"alpha").with_oneshots_of(amb.mood_def(&"beta"), &"alpha+beta")
 	_check(merged.oneshots.size() == amb.mood_def(&"alpha").oneshots.size() + amb.mood_def(&"beta").oneshots.size() and merged.beds.size() == amb.mood_def(&"alpha").beds.size(), "a mood can borrow another's one-shots")
-	var roof := DotAmbienceRoof.new()
+	var roof := GSAmbienceRoof.new()
 	var flips := 0
 	for hit in [true, false, true, true, true, false, false, false, true, false, false, false, false]:
 		if roof.feed(hit):
@@ -361,7 +361,7 @@ func _creepy_indoors(amb: DotAmbience) -> void:
 	_check(roof.roofed == false and flips == 2, "the roof probe needs agreeing rays to flip (%d flips)" % flips)
 
 
-func _creepy_lifecycle(amb: DotAmbience, m: DotAudioManager, dir: String) -> void:
+func _creepy_lifecycle(amb: GSAmbience, m: GSAudioManager, dir: String) -> void:
 	var live: Array = amb._voices.keys()
 	var was_playing := live.any(func(h: int) -> bool: return m.is_playing(h))
 	remove_child(amb)
@@ -370,7 +370,7 @@ func _creepy_lifecycle(amb: DotAmbience, m: DotAudioManager, dir: String) -> voi
 
 	# No catalogue: no bed can start; the one-shot timers must survive the retries, not be re-rolled.
 	var m2 := _manager(null, 4)
-	var amb2 := DotAmbience.new()
+	var amb2 := GSAmbience.new()
 	amb2.manager = m2
 	amb2.seed_random(3)
 	add_child(amb2)
@@ -386,7 +386,7 @@ func _creepy_lifecycle(amb: DotAmbience, m: DotAudioManager, dir: String) -> voi
 	amb2.queue_free()
 	m2.queue_free()
 
-	var sm := DotAmbienceMood.from_dictionary("s", {"oneshots": [{"files": "a_shot1.wav"}]}, dir, PackedStringArray())
+	var sm := GSAmbienceMood.from_dictionary("s", {"oneshots": [{"files": "a_shot1.wav"}]}, dir, PackedStringArray())
 	_check(sm.oneshots.size() == 1 and sm.oneshots[0]["files"].size() == 1, "a one-shot's files may be a single string")
 
 
@@ -394,8 +394,8 @@ func _creepy_lifecycle(amb: DotAmbience, m: DotAudioManager, dir: String) -> voi
 ## player's sliders multiply, and a player's mute wins.
 func _test_ambience_director() -> void:
 	_section("Ambience director: stock moods, map to mood, settings")
-	var m := _manager(DotAudioCatalogue.new(), 16)
-	var d := DotAmbienceDirector.new()
+	var m := _manager(GSAudioCatalogue.new(), 16)
+	var d := GSAmbienceDirector.new()
 	d.manager = m
 	d.default_mood = &"industrial"
 	d.prefix_moods = {"surf_": &"snow_wind"}
@@ -404,7 +404,7 @@ func _test_ambience_director() -> void:
 	var made := d.setup()
 	d.ambient.set_process(false)
 	_check(made.ok and d.has_moods() and d.ambient.mood_names().size() == 8, "the stock set loads all eight moods")
-	_check(DotAudioStock.moods_directory().ends_with("stock/moods") and FileAccess.file_exists(DotAudioStock.moods_directory() + "/CREDITS.md"), "the stock set is credited beside its files")
+	_check(GSAudioStock.moods_directory().ends_with("stock/moods") and FileAccess.file_exists(GSAudioStock.moods_directory() + "/CREDITS.md"), "the stock set is credited beside its files")
 	d.on_map(&"unknown_1")
 	_check(d.mood_for_map()["mood"] == &"industrial" and d.mood_for_map()["why"] == "default", "an unknown map gets the default")
 	d.on_map(&"surf_ski")
@@ -418,7 +418,7 @@ func _test_ambience_director() -> void:
 	_check(d.mood_for_map()["why"] == "game table", "the game's table names its hand-made maps")
 	_check(d.indoor_mood_for_map() == &"indoor_hall", "an indoor map stays indoors")
 
-	var rules := DotAmbienceRules.new()
+	var rules := GSAmbienceRules.new()
 	rules.prefix = "tt"
 	var store := _FakeStore.new()
 	d.follow_settings(store, rules)

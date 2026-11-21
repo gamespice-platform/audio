@@ -1,9 +1,9 @@
-class_name DotAmbienceRoof
+class_name GSAmbienceRoof
 extends RefCounted
 
 ## Whether the listener stands under a roof: a short upward ray a few times a second, with hysteresis
 ## so a doorway does not flap the mood. Call `step(delta, eye, space)` each frame and feed
-## [method DotAmbience.set_indoors] with `roofed`.
+## [method GSAmbience.set_indoors] with `roofed`.
 
 ## How far up a ceiling counts, in metres. A hangar's or a stadium's roof beyond it is the open air.
 var height := 8.0

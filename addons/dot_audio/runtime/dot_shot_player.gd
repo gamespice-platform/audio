@@ -1,14 +1,14 @@
-class_name DotShotPlayer
+class_name GSShotPlayer
 extends Node
 
-## Plays a [DotShotDef] as layers: attack, body and the room's tail from the close set, the far set crossfaded in by
+## Plays a [GSShotDef] as layers: attack, body and the room's tail from the close set, the far set crossfaded in by
 ## distance, all delayed by the speed of sound, with small pitch and gain jitter and never the same variant twice in a
 ## row. The tail is a crossfade of the classes by [member enclosure]'s measured room. Call [method fire]; layers are played from [method advance].
 
-var rules: DotShotRules = DotShotRules.new()
-## Optional: its [member DotAudioEnclosure.tail_class] picks the tail; without one the tail is outdoor.
-var enclosure: DotAudioEnclosure = null
-var manager: DotAudioManager = null
+var rules: GSShotRules = GSShotRules.new()
+## Optional: its [member GSAudioEnclosure.tail_class] picks the tail; without one the tail is outdoor.
+var enclosure: GSAudioEnclosure = null
+var manager: GSAudioManager = null
 ## Pitch varies by plus or minus this fraction, gain by this many dB.
 @export_range(0.0, 0.2, 0.001) var pitch_jitter := 0.03
 @export_range(0.0, 6.0, 0.1) var gain_jitter_db := 1.5
@@ -29,13 +29,13 @@ func seed_rolls(value: int) -> void:
 
 
 ## Adds [param shot]'s files to the manager's catalogue. The reverb bus is created when an enclosure is set.
-func register(shot: DotShotDef) -> DotResult:
+func register(shot: GSShotDef) -> GSResult:
 	if manager == null or manager.catalogue == null:
-		return DotResult.fail(DotError.CODE_STATE, "the shot player has no manager with a catalogue")
+		return GSResult.fail(GSError.CODE_STATE, "the shot player has no manager with a catalogue")
 	var ok := shot.validate()
 	if not ok.ok:
 		return ok.wrap("registering shot '%s'" % shot.id)
-	var tail_bus := DotAudioEnclosure.BUS if enclosure != null else &"SFX"
+	var tail_bus := GSAudioEnclosure.BUS if enclosure != null else &"SFX"
 	if enclosure != null:
 		var made := enclosure.ensure_bus()
 		if not made.ok:
@@ -43,18 +43,18 @@ func register(shot: DotShotDef) -> DotResult:
 	for d in shot.defs(tail_bus):
 		var _added := manager.catalogue.add(d)
 	_shots[shot.id] = shot
-	return DotResult.success(shot.id)
+	return GSResult.success(shot.id)
 
 
 func has_shot(id: StringName) -> bool:
 	return _shots.has(id)
 
 
-## What [method fire] would play for a shot from [param at] heard at [member DotAudioManager.listener_position]:
+## What [method fire] would play for a shot from [param at] heard at [member GSAudioManager.listener_position]:
 ## `{layer, def_id, delay, volume, pitch}` per layer. Picks (and so remembers) the variants.
 func plan(id: StringName, at: Vector3, suppressed := false, volume_scale := 1.0) -> Array[Dictionary]:
 	var out: Array[Dictionary] = []
-	var shot: DotShotDef = _shots.get(id)
+	var shot: GSShotDef = _shots.get(id)
 	if shot == null:
 		return out
 	var metres := (manager.listener_position if manager != null else Vector3.ZERO).distance_to(at)
@@ -65,32 +65,32 @@ func plan(id: StringName, at: Vector3, suppressed := false, volume_scale := 1.0)
 	var tail_w: Dictionary = enclosure.weights() if in_room else {&"outdoor": 1.0}
 	var tight := enclosure.tight() if in_room else 0.0
 	# A shooter in a tight space hears it louder, with the body lower in the mid range and the tail up against the attack.
-	var loud := volume_scale * db_to_linear(DotAudioEnclosure.TIGHT_LOUD_DB * tight)
-	var body_pitch := lerpf(1.0, DotAudioEnclosure.TIGHT_BODY_PITCH, tight)
-	var tail_gain := 1.0 + DotAudioEnclosure.TIGHT_TAIL_GAIN * tight
+	var loud := volume_scale * db_to_linear(GSAudioEnclosure.TIGHT_LOUD_DB * tight)
+	var body_pitch := lerpf(1.0, GSAudioEnclosure.TIGHT_BODY_PITCH, tight)
+	var tail_gain := 1.0 + GSAudioEnclosure.TIGHT_TAIL_GAIN * tight
 	var delay := rules.delay_for(metres)
 	var near_layers: Array[Array] = []
 	if suppressed and not shot.suppressed_body.is_empty():
-		near_layers = [[DotShotDef.SUPPRESSED_BODY, near_w, body_pitch]]
+		near_layers = [[GSShotDef.SUPPRESSED_BODY, near_w, body_pitch]]
 		for cls: StringName in tail_w:
 			near_layers.append([StringName("tail_%s" % cls), near_w * 0.35 * float(tail_w[cls]) * tail_gain, 1.0])
 	else:
-		near_layers = [[DotShotDef.ATTACK, near_w * near_w, 1.0], [DotShotDef.BODY, near_w, body_pitch]]
+		near_layers = [[GSShotDef.ATTACK, near_w * near_w, 1.0], [GSShotDef.BODY, near_w, body_pitch]]
 		for cls: StringName in tail_w:
 			near_layers.append([StringName("tail_%s" % cls), near_w * float(tail_w[cls]) * tail_gain, 1.0])
 	for entry in near_layers:
 		_add(out, shot, entry[0], entry[1], delay, loud, entry[2])
-	var far_layer := DotShotDef.SUPPRESSED_FAR if suppressed and not shot.suppressed_far.is_empty() else DotShotDef.FAR
+	var far_layer := GSShotDef.SUPPRESSED_FAR if suppressed and not shot.suppressed_far.is_empty() else GSShotDef.FAR
 	_add(out, shot, far_layer, far_w, delay, loud)
 	return out
 
 
 ## Plays a shot: returns the number of layers started or queued, failing when layers are off or the shot unknown.
-func fire(id: StringName, at: Vector3, suppressed := false, volume_scale := 1.0) -> DotResult:
+func fire(id: StringName, at: Vector3, suppressed := false, volume_scale := 1.0) -> GSResult:
 	if not rules.layers:
-		return DotResult.fail(DotError.CODE_UNSUPPORTED, "layered shots are off", "snd_shot_layers 0")
+		return GSResult.fail(GSError.CODE_UNSUPPORTED, "layered shots are off", "snd_shot_layers 0")
 	if not _shots.has(id) or manager == null:
-		return DotResult.fail(DotError.CODE_INVALID, "unknown shot '%s'" % id)
+		return GSResult.fail(GSError.CODE_INVALID, "unknown shot '%s'" % id)
 	var items := plan(id, at, suppressed, volume_scale)
 	var kept: Array[Dictionary] = []
 	for item in items:
@@ -104,7 +104,7 @@ func fire(id: StringName, at: Vector3, suppressed := false, volume_scale := 1.0)
 		else:
 			item["due"] = _clock + float(item["delay"])
 			_queue.append(item)
-	return DotResult.success(items.size())
+	return GSResult.success(items.size())
 
 
 ## Plays the layers whose delay is up.
@@ -137,14 +137,14 @@ func describe() -> Dictionary:
 			"tail": enclosure.tail_class if enclosure != null else &"outdoor"}
 
 
-## A tail is dropped when [member DotShotRules.tail_voices] are already sounding, and tails are spaced by their length over
+## A tail is dropped when [member GSShotRules.tail_voices] are already sounding, and tails are spaced by their length over
 ## that cap, so a rapid-fire weapon gets an even wash of tails rather than a burst, and the crack and body always play.
 func _take_tail_voice(item: Dictionary) -> bool:
 	var cap := rules.tail_voices
 	if cap <= 0:
 		return true
 	var due := _clock + float(item["delay"])
-	var length: float = DotShotRules.TAIL_SECONDS.get(StringName(String(item["layer"]).trim_prefix("tail_")), 1.5)
+	var length: float = GSShotRules.TAIL_SECONDS.get(StringName(String(item["layer"]).trim_prefix("tail_")), 1.5)
 	_tail_ends = _tail_ends.filter(func(t: float) -> bool: return t > _clock)
 	if _tail_ends.size() >= cap:
 		return false
@@ -154,7 +154,7 @@ func _take_tail_voice(item: Dictionary) -> bool:
 	return true
 
 
-func _add(out: Array[Dictionary], shot: DotShotDef, layer: StringName, weight: float, delay: float, volume_scale: float, pitch_scale := 1.0) -> void:
+func _add(out: Array[Dictionary], shot: GSShotDef, layer: StringName, weight: float, delay: float, volume_scale: float, pitch_scale := 1.0) -> void:
 	var paths := shot.layer(layer)
 	if paths.is_empty() or weight < floor_weight:
 		return

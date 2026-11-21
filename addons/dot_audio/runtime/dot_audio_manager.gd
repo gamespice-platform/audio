@@ -1,10 +1,10 @@
-class_name DotAudioManager
+class_name GSAudioManager
 extends Node
 
 ## The node a game holds: ids in, limits applied, requests out to a sink.
 ##
 ## [codeblock]
-## var audio := DotAudioManager.new()
+## var audio := GSAudioManager.new()
 ## audio.catalogue = my_catalogue
 ## add_child(audio)
 ## audio.setup()
@@ -17,7 +17,7 @@ extends Node
 ## [b]Everything above the sink runs in every deployment, including one with no sound
 ## card.[/b] Ids are resolved, concurrency is counted, cooldowns are honoured, voices are
 ## stolen by priority and the music state machine runs — and then either a noise comes out
-## or [DotAudioSinkNull] writes down that one would have. That is what makes a headless
+## or [GSAudioSinkNull] writes down that one would have. That is what makes a headless
 ## suite a test of this system rather than of a mock, and it is why a dedicated server can
 ## decide what its clients are told to play.
 
@@ -32,9 +32,9 @@ signal played(id: StringName, handle: int, why: StringName)
 ## The music track changed.
 signal music_changed(from_id: StringName, to_id: StringName)
 
-@export var catalogue: DotAudioCatalogue = null
+@export var catalogue: GSAudioCatalogue = null
 
-@export var mixer: DotAudioMixer = null
+@export var mixer: GSAudioMixer = null
 
 ## How many sounds may be in flight at once, across every id.
 @export_range(1, 512, 1) var voices: int = 32
@@ -46,7 +46,7 @@ signal music_changed(from_id: StringName, to_id: StringName)
 
 @export var register_as_service: bool = true
 
-## Puts the family's limiter at the end of the Master bus (DotAudioLoudness): a ceiling at
+## Puts the family's limiter at the end of the Master bus (GSAudioLoudness): a ceiling at
 ## -2 dBFS so ten sounds at once cannot clip. On by default because every game wants it
 ## and a game that forgot it is the one that clipped in the first play test.
 @export var limit_master: bool = true
@@ -68,12 +68,12 @@ var listener_position: Vector3 = Vector3.ZERO
 
 ## Where the random choices come from. Anything with [code]unit_at(index)[/code].
 ##
-## A GameSpice Core [DotRandomStream], when a game passes one — and then a shot's pitch and variant are
+## A GameSpice Core [GSRandomStream], when a game passes one — and then a shot's pitch and variant are
 ## the same on the server and on every client watching, which is what makes an audio bug
 ## reproducible. Without one it falls back to the engine's generator and says so.
 var roll_source: Object = null
 
-var sink: DotAudioSink = null
+var sink: GSAudioSink = null
 
 var _playing: Dictionary = {}
 ## handle -> [code]{gain_db, pitch}[/code]: the def's gain and the pitch it rolled at the
@@ -87,15 +87,15 @@ var _roll_index := 0
 var _ducked := false
 
 
-func setup() -> DotResult:
+func setup() -> GSResult:
 	if catalogue == null:
-		catalogue = DotAudioCatalogue.new()
+		catalogue = GSAudioCatalogue.new()
 	var res := catalogue.validate()
 	if not res.ok:
 		return res.wrap("audio catalogue")
 
 	if mixer == null:
-		mixer = DotAudioMixer.new()
+		mixer = GSAudioMixer.new()
 	var mres := mixer.validate()
 	if not mres.ok:
 		return mres.wrap("audio mixer")
@@ -105,23 +105,23 @@ func setup() -> DotResult:
 		# card when there is none -- a mix rate, a device list and a latency, all
 		# plausible -- and only get_driver_name() says "Dummy". GameSpice Voice found that, and
 		# a check built on any of the others passes on a machine with no audio at all.
-		if DotAudioSink.device_present():
-			sink = DotAudioSinkGodot.new(self, voices)
+		if GSAudioSink.device_present():
+			sink = GSAudioSinkGodot.new(self, voices)
 		else:
-			sink = DotAudioSinkNull.new(voices)
-			DotLog.info(CHANNEL, "no audio device; sounds are resolved and not heard")
+			sink = GSAudioSinkNull.new(voices)
+			GSLog.info(CHANNEL, "no audio device; sounds are resolved and not heard")
 
-	if apply_mixer_to_buses and DotAudioSink.device_present():
+	if apply_mixer_to_buses and GSAudioSink.device_present():
 		var missing := mixer.apply_to_buses()
 		if not missing.is_empty():
-			DotLog.info(CHANNEL, "buses not present", {"names": ", ".join(missing)})
+			GSLog.info(CHANNEL, "buses not present", {"names": ", ".join(missing)})
 
-	if limit_master and DotAudioSink.device_present():
-		DotAudioLoudness.install_limiter()
+	if limit_master and GSAudioSink.device_present():
+		GSAudioLoudness.install_limiter()
 
 	if register_as_service:
-		DotRegistry.register(SERVICE, self)
-	return DotResult.success(null)
+		GSRegistry.register(SERVICE, self)
+	return GSResult.success(null)
 
 
 func _exit_tree() -> void:
@@ -129,7 +129,7 @@ func _exit_tree() -> void:
 		sink.stop_all()
 		sink.close()
 	if register_as_service:
-		DotRegistry.unregister_instance(SERVICE, self)
+		GSRegistry.unregister_instance(SERVICE, self)
 
 
 # --- Playing ----------------------------------------------------------------
@@ -215,7 +215,7 @@ func _start(
 		"bus": String(def.bus),
 		"volume_db": _volume_db(def.gain_db + loudness_trim_db, volume_scale),
 		"pitch": _pitch(rolled_pitch, pitch_scale),
-		"kind": def.kind if positioned else DotAudioDef.Kind.FLAT,
+		"kind": def.kind if positioned else GSAudioDef.Kind.FLAT,
 		"position": position,
 		"unit_size": def.unit_size,
 		"max_distance": def.max_distance,
@@ -285,7 +285,7 @@ func move(handle: int, position: Vector3) -> void:
 ## range ROLLED when this handle started. So [code]play(id, v, p)[/code] followed by
 ## [code]shape(h, v, p)[/code] changes nothing, and an engine shaped every frame keeps both
 ## its catalogue gain and its variation instead of having them overwritten by raw numbers.
-## That is why this is not a pass-through to [method DotAudioSink.shape]: a caller handing
+## That is why this is not a pass-through to [method GSAudioSink.shape]: a caller handing
 ## the sink decibels would have to know the def's gain to stay at the level it started at.
 ##
 ## [b]Returns whether there was a voice to shape.[/b] False for a handle this manager did
@@ -444,7 +444,7 @@ func _apply_duck() -> void:
 	if want == _ducked:
 		return
 	_ducked = want
-	if not DotAudioSink.device_present() or mixer == null:
+	if not GSAudioSink.device_present() or mixer == null:
 		return
 	var idx := AudioServer.get_bus_index(String(mixer.bus_names[1]) if mixer.bus_names.size() > 1 else "Music")
 	if idx < 0:
@@ -465,13 +465,13 @@ func _fade_in(handle: int, seconds: float) -> void:
 	# on a null sink, and a bus-independent volume ramp on a real one. A game that wants
 	# sample-accurate fades wants a stem player, which is a different thing and is listed
 	# under what is deliberately not here.
-	if seconds <= 0.0 or not sink is DotAudioSinkGodot:
+	if seconds <= 0.0 or not sink is GSAudioSinkGodot:
 		return
 	_ramp(handle, -40.0, 0.0, seconds)
 
 
 func _fade_out(handle: int, seconds: float) -> void:
-	if seconds <= 0.0 or not sink is DotAudioSinkGodot:
+	if seconds <= 0.0 or not sink is GSAudioSinkGodot:
 		sink.stop(handle)
 		_release(handle)
 		return
@@ -505,7 +505,7 @@ func describe() -> Dictionary:
 	var u := sink.usage() if sink != null else {"playing": 0, "capacity": 0}
 	return {
 		"sink": sink.sink_name() if sink != null else "none",
-		"device": DotAudioSink.device_present(),
+		"device": GSAudioSink.device_present(),
 		"sounds": catalogue.defs.size() if catalogue != null else 0,
 		"playing": u["playing"],
 		"capacity": u["capacity"],

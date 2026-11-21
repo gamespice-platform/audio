@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """One preview wav and waveform png per weapon: fire x3, reload out and in, dry click, equip.
 
-Reads the same tables the game reads (DotWeaponSound.FIRE/RELOAD_CLASS/FEEL, ZeeWeaponSound.WEAPONS,
+Reads the same tables the game reads (GSWeaponSound.FIRE/RELOAD_CLASS/FEEL, ZeeWeaponSound.WEAPONS,
 AwWeaponPack.SOUND_CLASSES), so a preview is what a player hears. Needs ffmpeg.
 
   python3 tools/weapon_previews.py [out_dir]     (default ~/docs/weapon-sound-previews)

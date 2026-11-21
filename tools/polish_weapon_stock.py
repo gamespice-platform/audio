@@ -6,7 +6,7 @@
 Per file: remove DC, trim leading silence (weapons/ only; shot layers keep their reverb pre-delay), fade a cut-off tail,
 soft-limit true peaks over -1.5 dBFS. stock/weapons/ is then levelled to a per-category K-weighted active loudness
 (TARGETS), so a pistol and a rifle differ by what a person would expect, not by 25 LU of accident. stock/shots/ layers
-keep their balance (DotShotPlayer mixes them) and are only repaired. Only files that change are re-encoded (Ogg Vorbis q4).
+keep their balance (GSShotPlayer mixes them) and are only repaired. Only files that change are re-encoded (Ogg Vorbis q4).
 """
 import argparse, json, sys
 from pathlib import Path

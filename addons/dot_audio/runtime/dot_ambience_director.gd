@@ -1,7 +1,7 @@
-class_name DotAmbienceDirector
+class_name GSAmbienceDirector
 extends Node
 
-## The glue every game repeats around [DotAmbience]: build it over the stock mood set, pick a map's mood
+## The glue every game repeats around [GSAmbience]: build it over the stock mood set, pick a map's mood
 ## (document, game table, name prefix, vote over sound names, else default), follow the roof and the
 ## rules and settings. Set `manager`, `default_mood`, `prefix_moods`, call `setup()`, then the `on_map` hooks.
 
@@ -12,11 +12,11 @@ const DEFAULT_INDOOR_OF := {
 	&"outdoor_night": &"indoor_hall", &"snow_wind": &"indoor_hall", &"swamp": &"indoor_hall", &"city_ruins": &"indoor_hall",
 }
 
-var manager: DotAudioManager = null
+var manager: GSAudioManager = null
 var default_mood: StringName = &"outdoor_night"
 
 ## The layer itself; built by [method setup].
-var ambient: DotAmbience = null
+var ambient: GSAmbience = null
 
 ## Map id to mood, for hand-made maps.
 var map_moods: Dictionary = {}
@@ -27,10 +27,10 @@ var prefix_moods: Dictionary = {}
 ## Outdoor mood to the one under a roof.
 var indoor_of: Dictionary = DEFAULT_INDOOR_OF
 
-## Whether the family's stock moods ([method DotAudioStock.moods_directory]) are loaded.
+## Whether the family's stock moods ([method GSAudioStock.moods_directory]) are loaded.
 var use_stock := true
 
-var rules: DotAmbienceRules = DotAmbienceRules.new()
+var rules: GSAmbienceRules = GSAmbienceRules.new()
 
 var _store: Object = null
 var _user_on := true
@@ -41,27 +41,27 @@ var _doc_mood: StringName = &""
 var _doc_indoor: StringName = &""
 var _doc_extra: StringName = &""
 ## The bed layer a map document's `ambient.level` / `ambient.lively` reach (optional; the game assigns it).
-var beds: DotAudioAmbience = null
+var beds: GSAudioAmbience = null
 var _doc_volume := 1.0
 var _doc_frequency := 1.0
-## Optional `Callable(id) -> Object`: the game's map definition (a `DotMapDef` or a Dictionary with `meta`, read by duck type), so [method on_map] without a document finds the map's `ambient` in its `meta` (inline, or `meta.doc`, a JSON path).
+## Optional `Callable(id) -> Object`: the game's map definition (a `GSMapDef` or a Dictionary with `meta`, read by duck type), so [method on_map] without a document finds the map's `ambient` in its `meta` (inline, or `meta.doc`, a JSON path).
 var map_lookup: Callable = Callable()
-var _roof := DotAmbienceRoof.new()
+var _roof := GSAmbienceRoof.new()
 var _map_names: Array = []
 
 
 ## Builds the layer and loads the stock moods. Call once, after adding this node.
-func setup() -> DotResult:
-	ambient = DotAmbience.new()
+func setup() -> GSResult:
+	ambient = GSAmbience.new()
 	ambient.name = "Ambient"
 	ambient.manager = manager
 	ambient.default_mood = default_mood
 	add_child(ambient)
-	var made := DotResult.success(0)
+	var made := GSResult.success(0)
 	if use_stock:
-		made = ambient.add_set_dir(DotAudioStock.moods_directory())
+		made = ambient.add_set_dir(GSAudioStock.moods_directory())
 		if not made.ok:
-			DotLog.warn(CHANNEL, "no stock ambience set", {"why": made.error.message})
+			GSLog.warn(CHANNEL, "no stock ambience set", {"why": made.error.message})
 	_apply()
 	return made
 
@@ -72,7 +72,7 @@ func has_moods() -> bool:
 
 
 ## Adds a game's own set over the stock one (same mood names replace).
-func add_set_dir(dir: String) -> DotResult:
+func add_set_dir(dir: String) -> GSResult:
 	return ambient.add_set_dir(dir)
 
 
@@ -110,7 +110,7 @@ func _doc_from_lookup(id: StringName) -> Dictionary:
 
 ## A converted map's `sounds` block arrived with its world; its names vote unless the document or a table decided.
 func on_world_sounds(sounds: Dictionary) -> void:
-	_map_names = [String(_map_id)] + DotAmbienceMoods.names_in(sounds)
+	_map_names = [String(_map_id)] + GSAmbienceMoods.names_in(sounds)
 	_choose_mood()
 
 
@@ -124,7 +124,7 @@ func mood_for_map() -> Dictionary:
 	for prefix: Variant in prefix_moods:
 		if lower.begins_with(str(prefix)):
 			return {"mood": prefix_moods[prefix], "why": "name prefix"}
-	var voted := DotAmbienceMoods.vote(_map_names)
+	var voted := GSAmbienceMoods.vote(_map_names)
 	if voted != &"":
 		return {"mood": voted, "why": "sound names"}
 	return {"mood": default_mood, "why": "default"}
@@ -154,7 +154,7 @@ func follow_roof(delta: float, eye: Vector3, space: PhysicsDirectSpaceState3D, w
 
 ## The server's rules and the player's own sliders, multiplied: a player can only turn the server's
 ## level down. [param store] is a settings store with `get_bool`, `get_float` and `changed`.
-func follow_settings(store: Object, new_rules: DotAmbienceRules = null) -> void:
+func follow_settings(store: Object, new_rules: GSAmbienceRules = null) -> void:
 	if new_rules != null:
 		rules = new_rules
 	if not rules.changed.is_connected(_apply):
@@ -166,7 +166,7 @@ func follow_settings(store: Object, new_rules: DotAmbienceRules = null) -> void:
 			store.changed.connect(_on_setting)
 	_apply()
 	if ambient != null and rules.dir != "":
-		DotLog.result(CHANNEL, "ambience set from the dir cvar", ambient.add_set_dir(rules.dir))
+		GSLog.result(CHANNEL, "ambience set from the dir cvar", ambient.add_set_dir(rules.dir))
 		_choose_mood()
 
 
@@ -231,10 +231,10 @@ func _choose_mood() -> void:
 	var got := mood_for_map()
 	var made := ambient.set_mood(_with_extra(got["mood"]))
 	if not made.ok:
-		DotLog.debug(CHANNEL, "ambience mood not available", {"mood": String(got["mood"]), "why": made.error.message})
+		GSLog.debug(CHANNEL, "ambience mood not available", {"mood": String(got["mood"]), "why": made.error.message})
 		var _fallback := ambient.set_mood(default_mood)
 	else:
-		DotLog.debug(CHANNEL, "ambience mood", {"map": String(_map_id), "mood": String(got["mood"]), "why": got["why"]})
+		GSLog.debug(CHANNEL, "ambience mood", {"map": String(_map_id), "mood": String(got["mood"]), "why": got["why"]})
 	ambient.indoor_mood = _with_extra(indoor_mood_for_map())
 
 

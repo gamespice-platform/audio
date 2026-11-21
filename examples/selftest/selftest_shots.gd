@@ -3,7 +3,7 @@ extends "selftest_stock.gd"
 ## The layered-shot sections of audio_selftest.gd: layers by distance, tail by enclosure.
 
 
-func _sweep(e: DotAudioEnclosure, distance: float, miss_every: int = 0) -> void:
+func _sweep(e: GSAudioEnclosure, distance: float, miss_every: int = 0) -> void:
 	for i in 3:
 		for r in e.rules.rays:
 			e.feed(-1.0 if miss_every > 0 and r % miss_every == 0 else distance)
@@ -13,23 +13,23 @@ func _sweep(e: DotAudioEnclosure, distance: float, miss_every: int = 0) -> void:
 func _test_shots() -> void:
 	_section("Layered shots: layers by distance, tail by enclosure, no immediate repeat")
 
-	var cat := DotAudioCatalogue.new()
+	var cat := GSAudioCatalogue.new()
 	var m := _manager(cat, 32)
-	var enc := DotAudioEnclosure.new()
+	var enc := GSAudioEnclosure.new()
 	enc.send_bus = &"Master"
 	add_child(enc)
-	var p := DotShotPlayer.new()
+	var p := GSShotPlayer.new()
 	p.manager = m
 	p.enclosure = enc
 	add_child(p)
 	p.seed_rolls(7)
-	var shot := DotAudioShotStock.shot(&"rifle")
+	var shot := GSAudioShotStock.shot(&"rifle")
 	_check(shot.validate().ok and p.register(shot).ok and p.has_shot(shot.id), "a stock shot validates and registers")
-	_check(p.register(DotShotDef.new()).ok == false, "a shot with no id or layers is refused")
+	_check(p.register(GSShotDef.new()).ok == false, "a shot with no id or layers is refused")
 
 	var missing := 0
-	for weapon_class: StringName in DotAudioShotStock.COUNTS:
-		var s := DotAudioShotStock.shot(weapon_class)
+	for weapon_class: StringName in GSAudioShotStock.COUNTS:
+		var s := GSAudioShotStock.shot(weapon_class)
 		for layer in s.layer_names():
 			for path in s.layer(layer):
 				if not FileAccess.file_exists(path):
@@ -61,14 +61,14 @@ func _test_shots() -> void:
 	_sweep(enc, 2.0)
 	var in_small := p.plan(shot.id, Vector3(5, 0, 0)).map(func(e: Dictionary) -> StringName: return e.layer)
 	_check(in_small.has(&"tail_small") and not in_small.has(&"tail_outdoor"), "a shot in a tight room plays the small tail instead of the outdoor one")
-	_check(enc.reverb_params().room_size < 0.2 and AudioServer.get_bus_index(DotAudioEnclosure.BUS) >= 0, "the reverb bus exists and a tight room has a small room size")
+	_check(enc.reverb_params().room_size < 0.2 and AudioServer.get_bus_index(GSAudioEnclosure.BUS) >= 0, "the reverb bus exists and a tight room has a small room size")
 	_test_tail_weights()
 	_test_shot_closet(shot, p, enc)
 	_test_shot_playback(shot, p)
 
 
 func _test_tail_weights() -> void:
-	var W := DotAudioEnclosure.tail_weights
+	var W := GSAudioEnclosure.tail_weights
 	var norm_ok := true
 	var mono_ok := true
 	var prev_small := 2.0
@@ -92,13 +92,13 @@ func _test_tail_weights() -> void:
 	_check(closet[&"small"] > 0.99 and field[&"outdoor"] > 0.99 and hall_w[&"hall"] > 0.99, "a closet is all small, a field all outdoor, a hall all hall")
 	_check(corridor[&"small"] > 0.3 and corridor[&"medium"] > 0.3 and corridor[&"hall"] == 0.0 and corridor[&"outdoor"] < 0.05, "a corridor crossfades small and medium")
 	_check(openroom[&"outdoor"] > 0.2 and openroom[&"outdoor"] < 0.8 and openroom[&"large"] > 0.3, "an open room is a blend of its class and outdoor")
-	var near_edge: Dictionary = W.call(DotAudioEnclosure.CLASS_CENTRES[&"small"] * 1.05, 0.0)
+	var near_edge: Dictionary = W.call(GSAudioEnclosure.CLASS_CENTRES[&"small"] * 1.05, 0.0)
 	_check(near_edge[&"small"] > 0.95 and near_edge[&"medium"] < 0.3, "a small step in size gives a small step in weights (no snap)")
-	var tight_closet := DotAudioEnclosure.tightness(1.2, 0.0)
-	_check(tight_closet == 1.0 and DotAudioEnclosure.tightness(12.0, 0.0) == 0.0 and DotAudioEnclosure.tightness(1.2, 0.9) == 0.0 and DotAudioEnclosure.tightness(5.0, 0.0) > 0.0 and DotAudioEnclosure.tightness(5.0, 0.0) < 1.0, "tightness is 1 in a closet and 0 in a hall or outdoors")
+	var tight_closet := GSAudioEnclosure.tightness(1.2, 0.0)
+	_check(tight_closet == 1.0 and GSAudioEnclosure.tightness(12.0, 0.0) == 0.0 and GSAudioEnclosure.tightness(1.2, 0.9) == 0.0 and GSAudioEnclosure.tightness(5.0, 0.0) > 0.0 and GSAudioEnclosure.tightness(5.0, 0.0) < 1.0, "tightness is 1 in a closet and 0 in a hall or outdoors")
 
 
-func _test_shot_closet(shot: DotShotDef, p: DotShotPlayer, enc: DotAudioEnclosure) -> void:
+func _test_shot_closet(shot: GSShotDef, p: GSShotPlayer, enc: GSAudioEnclosure) -> void:
 	p.pitch_jitter = 0.0
 	p.gain_jitter_db = 0.0
 	_sweep(enc, 1.5)
@@ -121,11 +121,11 @@ func _test_shot_closet(shot: DotShotDef, p: DotShotPlayer, enc: DotAudioEnclosur
 	p.gain_jitter_db = 1.5
 	_sweep(enc, 2.0)
 	_check(absf(enc.comb_delay_ms() - 2.0 * 2.0 / 343.0 * 1000.0) < 0.5, "the comb delay follows the measured size (a 2 m room is %.1f ms)" % enc.comb_delay_ms())
-	var h := DotAudioEnclosure.fibonacci(24)
+	var h := GSAudioEnclosure.fibonacci(24)
 	_check(h.size() == 24 and absf(h[0].length() - 1.0) < 0.001 and absf(h[10].length() - 1.0) < 0.001, "the rays are unit directions")
 
 
-func _test_shot_playback(shot: DotShotDef, p: DotShotPlayer) -> void:
+func _test_shot_playback(shot: GSShotDef, p: GSShotPlayer) -> void:
 	var repeats := 0
 	var last := -1
 	for i in 200:
@@ -144,7 +144,7 @@ func _test_shot_playback(shot: DotShotDef, p: DotShotPlayer) -> void:
 	var quiet := p.plan(shot.id, Vector3(5, 0, 0), true).map(func(e: Dictionary) -> StringName: return e.layer)
 	_check(quiet.has(&"suppressed_body") and not quiet.has(&"attack"), "a suppressed shot has no crack")
 
-	var r := DotShotRules.new()
+	var r := GSShotRules.new()
 	_check(r.layers and r.enclosure and r.delay, "the cvars default on")
 	_check(r.set_cvar("snd_shot_rays", "99") and r.rays == 99, "the ray count has no upper bound")
 	_check(r.set_cvar("snd_shot_far", "9000") and r.far_metres == 9000.0 and r.set_cvar("snd_shot_reverb", "5") and r.reverb == 5.0, "far distance and reverb have no upper bound")
@@ -157,17 +157,17 @@ func _test_shot_playback(shot: DotShotDef, p: DotShotPlayer) -> void:
 
 func _test_shot_tail_cap() -> void:
 	_section("Layered shots: a rapid-fire weapon keeps a bounded number of room tails")
-	var m := _manager(DotAudioCatalogue.new(), 32)
-	var enc := DotAudioEnclosure.new()
+	var m := _manager(GSAudioCatalogue.new(), 32)
+	var enc := GSAudioEnclosure.new()
 	enc.send_bus = &"Master"
 	add_child(enc)
 	_sweep(enc, 30.0)
-	var p := DotShotPlayer.new()
+	var p := GSShotPlayer.new()
 	p.manager = m
 	p.enclosure = enc
 	add_child(p)
 	p.seed_rolls(3)
-	var gun := DotAudioShotStock.shot(&"minigun")
+	var gun := GSAudioShotStock.shot(&"minigun")
 	var registered := p.register(gun).ok
 	_check(registered and enc.tail_class == &"hall", "a minigun in a hall registers with the hall tail")
 	var rounds := 0
@@ -178,7 +178,7 @@ func _test_shot_tail_cap() -> void:
 		peak = maxi(peak, p.tail_voices())
 		p.advance(0.04)
 	_check(rounds == 150 and peak <= p.rules.tail_voices and peak > 1, "25 rounds a second for 6 s: at most %d hall tails at once, saw %d" % [p.rules.tail_voices, peak])
-	var plain := DotShotPlayer.new()
+	var plain := GSShotPlayer.new()
 	plain.manager = m
 	plain.enclosure = enc
 	plain.rules.tail_voices = 0

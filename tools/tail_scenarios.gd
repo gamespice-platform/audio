@@ -17,15 +17,15 @@ func _init() -> void:
 	for name: String in SCENARIOS:
 		var size: float = SCENARIOS[name][0]
 		var open: float = SCENARIOS[name][1]
-		var w := DotAudioEnclosure.tail_weights(size, open)
-		var t := DotAudioEnclosure.tightness(size, open)
+		var w := GSAudioEnclosure.tail_weights(size, open)
+		var t := GSAudioEnclosure.tightness(size, open)
 		var weights := {}
 		for k in w:
 			weights[String(k)] = w[k]
 		out[name] = {"size": size, "open": open, "weights": weights, "tight": t,
-				"tail_gain": 1.0 + DotAudioEnclosure.TIGHT_TAIL_GAIN * t,
-				"loud_db": DotAudioEnclosure.TIGHT_LOUD_DB * t,
-				"body_pitch": lerpf(1.0, DotAudioEnclosure.TIGHT_BODY_PITCH, t),
-				"comb_ms": clampf(2.0 * size / DotAudioEnclosure.SPEED_OF_SOUND * 1000.0, 3.0, 60.0)}
+				"tail_gain": 1.0 + GSAudioEnclosure.TIGHT_TAIL_GAIN * t,
+				"loud_db": GSAudioEnclosure.TIGHT_LOUD_DB * t,
+				"body_pitch": lerpf(1.0, GSAudioEnclosure.TIGHT_BODY_PITCH, t),
+				"comb_ms": clampf(2.0 * size / GSAudioEnclosure.SPEED_OF_SOUND * 1000.0, 3.0, 60.0)}
 	print("JSON:" + JSON.stringify(out))
 	quit()

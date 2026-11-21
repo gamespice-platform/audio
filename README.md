@@ -10,7 +10,7 @@ Game audio for Godot 4.7+ that decides what is heard, how loud, how many sounds 
 ## Quick start
 
 ```gdscript
-var audio := DotAudioManager.new()
+var audio := GSAudioManager.new()
 audio.catalogue = my_catalogue
 add_child(audio)
 audio.setup()                        # picks a sink by asking the driver's name
@@ -30,29 +30,29 @@ audio.roll_source = rng.stream(&"audio")
 
 ## Sounds are paths, not streams
 
-A sound is an id plus a path, never a loaded `AudioStream`. A dedicated server can then validate the whole catalogue with no sound card and no files, and a game delivered as a content pack can mount its files at runtime. `DotAudioCatalogue.validate()` checks everything except whether the file exists. `missing_files()` answers that separately, on the client that needs them.
+A sound is an id plus a path, never a loaded `AudioStream`. A dedicated server can then validate the whole catalogue with no sound card and no files, and a game delivered as a content pack can mount its files at runtime. `GSAudioCatalogue.validate()` checks everything except whether the file exists. `missing_files()` answers that separately, on the client that needs them.
 
-Without any files a game can still make noise. `DotAudioSynth` bakes short sounds deterministically (sine sweep, hash grit, envelope) and `DotAudioSinkGodot.bank` holds them behind the filesystem. As soon as a real file exists at the path a definition names, that file wins.
+Without any files a game can still make noise. `GSAudioSynth` bakes short sounds deterministically (sine sweep, hash grit, envelope) and `GSAudioSinkGodot.bank` holds them behind the filesystem. As soon as a real file exists at the path a definition names, that file wins.
 
 ```gdscript
-var bank := DotAudioSynth.bank(catalogue, {
-    &"fire_rifle": DotAudioSynth.Voice.SHOT,
-    &"hit_marker": DotAudioSynth.Voice.BLIP,
+var bank := GSAudioSynth.bank(catalogue, {
+    &"fire_rifle": GSAudioSynth.Voice.SHOT,
+    &"hit_marker": GSAudioSynth.Voice.BLIP,
 })
-(audio.sink as DotAudioSinkGodot).bank = bank
+(audio.sink as GSAudioSinkGodot).bank = bank
 ```
 
 ## Headless and sinks
 
-In a headless run Godot reports a 44100 Hz mix rate and a "Default" device, as if a sound card existed. Only `AudioServer.get_driver_name()` says `"Dummy"`. dot-audio therefore picks its sink by driver name. `DotAudioSinkNull` runs the real catalogue, culling, cooldowns, concurrency limits and music state machine, and replaces only the code that would create an `AudioStreamPlayer`. A dedicated server can use it to decide what clients should play.
+In a headless run Godot reports a 44100 Hz mix rate and a "Default" device, as if a sound card existed. Only `AudioServer.get_driver_name()` says `"Dummy"`. dot-audio therefore picks its sink by driver name. `GSAudioSinkNull` runs the real catalogue, culling, cooldowns, concurrency limits and music state machine, and replaces only the code that would create an `AudioStreamPlayer`. A dedicated server can use it to decide what clients should play.
 
 ## Volume
 
-`DotAudioMixer` sliders carry a linear amplitude from 0 to 1, and `linear_to_db` converts it. Zero means a muted bus. It is a `DotConfig`, so GameSpice UI can generate a settings screen and GameSpice Settings can save it.
+`GSAudioMixer` sliders carry a linear amplitude from 0 to 1, and `linear_to_db` converts it. Zero means a muted bus. It is a `GSConfig`, so GameSpice UI can generate a settings screen and GameSpice Settings can save it.
 
 ## Limits per sound
 
-These are per-sound settings on `DotAudioDef`. The defaults are shown; every one is configurable.
+These are per-sound settings on `GSAudioDef`. The defaults are shown; every one is configurable.
 
 | Setting | Default | Purpose |
 | --- | --- | --- |
@@ -67,19 +67,19 @@ When the pool is full the lowest-priority voice is stolen. If nothing has lower 
 
 | Feature | What it does |
 | --- | --- |
-| `DotAudioFootsteps` | One step per stride for the player, other players and bots, by surface (a collider's `surface` meta, a `surface_wood` group, or a name like `Floor_Wood`). Silent when creeping. |
-| `DotAudioSlide` | A looping scrape by surface, louder and higher with speed. One positional voice per sliding body. |
-| `DotAudioSurf` / `DotAudioSurfRules` | A glide loop on ramps too steep to stand on, and silenced steps there. Every value is an `sv_surf_*` cvar. |
-| `DotAudioAmbience` | A crossfaded ambience bed per map, with zones that swap it. |
-| `DotAmbience` | A mood layer of looping beds and sparse one-shots from random directions. See [docs/ambience.md](docs/ambience.md). Ships no sounds; a game supplies a `moods.json`. |
-| `DotShotDef` / `DotShotPlayer` | Shots played as layers (attack, body, tail, far, suppressed), crossfaded and delayed by distance. |
-| `DotAudioEnclosure` | Casts rays to estimate room size and openness, picks a tail class and drives one reverb bus. |
-| `DotShotRules` | The `snd_shot_*` cvars for the shot system. |
+| `GSAudioFootsteps` | One step per stride for the player, other players and bots, by surface (a collider's `surface` meta, a `surface_wood` group, or a name like `Floor_Wood`). Silent when creeping. |
+| `GSAudioSlide` | A looping scrape by surface, louder and higher with speed. One positional voice per sliding body. |
+| `GSAudioSurf` / `GSAudioSurfRules` | A glide loop on ramps too steep to stand on, and silenced steps there. Every value is an `sv_surf_*` cvar. |
+| `GSAudioAmbience` | A crossfaded ambience bed per map, with zones that swap it. |
+| `GSAmbience` | A mood layer of looping beds and sparse one-shots from random directions. See [docs/ambience.md](docs/ambience.md). Ships no sounds; a game supplies a `moods.json`. |
+| `GSShotDef` / `GSShotPlayer` | Shots played as layers (attack, body, tail, far, suppressed), crossfaded and delayed by distance. |
+| `GSAudioEnclosure` | Casts rays to estimate room size and openness, picks a tail class and drives one reverb bus. |
+| `GSShotRules` | The `snd_shot_*` cvars for the shot system. |
 | Loudness | Target of -17 LUFS integrated and -1 dBTP with a master limiter on by default. `addons/dot_audio/tools/loudness.sh` measures a game. See [docs/loudness.md](docs/loudness.md). |
 
 ## Stock sounds
 
-`DotAudioStock.add_to(catalogue)` adds the bundled sounds as ordinary definitions. A game's own definition with the same id wins. Weapon sounds are added with `DotAudioWeaponStock.add_to(catalogue)`; see [docs/weapons.md](docs/weapons.md).
+`GSAudioStock.add_to(catalogue)` adds the bundled sounds as ordinary definitions. A game's own definition with the same id wins. Weapon sounds are added with `GSAudioWeaponStock.add_to(catalogue)`; see [docs/weapons.md](docs/weapons.md).
 
 Full per-file credits are in [addons/dot_audio/stock/CREDITS.md](addons/dot_audio/stock/CREDITS.md). Everything in `stock/` is CC0.
 

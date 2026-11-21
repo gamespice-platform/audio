@@ -367,7 +367,7 @@ HG = "reloads2/reload.wav"
 MOSIN = TAB + "/mosin.wav"
 
 
-# Reloads by class, so two classes never share a file (DotWeaponSound.check_unique). `reload_out` and `reload_in` stay
+# Reloads by class, so two classes never share a file (GSWeaponSound.check_unique). `reload_out` and `reload_in` stay
 # as the generic fallback for a pack that does not know classes. Each set is a different recording where the sources
 # allow (pistol, SMG, rifle, heavy are four clips); the revolver and bolt rifle are built from single rounds and a
 # cocking click, because no recording of a speedloader or bolt was found under a free licence.

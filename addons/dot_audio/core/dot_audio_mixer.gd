@@ -1,6 +1,6 @@
 @tool
-class_name DotAudioMixer
-extends DotConfig
+class_name GSAudioMixer
+extends GSConfig
 
 ## The volume sliders, and the one conversion everybody gets wrong.
 ##
@@ -15,7 +15,7 @@ extends DotConfig
 ## a slider that reaches -60 dB instead of silence is one where a player who dragged it to
 ## the bottom can still hear the game.
 ##
-## It is a [DotConfig], so GameSpice UI generates the screen and GameSpice Settings persists it with
+## It is a [GSConfig], so GameSpice UI generates the screen and GameSpice Settings persists it with
 ## nothing here knowing either exists.
 
 ## Linear amplitudes, 0..1. What a slider carries.
@@ -118,10 +118,10 @@ func db_for(bus_name: StringName) -> float:
 	return -80.0 if linear <= 0.0 else linear_to_db(linear)
 
 
-func validate() -> DotResult:
+func validate() -> GSResult:
 	if bus_names.is_empty():
-		return DotResult.fail(DotError.CODE_INVALID, "a mixer with no buses named")
-	return DotResult.success(null)
+		return GSResult.fail(GSError.CODE_INVALID, "a mixer with no buses named")
+	return GSResult.success(null)
 
 
 func describe_lines(_redact_sensitive: bool = true) -> PackedStringArray:

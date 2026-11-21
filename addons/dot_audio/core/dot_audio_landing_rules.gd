@@ -1,4 +1,4 @@
-class_name DotAudioLandingRules
+class_name GSAudioLandingRules
 extends RefCounted
 ## The client's landing-sound settings: one volume cvar, mild by default.
 
@@ -13,7 +13,7 @@ var volume: float = 0.6:
 var min_impact: float = 4.0
 
 
-## The [code]volume_scale[/code] for [method DotAudioManager.play] at [param impact] m/s; 0 means do not play.
+## The [code]volume_scale[/code] for [method GSAudioManager.play] at [param impact] m/s; 0 means do not play.
 func volume_for(impact: float) -> float:
 	if volume <= 0.0 or impact < min_impact:
 		return 0.0

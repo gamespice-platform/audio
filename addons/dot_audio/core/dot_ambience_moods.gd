@@ -1,4 +1,4 @@
-class_name DotAmbienceMoods
+class_name GSAmbienceMoods
 extends RefCounted
 
 ## Which mood a map's own sound names point at: keywords in soundscape names and ambient

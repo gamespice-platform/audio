@@ -1,7 +1,7 @@
-class_name DotAmbienceConfig
-extends DotConfig
+class_name GSAmbienceConfig
+extends GSConfig
 
-## What a player or server owner may change about [DotAmbience]. Layered like every config
+## What a player or server owner may change about [GSAmbience]. Layered like every config
 ## here: defaults, JSON file, environment (`DOT_AMBIENCE_`), command line (`--ambience-`).
 
 ## Off silences the whole layer (beds fade out, no one-shots).
@@ -23,7 +23,7 @@ extends DotConfig
 ## Its moods replace a built-in mood of the same name.
 @export var sound_dir: String = ""
 
-## Whether [method DotAmbience.set_indoors] switches to the indoor mood. Off keeps the outdoor one.
+## Whether [method GSAmbience.set_indoors] switches to the indoor mood. Off keeps the outdoor one.
 @export var follow_indoors: bool = true
 
 ## Seconds a mood change takes to cross over.
@@ -48,7 +48,7 @@ func allowed() -> PackedStringArray:
 	return out
 
 
-func validate() -> DotResult:
+func validate() -> GSResult:
 	if volume < 0.0 or frequency < 0.0:
-		return DotResult.fail(DotError.CODE_INVALID, "ambience volume and frequency cannot be negative")
-	return DotResult.success(null)
+		return GSResult.fail(GSError.CODE_INVALID, "ambience volume and frequency cannot be negative")
+	return GSResult.success(null)

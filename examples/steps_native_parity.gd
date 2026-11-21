@@ -1,7 +1,7 @@
 extends "selftest/selftest_base.gd"
 
 ## The native footstep, slide and surf probes against the script, to the bit: one seeded world and seeded bodies, ticked by the script (rig A) and by
-## GameSpice Sim's DotSimAudioSteps/DotSimSurfProbe (rig B); every step, slide, surf, sink request and body state must match each tick, then [method DotAudioSurfRules.is_surfing]
+## GameSpice Sim's GSSimAudioSteps/GSSimSurfProbe (rig B); every step, slide, surf, sink request and body state must match each tick, then [method GSAudioSurfRules.is_surfing]
 ## over random input. No library: native half skipped (GS_SIM_REQUIRE_NATIVE=1 fails). Run: godot --headless --path . res://examples/steps_native_parity.tscn
 
 const TICKS := 420
@@ -36,18 +36,18 @@ var _probe_answers: Array = [[], []]
 
 
 func _ready() -> void:
-	DotLog.set_level(DotLog.Level.ERROR)
+	GSLog.set_level(GSLog.Level.ERROR)
 	_line("dot-audio native step, slide and surf parity")
 	# The native path is off by default (slower than the script); this suite is what it is kept honest by.
-	DotAudioFootsteps.native_enabled = true
-	DotAudioSlide.native_enabled = true
-	DotAudioSurfRules.native_enabled = true
-	_native = ClassDB.class_exists(&"DotSimAudioSteps") and ClassDB.class_exists(&"DotSimSurfProbe")
+	GSAudioFootsteps.native_enabled = true
+	GSAudioSlide.native_enabled = true
+	GSAudioSurfRules.native_enabled = true
+	_native = ClassDB.class_exists(&"GSSimAudioSteps") and ClassDB.class_exists(&"GSSimSurfProbe")
 	if not _native:
 		var required := (OS.get_environment("GS_SIM_REQUIRE_NATIVE") if OS.has_environment("GS_SIM_REQUIRE_NATIVE") else OS.get_environment("DOT_SIM_REQUIRE_NATIVE")) == "1"
 		_line("dot-sim's library is not loaded: the native half is skipped")
 		_check(not required, "GS_SIM_REQUIRE_NATIVE=1 needs the library")
-		_check(not DotAudioFootsteps.native_available(), "and the script says so (native_available false)")
+		_check(not GSAudioFootsteps.native_available(), "and the script says so (native_available false)")
 		_finish()
 		return
 	_rng.seed = SEED
@@ -129,9 +129,9 @@ func _build_world() -> void:
 	tiles.global_position = Vector3(0, 0, 45)
 
 
-func _manager_for_rig() -> DotAudioManager:
-	var cat := DotAudioCatalogue.new()
-	DotAudioStock.add_to(cat, false)
+func _manager_for_rig() -> GSAudioManager:
+	var cat := GSAudioCatalogue.new()
+	GSAudioStock.add_to(cat, false)
 	for id: StringName in cat.ids():
 		cat.find(id).cooldown_ms = 0  # time-based; the two rigs run a few microseconds apart
 	var m := _manager(cat, 64)
@@ -141,17 +141,17 @@ func _manager_for_rig() -> DotAudioManager:
 
 func _rig(native: bool) -> Dictionary:
 	var m := _manager_for_rig()
-	var rules := DotAudioSurfRules.new()
+	var rules := GSAudioSurfRules.new()
 	rules.use_native = native
-	var steps := DotAudioFootsteps.new()
+	var steps := GSAudioFootsteps.new()
 	steps.manager = m
 	steps.default_surface = &"concrete"
 	steps.surf_rules = rules
 	steps.use_native = native
-	var slide := DotAudioSlide.new()
+	var slide := GSAudioSlide.new()
 	slide.manager = m
 	slide.use_native = native
-	var surf := DotAudioSurf.new()
+	var surf := GSAudioSurf.new()
 	surf.manager = m
 	surf.rules = rules
 	surf.use_native = native
@@ -198,7 +198,7 @@ func _spawn() -> void:
 		opts["surface"] = &"metal" if i % 8 == 3 else &""
 		opts["loudness"] = 0.7
 	for rig in _rigs:
-		(rig["steps"] as DotAudioFootsteps).track(b, opts)
+		(rig["steps"] as GSAudioFootsteps).track(b, opts)
 
 
 func _sliding(b: Node3D) -> bool:
@@ -239,11 +239,11 @@ func _move(i: int, dt: float) -> void:
 
 func _configure(rig: Dictionary) -> void:
 	var t := _tick
-	var steps: DotAudioFootsteps = rig["steps"]
-	var slide: DotAudioSlide = rig["slide"]
-	var surf: DotAudioSurf = rig["surf"]
-	var rules: DotAudioSurfRules = rig["rules"]
-	(rig["m"] as DotAudioManager).listener_position = Vector3(cos(t * 0.02) * 25.0, 1.0, sin(t * 0.02) * 25.0)
+	var steps: GSAudioFootsteps = rig["steps"]
+	var slide: GSAudioSlide = rig["slide"]
+	var surf: GSAudioSurf = rig["surf"]
+	var rules: GSAudioSurfRules = rig["rules"]
+	(rig["m"] as GSAudioManager).listener_position = Vector3(cos(t * 0.02) * 25.0, 1.0, sin(t * 0.02) * 25.0)
 	steps.hear_distance = 0.0 if t < 120 else (12.0 if t >= 240 and t < 300 else 36.0)
 	steps.surf_rules = null if t >= 300 and t < 320 else rules
 	rules.mute_steps = not (t >= 200 and t < 230)
@@ -272,7 +272,7 @@ func _step_world() -> void:
 		_spawn()
 	if _tick == 130:
 		for rig in _rigs:
-			(rig["steps"] as DotAudioFootsteps).untrack(_bodies[7])
+			(rig["steps"] as GSAudioFootsteps).untrack(_bodies[7])
 	for i in _bodies.size():
 		_move(i, maxf(dt, 1.0 / 66.0))
 	var live := _live()
@@ -280,15 +280,15 @@ func _step_world() -> void:
 		var rig := _rigs[r]
 		_configure(rig)
 		if _tick % 10 == 0:
-			(rig["slide"] as DotAudioSlide).keep(live, _sliding)
-			(rig["surf"] as DotAudioSurf).keep_surfers(live)
+			(rig["slide"] as GSAudioSlide).keep(live, _sliding)
+			(rig["surf"] as GSAudioSurf).keep_surfers(live)
 		var us: Array = _usec[r]
 		var t0 := Time.get_ticks_usec()
-		(rig["steps"] as DotAudioFootsteps)._physics_process(dt)
+		(rig["steps"] as GSAudioFootsteps)._physics_process(dt)
 		var t1 := Time.get_ticks_usec()
-		(rig["slide"] as DotAudioSlide)._physics_process(dt)
+		(rig["slide"] as GSAudioSlide)._physics_process(dt)
 		var t2 := Time.get_ticks_usec()
-		(rig["surf"] as DotAudioSurf)._physics_process(dt)
+		(rig["surf"] as GSAudioSurf)._physics_process(dt)
 		var t3 := Time.get_ticks_usec()
 		us[0] += t1 - t0
 		us[1] += t2 - t1
@@ -320,8 +320,8 @@ func _compare() -> void:
 		_counts[kind] = int(_counts[kind]) + 1
 	a["seen"] = la.size()
 	b["seen"] = lb.size()
-	var sa := (a["m"] as DotAudioManager).sink as DotAudioSinkNull
-	var sb := (b["m"] as DotAudioManager).sink as DotAudioSinkNull
+	var sa := (a["m"] as GSAudioManager).sink as GSAudioSinkNull
+	var sb := (b["m"] as GSAudioManager).sink as GSAudioSinkNull
 	var pa := sa.played()
 	var pb := sb.played()
 	if pa != pb:
@@ -330,12 +330,12 @@ func _compare() -> void:
 	sa.forget()
 	sb.forget()
 	# The native tick holds the footstep state; written back here, outside the timed passes.
-	(b["steps"] as DotAudioFootsteps).native_sync()
-	_compare_state("footstep state", (a["steps"] as DotAudioFootsteps)._bodies, (b["steps"] as DotAudioFootsteps)._bodies,
+	(b["steps"] as GSAudioFootsteps).native_sync()
+	_compare_state("footstep state", (a["steps"] as GSAudioFootsteps)._bodies, (b["steps"] as GSAudioFootsteps)._bodies,
 		["last", "travelled", "air", "grounded"])
 	for node in ["slide", "surf"]:
-		(b[node] as DotAudioSlide).native_sync()
-		_compare_state(node + " state", (a[node] as DotAudioSlide)._bodies, (b[node] as DotAudioSlide)._bodies,
+		(b[node] as GSAudioSlide).native_sync()
+		_compare_state(node + " state", (a[node] as GSAudioSlide)._bodies, (b[node] as GSAudioSlide)._bodies,
 			["last", "on", "handle", "surface"])
 
 
@@ -360,12 +360,12 @@ func _report_run() -> void:
 	_check(int(_counts["step"]) > 50 and int(_counts["slide"]) > 20 and int(_counts["surf"]) > 2,
 		"over a run that steps, slides and surfs (%d steps, %d slide and %d surf starts and stops, %d plays)" % [
 			_counts["step"], _counts["slide"], _counts["surf"], _counts["play"]])
-	var steps_b: DotAudioFootsteps = _rigs[1]["steps"]
-	var slide_b: DotAudioSlide = _rigs[1]["slide"]
-	var rules_b: DotAudioSurfRules = _rigs[1]["rules"]
+	var steps_b: GSAudioFootsteps = _rigs[1]["steps"]
+	var slide_b: GSAudioSlide = _rigs[1]["slide"]
+	var rules_b: GSAudioSurfRules = _rigs[1]["rules"]
 	_check(steps_b._native != null and slide_b._native != null and rules_b._native != null,
 		"and rig B really ran natively (footsteps, slide and surf probe)")
-	_check((_rigs[0]["steps"] as DotAudioFootsteps)._native == null and (_rigs[0]["rules"] as DotAudioSurfRules)._native == null,
+	_check((_rigs[0]["steps"] as GSAudioFootsteps)._native == null and (_rigs[0]["rules"] as GSAudioSurfRules)._native == null,
 		"while rig A never did")
 	for k in 3:
 		_line("   time  %s: script %.1f us/tick, native %.1f us/tick (%d bodies)" % [
@@ -399,7 +399,7 @@ func _probe_round() -> void:
 	for k in order.size():
 		order.append(order[_rng.randi() % order.size()])  # some asked twice: the frame cache
 	for r in 2:
-		var rules: DotAudioSurfRules = _rigs[r]["rules"]
+		var rules: GSAudioSurfRules = _rigs[r]["rules"]
 		rules.probe = probe
 		rules.min_normal_y = lo
 		rules.max_normal_y = hi

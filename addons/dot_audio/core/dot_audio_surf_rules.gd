@@ -1,8 +1,8 @@
-class_name DotAudioSurfRules
+class_name GSAudioSurfRules
 extends RefCounted
 
 ## When a body counts as surfing: on a ramp too steep to stand on, footsteps and landings are
-## silenced and [DotAudioSurf] plays a glide that follows speed. Every number is a `sv_surf_*` cvar.
+## silenced and [GSAudioSurf] plays a glide that follows speed. Every number is a `sv_surf_*` cvar.
 
 const CVAR_PREFIX := "sv_surf_"
 
@@ -34,10 +34,10 @@ var _seen: Dictionary = {}
 var _query: PhysicsRayQueryParameters3D = null
 var _query_body: int = 0
 
-## GameSpice Sim's native probe ([code]DotSimSurfProbe[/code]): the same ray, ramp test and per-frame cache, used when
+## GameSpice Sim's native probe ([code]GSSimSurfProbe[/code]): the same ray, ramp test and per-frame cache, used when
 ## the extension is loaded, [member native_enabled] and [member use_native] are on and these rules are plain
-## [DotAudioSurfRules]. Footsteps and the surf glide share it through [method native_probe].
-const NATIVE_CLASS := &"DotSimSurfProbe"
+## [GSAudioSurfRules]. Footsteps and the surf glide share it through [method native_probe].
+const NATIVE_CLASS := &"GSSimSurfProbe"
 ## Whether the native probe is used when present. On by default: the packed native passes hold the bodies' state
 ## and make about four engine calls a body, measured about twice as fast as this script for footsteps and surf
 ## (examples/steps_native_parity prints both).
@@ -55,7 +55,7 @@ func native_probe() -> Object:
 	if _native == null:
 		if _native_known < 0:
 			_native_known = 1 if ClassDB.class_exists(NATIVE_CLASS) else 0
-		if _native_known != 1 or get_script() != DotAudioSurfRules:
+		if _native_known != 1 or get_script() != GSAudioSurfRules:
 			return null
 		_native = ClassDB.instantiate(NATIVE_CLASS)
 	return _native
@@ -192,7 +192,7 @@ func is_surfing(body: Node3D) -> bool:
 ## not [param body], hits, read from the longer ray [method is_surfing] cast for [param body] at [param at] this
 ## physics frame: the same hit when it lies within [param depth], empty when it lies past it or there is none.
 ## Null when no such ray was cast (another frame, the body moved, the native probe answered, another mask, or
-## [member probe] shorter than [param depth]). [DotAudioFootsteps] reads its ground from it instead of a second ray.
+## [member probe] shorter than [param depth]). [GSAudioFootsteps] reads its ground from it instead of a second ray.
 func frame_hit(body: Node3D, at: Vector3, depth: float, ray_mask: int) -> Variant:
 	var cached: Variant = _seen.get(body.get_instance_id())
 	if cached == null:

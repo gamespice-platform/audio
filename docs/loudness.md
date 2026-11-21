@@ -15,8 +15,8 @@ The tool's verdict says `quiet` under −20 LUFS and `loud` over −14, which is
 ## How it is held
 
 - **Levels are set in the catalogue.** `gain_db` per def is the mix. A game that is out of band is mixed again, not limited harder.
-- **The master limiter is a backstop.** `DotAudioManager.limit_master` (on by default) puts an `AudioEffectHardLimiter` at the end of Master with its ceiling at −2 dBFS: a decibel under the true-peak ceiling because the peaks between samples of a limited signal land above its sample peaks (at −1.5 a game measured −0.9 dBTP). It catches ten things at once; a mix that leans on it sounds squashed.
-- **`DotAudioManager.loudness_trim_db`** is the whole-game nudge, added to every voice's gain (so it reaches the browser too), set from a measurement and never by ear.
+- **The master limiter is a backstop.** `GSAudioManager.limit_master` (on by default) puts an `AudioEffectHardLimiter` at the end of Master with its ceiling at −2 dBFS: a decibel under the true-peak ceiling because the peaks between samples of a limited signal land above its sample peaks (at −1.5 a game measured −0.9 dBTP). It catches ten things at once; a mix that leans on it sounds squashed.
+- **`GSAudioManager.loudness_trim_db`** is the whole-game nudge, added to every voice's gain (so it reaches the browser too), set from a measurement and never by ear.
 - **The web build's limiter is the page's.** A web export in sample playback mode does not run bus effects, so the Master limiter does nothing there; the catalogue levels and the trim, which are per voice, still apply, and `addons/dot_audio/web/dot_audio_ceiling.js`, loaded before the engine, puts a limiter in front of the page's speakers. See [the browser's ceiling](#the-browsers-ceiling).
 
 ## Measuring: `addons/dot_audio/tools/loudness.sh`
@@ -33,7 +33,7 @@ Before that line it prints how far the camera went while recording (`capture cam
 
 Four things about it are decisions:
 
-- **xvfb, never headless and never Movie Maker.** Both run the Dummy audio driver, where `DotAudioSink.device_present()` is false and GameSpice Audio plays nothing. A recording of either is silence that proves nothing.
+- **xvfb, never headless and never Movie Maker.** Both run the Dummy audio driver, where `GSAudioSink.device_present()` is false and GameSpice Audio plays nothing. A recording of either is silence that proves nothing.
 - **The recorder is moved to the end of Master when recording starts.** A game's setup adds the limiter after the script adds anything, and a meter in front of the limiter measures a mix nobody hears.
 - **Wall-clock time, not `--fixed-fps`.** Audio is mixed in real time; a game stepped at a fixed rate on a slow software renderer plays its events sparser than they happen.
 - **The local player is driven through its own inputs, by a pilot where blind keys are not enough.** The stand-in holds W, sprints, jumps and turns, and turns wide when the camera has not moved for 0.6 s (it walked into a wall). A game it still cannot play brings `tools/loudness_pilot.gd`, which `loudness.sh` passes as `--pilot`: `drive(capture, ms)` every frame, playing through the capture's `key`, `turn`, `click` and `point` (input events and a warped pointer, so the game's sampler and bindings read them as they read a player), and `describe()`, printed as `capture pilot:`, says what the player did. game-fatal-contact (walks off walls, fires bursts), game-playlot (spawns and punts props) and game-hungario (a pointer-steered monster that eats and flees) have one. Nothing in a pilot moves a body directly.
@@ -56,29 +56,29 @@ A web build in sample playback runs no bus effects, so nothing held the ceiling 
 
 The two live runs are different stretches of play (the local player does not move under Chromium's software renderer), so compare their peaks, not their loudness; the offline rows are the same signal both ways. A script-side guard was tried first and dropped: summing what each voice GameSpice Audio starts could reach (file peak, gain, bus chain, distance) cut 150 voices a run by up to 12 dB and still let +0.1 dBTP through, because the estimate is the worst case for every voice at once and the loudest sounds in two games (zee-dot-weapons' reports) never pass through GameSpice Audio at all. The page sees everything the engine plays.
 
-## Footsteps: `DotAudioFootsteps`
+## Footsteps: `GSAudioFootsteps`
 
 One node per game; `track(body)` for the player, other players and bots.
 
 - **A step is distance, not time or animation.** Every 1.5 m at a walk to 2.3 m at a run, measured on the ground plane, so a body moved by netcode interpolation or a navigation agent steps at the rate it really moves.
 - **Slow is silent.** Under `quiet_speed` (1.4 m/s) nothing plays; sneaking is a mechanic in a hiding game.
 - **A landing after `landing_air_time` in the air is one full step**, a teleport (over 4 m in a frame) is nothing.
-- **The surface comes from the ground collider**: the hit shape's or its `surface` meta (or GameSpice Player Controller's `dot_fps_surface`), or a parent's, a `surface_<name>` group, or a surface word in the node name, folded through `DotAudioStock.surface_of` (so `stone`, `asphalt` and `Floor_Tile` are concrete). Anything else is `default_surface`, which a game sets per map.
+- **The surface comes from the ground collider**: the hit shape's or its `surface` meta (or GameSpice Player Controller's `dot_fps_surface`), or a parent's, a `surface_<name>` group, or a surface word in the node name, folded through `GSAudioStock.surface_of` (so `stone`, `asphalt` and `Floor_Tile` are concrete). Anything else is `default_surface`, which a game sets per map.
 - **`stepped(body, surface, loudness)`** is what a listening bot hears, so a game needs no second footstep system for its AI.
 
-## Ambience: `DotAudioAmbience`
+## Ambience: `GSAudioAmbience`
 
-`set_map_bed(id)` on every map load, `add_zone(aabb, bed, priority)` for a building, a tunnel or a cave inside it. Beds crossfade with an equal-power curve through `DotAudioManager.shape()`, because the manager's own fade is a subclass point that does nothing by default. A map that names no bed gets `fallback_bed`; a bed that was stolen or stopped is started again at the next check. Zones are boxes in data, not `Area3D` nodes, so a map document carries them and a server never builds them.
+`set_map_bed(id)` on every map load, `add_zone(aabb, bed, priority)` for a building, a tunnel or a cave inside it. Beds crossfade with an equal-power curve through `GSAudioManager.shape()`, because the manager's own fade is a subclass point that does nothing by default. A map that names no bed gets `fallback_bed`; a bed that was stolen or stopped is started again at the next check. Zones are boxes in data, not `Area3D` nodes, so a map document carries them and a server never builds them.
 
 ## The stock set
 
-`addons/dot_audio/stock/`, every file CC0 (`stock/CREDITS.md`), as defs from `DotAudioStock`:
+`addons/dot_audio/stock/`, every file CC0 (`stock/CREDITS.md`), as defs from `GSAudioStock`:
 
 - **Footsteps**: Kenney's Impact Sounds, five each of concrete, wood, grass, snow and carpet, and five light metal impacts for metal; mono, levelled against each other in `_FOOTSTEP_GAIN`.
 - **Beds**: nine seamless loops (wind and outdoor are Thimras's CC0 park recordings cut by `tools/make_real_beds.sh`; the other seven are 32 s stereo, synthesised by `tools/make_ambience.py` from fixed seeds: night, city, indoor, eerie, industrial, cave, rain), each normalised to −24 LUFS, about seven units under the target so a bed sits under the action at mixer level 1.0. Kenney's packs have no ambience; a bed is filtered noise and sparse events, which arithmetic does well, and a generated file is ours to license.
 
-**Why an addon that ships no audio ships these**: the rule is about the catalogue (a def names a path, never holds a stream), and it still holds. These are the same thirty-nine files in every game, and thirteen vendored copies would be thirteen places to fix one level. A game that wants its own defines the same id before `DotAudioStock.add_to` and wins.
+**Why an addon that ships no audio ships these**: the rule is about the catalogue (a def names a path, never holds a stream), and it still holds. These are the same thirty-nine files in every game, and thirteen vendored copies would be thirteen places to fix one level. A game that wants its own defines the same id before `GSAudioStock.add_to` and wins.
 
-**And why they still play when they arrive in an addon pack.** An addon release reaches players as an overlay over the build's `res://addons/dot_audio/` (dot-cloud's addon packs), made from the release zip: tracked files only, so `x.ogg` and `x.ogg.import` with no `.godot/imported/` output behind the marker. On a shell exported before the stock set existed, the importer follows the marker to nothing. `DotAudioSinkGodot.stream_at` reads the marker first and, when its output is missing and the source file is there, decodes the file from its own bytes (Ogg Vorbis, WAV, MP3) once per path. A shell exported with the stock set carries all 39 imported outputs and markers (checked in the Linux and Web exports, 2026-10-12) and never takes that path.
+**And why they still play when they arrive in an addon pack.** An addon release reaches players as an overlay over the build's `res://addons/dot_audio/` (dot-cloud's addon packs), made from the release zip: tracked files only, so `x.ogg` and `x.ogg.import` with no `.godot/imported/` output behind the marker. On a shell exported before the stock set existed, the importer follows the marker to nothing. `GSAudioSinkGodot.stream_at` reads the marker first and, when its output is missing and the source file is there, decodes the file from its own bytes (Ogg Vorbis, WAV, MP3) once per path. A shell exported with the stock set carries all 39 imported outputs and markers (checked in the Linux and Web exports, 2026-10-12) and never takes that path.
 
-The beds play on the `Ambience` bus, whose level is `DotAudioMixer.ambience * sfx` (`ambience_follows_sfx`, on by default): the Effects slider and an Ambience slider both reach them, and either at zero silences them.
+The beds play on the `Ambience` bus, whose level is `GSAudioMixer.ambience * sfx` (`ambience_follows_sfx`, on by default): the Effects slider and an Ambience slider both reach them, and either at zero silences them.

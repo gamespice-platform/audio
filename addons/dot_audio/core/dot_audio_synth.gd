@@ -1,11 +1,11 @@
-class_name DotAudioSynth
+class_name GSAudioSynth
 extends RefCounted
 
 ## Sound made of arithmetic, for a deployment that has no audio files yet.
 ##
 ## [b]This does not break "this addon ships no audio".[/b] The rule exists because a
 ## catalogue that holds [AudioStream]s cannot describe content delivered in a mounted pack
-## and cannot be validated on a server that does not have the files — see [DotAudioDef].
+## and cannot be validated on a server that does not have the files — see [GSAudioDef].
 ## A synthesiser holds nothing: it is a pure function from a handful of numbers to bytes,
 ## it is a few hundred milliseconds of work at startup, and the catalogue it feeds is still
 ## a document naming paths. What ships is the arithmetic, not a bank.
@@ -17,18 +17,18 @@ extends RefCounted
 ## worth arguing about (what a shot sounds like against what a footstep sounds like) are
 ## the same numbers in every one of them.
 ##
-## [b]It is a stand-in and is meant to be replaced.[/b] [DotAudioSinkGodot] consults its
+## [b]It is a stand-in and is meant to be replaced.[/b] [GSAudioSinkGodot] consults its
 ## bank only when the def's path resolves to nothing, so dropping the real files in turns
 ## the synthesiser off one id at a time, with no code change anywhere. That ordering is the
 ## whole design: a placeholder that outranked a shipped asset would be a placeholder
 ## somebody has to remember to remove.
 ##
 ## [codeblock]
-## var bank := DotAudioSynth.bank(catalogue, {
-##     &"fire_rifle": DotAudioSynth.Voice.SHOT,
-##     &"hit_marker": DotAudioSynth.Voice.BLIP,
+## var bank := GSAudioSynth.bank(catalogue, {
+##     &"fire_rifle": GSAudioSynth.Voice.SHOT,
+##     &"hit_marker": GSAudioSynth.Voice.BLIP,
 ## })
-## (audio.sink as DotAudioSinkGodot).bank = bank
+## (audio.sink as GSAudioSinkGodot).bank = bank
 ## [/codeblock]
 
 const CHANNEL := "audio.synth"
@@ -115,10 +115,10 @@ static func voice(kind: Voice) -> AudioStreamWAV:
 ## click with a tail rather than as a shot.
 ##
 ## [b]Deterministic, and that matters more than it sounds.[/b] The grit comes from
-## [method DotRandomStream.mix4] rather than from [method @GlobalScope.randf], so the bank
+## [method GSRandomStream.mix4] rather than from [method @GlobalScope.randf], so the bank
 ## is byte-identical on every machine and every run. That is what makes it something a
 ## suite can assert about rather than listen to — and it is the same reason
-## [DotAudioDef.pitch_min] is documented as deterministic when a stream is supplied.
+## [GSAudioDef.pitch_min] is documented as deterministic when a stream is supplied.
 static func bake(
 	from_hz: float,
 	to_hz: float,
@@ -157,8 +157,8 @@ static func bake(
 		var envelope := rise * pow(1.0 - t, 1.8)
 
 		var tone := sin(phase)
-		var hiss := DotRandomStream.unit_from(
-			DotRandomStream.mix4(index, salt, int(from), int(to))
+		var hiss := GSRandomStream.unit_from(
+			GSRandomStream.mix4(index, salt, int(from), int(to))
 		) * 2.0 - 1.0
 		var sample := lerpf(tone, hiss, grit) * envelope * gain
 
@@ -201,20 +201,20 @@ static func _stock_or_voice(kind: int, salt: int, stock: bool, r: Array = []) ->
 
 
 ## Bakes a stand-in for every id in [param recipes], keyed the way
-## [DotAudioSinkGodot.bank] reads it.
+## [GSAudioSinkGodot.bank] reads it.
 ##
 ## [param recipes] is [code]{StringName id: Voice}[/code]. An id the catalogue does not
 ## have is skipped and counted in the log rather than refused: a game that names a sound it
 ## has not added to its catalogue yet has a typo or a work in progress, and neither is a
 ## reason to leave the other twelve silent.
 ##
-## [b]Every variant of a def gets its own bake, salted by its path.[/b] [DotAudioDef]
+## [b]Every variant of a def gets its own bake, salted by its path.[/b] [GSAudioDef]
 ## exists partly to stop a rifle sounding like a metronome, and a bank that collapsed three
 ## variants onto one stream would quietly undo that — the def would still pick a variant,
 ## and all three would resolve to the same bytes.
 ##
 ## [param stock] swaps the sine-sweep voices for the synthesised recordings in stock/voices where there is one.
-static func bank(catalogue: DotAudioCatalogue, recipes: Dictionary, stock: bool = false) -> Dictionary:
+static func bank(catalogue: GSAudioCatalogue, recipes: Dictionary, stock: bool = false) -> Dictionary:
 	var out := {}
 	var missing: Array[String] = []
 
@@ -247,7 +247,7 @@ static func bank(catalogue: DotAudioCatalogue, recipes: Dictionary, stock: bool 
 			out[p] = _stock_or_voice(kind, hash(p), stock, r)
 
 	if not missing.is_empty():
-		DotLog.warn(
+		GSLog.warn(
 			CHANNEL,
 			"a synth recipe names an id the catalogue does not have",
 			{"ids": missing, "count": missing.size()}

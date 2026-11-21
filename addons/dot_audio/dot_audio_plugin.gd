@@ -10,7 +10,7 @@ const _ICON := "res://addons/dot_audio/icon_placeholder.svg"
 
 const _TYPES := [
 	[
-		"DotAudioManager",
+		"GSAudioManager",
 		"Node",
 		"res://addons/dot_audio/runtime/dot_audio_manager.gd",
 	],

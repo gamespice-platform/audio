@@ -1,4 +1,4 @@
-class_name DotAmbience
+class_name GSAmbience
 extends Node
 
 ## A creepy-ambience layer: a mood is a set of looping beds plus sparse random one-shots, crossfaded when
@@ -12,8 +12,8 @@ const RETRY_SECONDS := 2.0
 signal mood_changed(from_id: StringName, to_id: StringName)
 signal oneshot_played(mood_id: StringName, file: String, position: Vector3)
 
-var manager: DotAudioManager = null
-var config: DotAmbienceConfig = DotAmbienceConfig.new()
+var manager: GSAudioManager = null
+var config: GSAmbienceConfig = GSAmbienceConfig.new()
 
 ## Whose position the one-shots are placed round. Empty uses the manager's listener_position.
 var listener: Node3D = null
@@ -55,37 +55,37 @@ func seed_random(value: int) -> void:
 
 
 ## Adds the moods of [param dir]; a mood of the same name replaces the earlier one.
-func add_set_dir(dir: String) -> DotResult:
-	var loaded := DotAmbienceSet.load_dir(dir)
+func add_set_dir(dir: String) -> GSResult:
+	var loaded := GSAmbienceSet.load_dir(dir)
 	if not loaded.ok:
 		return loaded.wrap("ambience set")
-	var set: DotAmbienceSet = loaded.value
+	var set: GSAmbienceSet = loaded.value
 	for id: StringName in set.moods:
 		add_mood(set.moods[id])
-	return DotResult.success(set.moods.size())
+	return GSResult.success(set.moods.size())
 
 
-func add_mood(m: DotAmbienceMood) -> void:
+func add_mood(m: GSAmbienceMood) -> void:
 	_moods[m.name] = m
 	_registered.erase(m.name)
 	if m.name == _current:
 		_start_mood(m.name)
 
 
-## Reads [member DotAmbienceConfig.sound_dir] (the owner's own sounds) over the built-in moods.
-func load_custom() -> DotResult:
+## Reads [member GSAmbienceConfig.sound_dir] (the owner's own sounds) over the built-in moods.
+func load_custom() -> GSResult:
 	if config.sound_dir == "":
-		return DotResult.success(0)
+		return GSResult.success(0)
 	return add_set_dir(config.sound_dir)
 
 
 ## The mood named [param id], or null.
-func mood_def(id: StringName) -> DotAmbienceMood:
-	return _moods.get(id) as DotAmbienceMood
+func mood_def(id: StringName) -> GSAmbienceMood:
+	return _moods.get(id) as GSAmbienceMood
 
 
-## Tells the layer the listener is under a roof (see [DotAmbienceRoof]); it crosses over to
-## [member indoor_mood] at the config's crossfade, and back. Ignored when [member DotAmbienceConfig.follow_indoors] is off.
+## Tells the layer the listener is under a roof (see [GSAmbienceRoof]); it crosses over to
+## [member indoor_mood] at the config's crossfade, and back. Ignored when [member GSAmbienceConfig.follow_indoors] is off.
 func set_indoors(inside: bool) -> void:
 	_indoors = inside
 
@@ -104,12 +104,12 @@ func mood_names() -> PackedStringArray:
 
 ## What the game wants playing. Refused (state unchanged) for an unknown mood; the config can still
 ## put another in its place ([method effective_mood]).
-func set_mood(id: StringName) -> DotResult:
+func set_mood(id: StringName) -> GSResult:
 	if id != &"" and not _moods.has(id):
-		return DotResult.fail(DotError.CODE_INVALID, "no ambience mood '%s'" % id)
+		return GSResult.fail(GSError.CODE_INVALID, "no ambience mood '%s'" % id)
 	_requested = id
 	_apply_mood()
-	return DotResult.success(effective_mood())
+	return GSResult.success(effective_mood())
 
 
 ## The mood the config lets play: its override, else the request if allowed, else the default.
@@ -187,7 +187,7 @@ func _process(delta: float) -> void:
 ## Steps the layer by [param delta] seconds.
 func advance(delta: float) -> void:
 	if manager == null:
-		manager = DotRegistry.get_node_service(DotAudioManager.SERVICE) as DotAudioManager
+		manager = GSRegistry.get_node_service(GSAudioManager.SERVICE) as GSAudioManager
 		if manager == null:
 			return
 	_clock += delta
@@ -222,14 +222,14 @@ func _apply_mood() -> void:
 	else:
 		_timers.clear()
 	mood_changed.emit(from, want)
-	DotLog.debug(CHANNEL, "ambience mood", {"from": String(from), "to": String(want)})
+	GSLog.debug(CHANNEL, "ambience mood", {"from": String(from), "to": String(want)})
 
 
 func _start_mood(id: StringName, retry: bool = false) -> void:
 	if manager == null or not _moods.has(id):
 		return
 	_register(id)
-	var m: DotAmbienceMood = _moods[id]
+	var m: GSAmbienceMood = _moods[id]
 	m.assign_ids(ID_PREFIX, id)
 	var fade := config.crossfade_seconds
 	var i := 0
@@ -262,15 +262,15 @@ func _register(id: StringName) -> void:
 	if _registered.has(id) or manager == null or manager.catalogue == null:
 		return
 	_registered[id] = true
-	var m: DotAmbienceMood = _moods[id]
+	var m: GSAmbienceMood = _moods[id]
 	m.assign_ids(ID_PREFIX, id)
 	var cat := manager.catalogue
 	var i := 0
 	for bed: Dictionary in m.beds:
-		var d := DotAudioDef.new()
+		var d := GSAudioDef.new()
 		d.id = m.bed_ids[i]
 		d.path = bed["file"]
-		d.kind = DotAudioDef.Kind.FLAT
+		d.kind = GSAudioDef.Kind.FLAT
 		d.bus = bus
 		d.looping = true
 		d.priority = 90
@@ -281,11 +281,11 @@ func _register(id: StringName) -> void:
 		i += 1
 	i = 0
 	for shot: Dictionary in m.oneshots:
-		var d := DotAudioDef.new()
+		var d := GSAudioDef.new()
 		d.id = m.shot_ids[i]
 		d.path = (shot["files"] as PackedStringArray)[0]
 		d.variants = shot["files"]
-		d.kind = DotAudioDef.Kind.POSITIONAL_3D
+		d.kind = GSAudioDef.Kind.POSITIONAL_3D
 		d.bus = bus
 		d.priority = 25
 		d.max_concurrent = 2
@@ -296,7 +296,7 @@ func _register(id: StringName) -> void:
 		i += 1
 
 
-static func _replace(cat: DotAudioCatalogue, d: DotAudioDef) -> void:
+static func _replace(cat: GSAudioCatalogue, d: GSAudioDef) -> void:
 	if cat.has(d.id):
 		var old := cat.find(d.id)
 		old.path = d.path
@@ -306,7 +306,7 @@ static func _replace(cat: DotAudioCatalogue, d: DotAudioDef) -> void:
 
 
 func _tick_oneshots() -> void:
-	var m: DotAmbienceMood = _moods[_current]
+	var m: GSAmbienceMood = _moods[_current]
 	for t: Dictionary in _timers:
 		if _clock < float(t["next"]):
 			continue
@@ -319,7 +319,7 @@ func _tick_oneshots() -> void:
 		_play_shot(m, int(t["index"]), shot)
 
 
-func _play_shot(m: DotAmbienceMood, index: int, shot: Dictionary) -> void:
+func _play_shot(m: GSAmbienceMood, index: int, shot: Dictionary) -> void:
 	var at := manager.listener_position
 	if listener != null and is_instance_valid(listener) and listener.is_inside_tree():
 		at = listener.global_position
@@ -335,7 +335,7 @@ func _play_shot(m: DotAmbienceMood, index: int, shot: Dictionary) -> void:
 	var files: PackedStringArray = shot["files"]
 	_last_shot = {"mood": String(m.name), "index": index, "distance": snappedf(dist, 0.1), "at": snappedf(_clock, 0.1)}
 	oneshot_played.emit(m.name, files[0], pos)
-	DotLog.trace(CHANNEL, "ambience one-shot", _last_shot)
+	GSLog.trace(CHANNEL, "ambience one-shot", _last_shot)
 
 
 func _ease(delta: float) -> void:

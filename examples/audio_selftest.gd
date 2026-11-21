@@ -6,7 +6,7 @@ extends "selftest/selftest_synth.gd"
 ## cooldowns, the concurrency caps, the priority stealing and the music state machine all
 ## run exactly as they do with speakers attached; only the four lines that would create an
 ## [AudioStreamPlayer] are replaced. So these checks are of the system, not of a mock —
-## which is the reason [DotAudioSink] exists at all.
+## which is the reason [GSAudioSink] exists at all.
 ##
 ## [codeblock]
 ## godot --headless --path . res://examples/audio_selftest.tscn
@@ -16,7 +16,7 @@ const SECTIONS := 26
 const CHECKS := 366
 
 func _ready() -> void:
-	DotLog.set_level(DotLog.Level.ERROR)
+	GSLog.set_level(GSLog.Level.ERROR)
 	# Awaited: _test_limits waits a frame, and an un-awaited coroutine returns at its first
 	# `await` with the caller carrying straight on -- which is how a suite ends up quitting
 	# before half its checks have run.
@@ -71,10 +71,10 @@ func _run() -> void:
 
 	get_tree().quit(1 if _failed > 0 else 0)
 
-func _catalogue() -> DotAudioCatalogue:
-	var c := DotAudioCatalogue.new()
+func _catalogue() -> GSAudioCatalogue:
+	var c := GSAudioCatalogue.new()
 
-	var rifle := DotAudioDef.new()
+	var rifle := GSAudioDef.new()
 	rifle.id = &"rifle"
 	rifle.path = "res://fixtures/silent.wav"
 	rifle.max_concurrent = 3
@@ -82,17 +82,17 @@ func _catalogue() -> DotAudioCatalogue:
 	rifle.tags = [&"weapon"]
 	c.add(rifle)
 
-	var step := DotAudioDef.new()
+	var step := GSAudioDef.new()
 	step.id = &"footstep"
 	step.path = "res://fixtures/silent.wav"
-	step.kind = DotAudioDef.Kind.POSITIONAL_3D
+	step.kind = GSAudioDef.Kind.POSITIONAL_3D
 	step.max_distance = 30.0
 	step.cooldown_ms = 100
 	step.priority = 10
 	step.tags = [&"footstep"]
 	c.add(step)
 
-	var theme := DotAudioDef.new()
+	var theme := GSAudioDef.new()
 	theme.id = &"theme"
 	theme.path = "res://fixtures/silent.wav"
 	theme.bus = &"Music"
@@ -112,18 +112,18 @@ func _test_honesty_about_the_device() -> void:
 	_check(AudioServer.get_mix_rate() > 0.0, "a headless run reports a mix rate")
 	_check(AudioServer.get_bus_count() > 0, "and a bus layout")
 	_check(
-		not DotAudioSink.device_present(),
+		not GSAudioSink.device_present(),
 		"and only the driver name says there is no device at all"
 	)
 
-	var auto := DotAudioManager.new()
+	var auto := GSAudioManager.new()
 	auto.catalogue = _catalogue()
 	auto.apply_mixer_to_buses = false
 	auto.register_as_service = false
 	add_child(auto)
 	auto.setup()
 	_check(
-		auto.sink is DotAudioSinkNull,
+		auto.sink is GSAudioSinkNull,
 		"so a manager left to choose picks the sink that cannot make a noise"
 	)
 	_check(
@@ -137,7 +137,7 @@ func _test_honesty_about_the_device() -> void:
 func _test_definitions() -> void:
 	_section("A sound is a document that names a file and never loads one")
 
-	var d := DotAudioDef.new()
+	var d := GSAudioDef.new()
 	_check(not d.validate().ok, "a sound with no id is refused")
 	d.id = &"x"
 	_check(not d.validate().ok, "and so is one that names no file")
@@ -150,7 +150,7 @@ func _test_definitions() -> void:
 	# A game whose bank is baked arithmetically has no file to name, and this addon
 	# refused it on the first run. game-hungario is that game and is the first thing to
 	# use the sink seam for what it is actually for.
-	var made := DotAudioDef.new()
+	var made := GSAudioDef.new()
 	made.id = &"blip"
 	_check(not made.validate().ok, "a sound with no file and no generator is refused")
 	made.generated = true
@@ -165,7 +165,7 @@ func _test_definitions() -> void:
 	d.pitch_min = 0.9
 	d.pitch_max = 1.1
 
-	d.kind = DotAudioDef.Kind.POSITIONAL_3D
+	d.kind = GSAudioDef.Kind.POSITIONAL_3D
 	d.unit_size = 40.0
 	d.max_distance = 20.0
 	_check(
@@ -194,11 +194,11 @@ func _test_catalogue() -> void:
 	_check(c.find(&"nothing") == null, "and does not invent")
 	_check(c.with_tag(&"weapon").size() == 1, "and can be filtered by tag")
 
-	var dupe := DotAudioCatalogue.new()
-	var a := DotAudioDef.new()
+	var dupe := GSAudioCatalogue.new()
+	var a := GSAudioDef.new()
 	a.id = &"same"
 	a.path = "x.ogg"
-	var b := DotAudioDef.new()
+	var b := GSAudioDef.new()
 	b.id = &"same"
 	b.path = "y.ogg"
 	dupe.add(a).add(b)
@@ -221,7 +221,7 @@ func _test_catalogue() -> void:
 func _test_mixer_curve() -> void:
 	_section("A volume slider is not decibels")
 
-	var m := DotAudioMixer.new()
+	var m := GSAudioMixer.new()
 	_check(m.validate().ok, "the mixer validates")
 	_check(m.levels().size() == 6, "and has a level per bus it names")
 
@@ -253,7 +253,7 @@ func _test_limits() -> void:
 	_section("The three limits, each of which is a different problem")
 
 	var m := _manager(_catalogue(), 16)
-	var null_sink := m.sink as DotAudioSinkNull
+	var null_sink := m.sink as GSAudioSinkNull
 
 	var refusals := []
 	m.played.connect(func(id: StringName, handle: int, why: StringName) -> void:
@@ -332,7 +332,7 @@ func _test_fade_timer() -> void:
 	_section("A fade finishes its voice, and a freed manager is not called back")
 
 	var m := _manager(_catalogue(), 4)
-	m.sink = DotAudioSinkGodot.new(m, 4)
+	m.sink = GSAudioSinkGodot.new(m, 4)
 	m._playing[7] = &"rifle"
 	m._fade_out(7, 0.05)
 	_check(m._playing.has(7), "the voice is held while it fades")
@@ -340,7 +340,7 @@ func _test_fade_timer() -> void:
 	_check(not m._playing.has(7), "and released when the fade ends")
 
 	var gone := _manager(_catalogue(), 4)
-	gone.sink = DotAudioSinkGodot.new(gone, 4)
+	gone.sink = GSAudioSinkGodot.new(gone, 4)
 	gone._playing[8] = &"rifle"
 	gone._fade_out(8, 0.05)
 	gone.free()
@@ -352,14 +352,14 @@ func _test_stealing() -> void:
 	_section("A full pool steals downwards, or refuses")
 
 	# Two voices, so the pool is the binding limit rather than any per-id cap.
-	var cat := DotAudioCatalogue.new()
-	var quiet := DotAudioDef.new()
+	var cat := GSAudioCatalogue.new()
+	var quiet := GSAudioDef.new()
 	quiet.id = &"quiet"
 	quiet.path = "res://fixtures/silent.wav"
 	quiet.priority = 10
 	quiet.max_concurrent = 0
 	cat.add(quiet)
-	var loud := DotAudioDef.new()
+	var loud := GSAudioDef.new()
 	loud.id = &"loud"
 	loud.path = "res://fixtures/silent.wav"
 	loud.priority = 90
@@ -367,7 +367,7 @@ func _test_stealing() -> void:
 	cat.add(loud)
 
 	var m := _manager(cat, 2)
-	var sink := m.sink as DotAudioSinkNull
+	var sink := m.sink as GSAudioSinkNull
 
 	_check(m.play(&"quiet") != 0, "the pool takes one")
 	_check(m.play(&"quiet") != 0, "and a second")
@@ -424,7 +424,7 @@ func _test_music_and_ducking() -> void:
 	# `stop_id` and `played_ids` had no caller either. `stop_id` is the one a game needs
 	# for a looping sound whose handle it did not keep -- an engine, a fire, an alarm --
 	# and it has to stop EVERY copy, not the first.
-	var sink := m.sink as DotAudioSinkNull
+	var sink := m.sink as GSAudioSinkNull
 	sink.forget()
 	var first := m.play(&"rifle")
 	var second := m.play(&"rifle")
@@ -467,31 +467,31 @@ func _test_music_and_ducking() -> void:
 
 func _test_hurt_sound() -> void:
 	_section("The hurt grunt scales with damage and yields to a death cry")
-	_check(DotHurtSound.volume_for(0.0) == DotHurtSound.MIN_VOLUME and DotHurtSound.volume_for(400.0) == 1.0, "a scratch is quiet, a heavy hit full")
-	_check(DotHurtSound.pitch_for(1.0) > DotHurtSound.pitch_for(40.0), "a graze is higher than a heavy hit")
+	_check(GSHurtSound.volume_for(0.0) == GSHurtSound.MIN_VOLUME and GSHurtSound.volume_for(400.0) == 1.0, "a scratch is quiet, a heavy hit full")
+	_check(GSHurtSound.pitch_for(1.0) > GSHurtSound.pitch_for(40.0), "a graze is higher than a heavy hit")
 	var m := _manager(_catalogue())
-	_check(DotHurtSound.play(m, &"rifle", 20.0) != 0, "a non-lethal hit plays")
-	_check(DotHurtSound.play(m, &"rifle", 20.0, true) == 0, "a lethal hit leaves the grunt to the death cry")
-	_check(DotHurtSound.play(null, &"rifle", 20.0) == 0, "no audio is silence, not an error")
+	_check(GSHurtSound.play(m, &"rifle", 20.0) != 0, "a non-lethal hit plays")
+	_check(GSHurtSound.play(m, &"rifle", 20.0, true) == 0, "a lethal hit leaves the grunt to the death cry")
+	_check(GSHurtSound.play(null, &"rifle", 20.0) == 0, "no audio is silence, not an error")
 
 func _test_voice_queue() -> void:
 	_section("Announcer lines take turns by priority and never talk over each other")
-	var cat := DotAudioCatalogue.new()
+	var cat := GSAudioCatalogue.new()
 	for n in [&"a", &"b", &"c", &"d", &"e", &"f"]:
-		var def := DotAudioDef.new()
+		var def := GSAudioDef.new()
 		def.id = n
 		def.path = "res://fixtures/silent.wav"
 		cat.add(def)
 	var m := _manager(cat)
-	var sink := m.sink as DotAudioSinkNull
-	var q := DotVoiceQueue.new()
+	var sink := m.sink as GSAudioSinkNull
+	var q := GSVoiceQueue.new()
 	q.setup(m)
 	q.gap = 0.1
 	q.max_wait = 3.0
 	add_child(q)
-	_check(q.say(&"a", 40) == DotVoiceQueue.PLAYING and q.is_speaking(), "a line starts at once when nobody speaks")
-	_check(q.say(&"b", 40) == DotVoiceQueue.QUEUED and sink.count_of(&"b") == 0, "a second line waits instead of overlapping")
-	_check(q.say(&"b", 40) == DotVoiceQueue.DUPLICATE and q.queued_ids().size() == 1, "the same line is not queued twice")
+	_check(q.say(&"a", 40) == GSVoiceQueue.PLAYING and q.is_speaking(), "a line starts at once when nobody speaks")
+	_check(q.say(&"b", 40) == GSVoiceQueue.QUEUED and sink.count_of(&"b") == 0, "a second line waits instead of overlapping")
+	_check(q.say(&"b", 40) == GSVoiceQueue.DUPLICATE and q.queued_ids().size() == 1, "the same line is not queued twice")
 	q.say(&"c", 55)
 	_check(q.queued_ids() == [&"c", &"b"], "the more urgent line waits first, ties in the order said")
 	for h in range(1, 20):
@@ -501,13 +501,13 @@ func _test_voice_queue() -> void:
 	_check(not q.is_speaking() and sink.count_of(&"c") == 0, "a short silence separates two lines")
 	q.tick(0.1)
 	_check(q.is_speaking() and sink.count_of(&"c") == 1 and sink.count_of(&"b") == 0, "then the most urgent one speaks")
-	_check(q.say(&"d", 90) == DotVoiceQueue.INTERRUPTED and sink.count_of(&"d") == 1, "a line far more urgent cuts in")
-	_check(q.say(&"e", 95) == DotVoiceQueue.QUEUED, "but only when it outranks by the margin")
+	_check(q.say(&"d", 90) == GSVoiceQueue.INTERRUPTED and sink.count_of(&"d") == 1, "a line far more urgent cuts in")
+	_check(q.say(&"e", 95) == GSVoiceQueue.QUEUED, "but only when it outranks by the margin")
 	q.clear()
 	for n in [&"a", &"b", &"c", &"d", &"e"]:
 		q.say(n, 10)
 	_check(q.queued_ids().size() <= q.max_queued, "the queue is capped")
-	_check(q.say(&"f", 5) == DotVoiceQueue.DROPPED, "a line less urgent than a full queue is dropped")
+	_check(q.say(&"f", 5) == GSVoiceQueue.DROPPED, "a line less urgent than a full queue is dropped")
 	q.clear()
 	q.say(&"b", 10)
 	q.tick(4.0)
@@ -517,8 +517,8 @@ func _test_voice_queue() -> void:
 	q.tick(0.2)
 	q.tick(0.2)
 	_check(q.queued_ids().is_empty() and not q.is_speaking(), "a line that waited too long is dropped as stale")
-	var silent := DotVoiceQueue.new()
-	_check(silent.say(&"a") == DotVoiceQueue.DROPPED, "no audio is silence, not an error")
+	var silent := GSVoiceQueue.new()
+	_check(silent.say(&"a") == GSVoiceQueue.DROPPED, "no audio is silence, not an error")
 	silent.free()
 	q.queue_free()
 
@@ -529,7 +529,7 @@ func _test_shaping() -> void:
 	# every frame. Until API level 2 the manager could move and stop a voice but not this,
 	# and a game subclassed the Godot sink and read its pool to do it.
 	var cat := _catalogue()
-	var engine := DotAudioDef.new()
+	var engine := GSAudioDef.new()
 	engine.id = &"engine"
 	engine.path = "res://fixtures/silent.wav"
 	engine.looping = true
@@ -539,7 +539,7 @@ func _test_shaping() -> void:
 	cat.add(engine)
 
 	var m := _manager(cat)
-	var sink := m.sink as DotAudioSinkNull
+	var sink := m.sink as GSAudioSinkNull
 
 	var h := m.play(&"rifle", 0.5, 1.5)
 	var v := m.voice(h)
@@ -597,7 +597,7 @@ func _test_shaping() -> void:
 	)
 	m.queue_free()
 
-	_check(DotAudioSink.new().voice(1).is_empty(), "a sink that cannot shape reads back nothing")
+	_check(GSAudioSink.new().voice(1).is_empty(), "a sink that cannot shape reads back nothing")
 
 	_test_shaping_godot_sink()
 
@@ -605,15 +605,15 @@ func _test_shaping() -> void:
 func _test_shaping_godot_sink() -> void:
 	var host := Node.new()
 	add_child(host)
-	var gs := DotAudioSinkGodot.new(host, 1)
-	gs.bank = {&"tone": DotAudioSynth.voice(DotAudioSynth.Voice.STEP)}
+	var gs := GSAudioSinkGodot.new(host, 1)
+	gs.bank = {&"tone": GSAudioSynth.voice(GSAudioSynth.Voice.STEP)}
 	var player_of := func(handle: int) -> Node:
 		for child in host.get_children():
 			if int(child.get_meta(&"dot_audio_handle", 0)) == handle:
 				return child
 		return null
 
-	var low := gs.play({"id": "tone", "path": "", "kind": DotAudioDef.Kind.FLAT, "priority": 10, "volume_db": -3.0, "pitch": 1.0})
+	var low := gs.play({"id": "tone", "path": "", "kind": GSAudioDef.Kind.FLAT, "priority": 10, "volume_db": -3.0, "pitch": 1.0})
 	gs.shape(low, -12.0, 0.75)
 	var p: Node = player_of.call(low)
 	_check(
@@ -630,7 +630,7 @@ func _test_shaping_godot_sink() -> void:
 
 	# One voice, so the louder sound steals the same player. A late shape of the stolen
 	# handle must not reach the player the new sound now owns.
-	var high := gs.play({"id": "tone", "path": "", "kind": DotAudioDef.Kind.FLAT, "priority": 90, "volume_db": -1.0, "pitch": 1.25})
+	var high := gs.play({"id": "tone", "path": "", "kind": GSAudioDef.Kind.FLAT, "priority": 90, "volume_db": -1.0, "pitch": 1.25})
 	gs.shape(low, -40.0, 0.5)
 	var q: Node = player_of.call(high)
 	_check(

@@ -1,15 +1,15 @@
-class_name DotAudioSlide
+class_name GSAudioSlide
 extends Node
 
 ## The scrape of a body sliding along the ground: one looping voice per sliding body, chosen by its
-## surface (found as [DotAudioFootsteps] does; none set plays the generic scrape), louder and higher
+## surface (found as [GSAudioFootsteps] does; none set plays the generic scrape), louder and higher
 ## the faster it goes. Use `slide.keep(players, is_sliding_callable)`. Never on a server.
 
 ## A slide started or ended, with the surface it scrapes.
 signal slide_started(body: Node3D, surface: StringName)
 signal slide_stopped(body: Node3D)
 
-var manager: DotAudioManager = null
+var manager: GSAudioManager = null
 ## The map's ground for colliders that name no surface; empty plays the generic scrape.
 var default_surface: StringName = &""
 ## The server's switch (a game binds its cvar to this).
@@ -34,10 +34,10 @@ var reach_margin: float = 4.0
 # body -> {last, handle, surface, sliding: Callable, opts}
 var _bodies: Dictionary = {}
 
-## GameSpice Sim's native gate ([code]DotSimAudioSteps[/code]) settles out-of-reach, off, slow or non-sliding bodies natively,
+## GameSpice Sim's native gate ([code]GSSimAudioSteps[/code]) settles out-of-reach, off, slow or non-sliding bodies natively,
 ## to the bit (examples/steps_native_parity); the rest advance here. Used when the extension is loaded, [member native_enabled]
-## and [member use_native] are on and this is a plain [DotAudioSlide] or [DotAudioSurf]; otherwise (web, no library) the script runs.
-const NATIVE_CLASS := &"DotSimAudioSteps"
+## and [member use_native] are on and this is a plain [GSAudioSlide] or [GSAudioSurf]; otherwise (web, no library) the script runs.
+const NATIVE_CLASS := &"GSSimAudioSteps"
 ## Whether the native gate is used when present. On by default: the packed native passes hold the bodies' state
 ## and make about four engine calls a body, measured about twice as fast as this script for footsteps and surf
 ## (examples/steps_native_parity prints both).
@@ -73,7 +73,7 @@ func track(body: Node3D, sliding: Callable, opts: Dictionary = {}) -> void:
 	}
 
 
-## Follows exactly these bodies (dropping the rest), once a frame, like [method DotAudioFootsteps.keep].
+## Follows exactly these bodies (dropping the rest), once a frame, like [method GSAudioFootsteps.keep].
 func keep(bodies: Array, sliding_of: Callable) -> void:
 	var seen := {}
 	for b: Variant in bodies:
@@ -113,7 +113,7 @@ func _physics_process(delta: float) -> void:
 	if _bodies.is_empty():
 		return
 	if manager == null:
-		manager = DotRegistry.get_node_service(DotAudioManager.SERVICE) as DotAudioManager
+		manager = GSRegistry.get_node_service(GSAudioManager.SERVICE) as GSAudioManager
 	var reach_sq := reach_squared()
 	var ear := manager.listener_position if manager != null else Vector3.ZERO
 	if use_native and native_available() and _native_ok():
@@ -136,7 +136,7 @@ func _physics_process(delta: float) -> void:
 
 ## Whether the native gate decides as this script would: only for the exact class (a subclass may ask differently).
 func _native_ok() -> bool:
-	return get_script() == DotAudioSlide
+	return get_script() == GSAudioSlide
 
 
 ## The speed a body not yet playing must reach to be asked, for the native gate; negative asks every body.
@@ -346,15 +346,15 @@ var _slide_ids: Array[StringName] = []
 ## Every loop [method _sound_for] can return, for [method reach_squared]; a subclass that swaps one swaps both.
 func _sound_ids() -> Array[StringName]:
 	if _slide_ids.is_empty():
-		_slide_ids.append(DotAudioStock.slide_id(&""))
-		for s: StringName in DotAudioStock.SURFACES:
-			_slide_ids.append(DotAudioStock.slide_id(s))
+		_slide_ids.append(GSAudioStock.slide_id(&""))
+		for s: StringName in GSAudioStock.SURFACES:
+			_slide_ids.append(GSAudioStock.slide_id(s))
 	return _slide_ids
 
 
 ## The loop to play on [param surface]; a subclass swaps it.
 func _sound_for(surface: StringName) -> StringName:
-	return DotAudioStock.slide_id(surface)
+	return GSAudioStock.slide_id(surface)
 
 
 ## (volume, pitch) at [param speed] m/s; a subclass swaps the curve.
@@ -384,10 +384,10 @@ func surface_under(body: Node3D) -> StringName:
 			q.exclude = [(body as CollisionObject3D).get_rid()]
 		var hit := world.direct_space_state.intersect_ray(q)
 		if not hit.is_empty():
-			var s := DotAudioFootsteps.surface_of_collider(hit.get("collider"), int(hit.get("shape", -1)), surface_metas)
+			var s := GSAudioFootsteps.surface_of_collider(hit.get("collider"), int(hit.get("shape", -1)), surface_metas)
 			if s != &"":
 				return s
-	return DotAudioStock.surface_of(String(default_surface))
+	return GSAudioStock.surface_of(String(default_surface))
 
 
 func describe() -> Dictionary:

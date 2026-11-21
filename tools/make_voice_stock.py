@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""Synthesises the stock files that replace DotAudioSynth's sine-sweep stand-ins for the voices a game hears most:
+"""Synthesises the stock files that replace GSAudioSynth's sine-sweep stand-ins for the voices a game hears most:
 shot (rifle, heavy, tight/energy), impact, hit-marker blip, hurt, die, boom. Self-synthesised from tools/foley.py, no recordings.
 
     python3 -I tools/make_voice_stock.py [--out addons/dot_audio/stock/voices]
 
 Writes <voice>_<i>.ogg (3 variants each), mono Ogg Vorbis, ceiling -2 dB, levelled by K-weighted active loudness so
-a hit tick is not louder than a shot. DotAudioSynth.bank(..., stock = true) uses them in place of the sweeps.
+a hit tick is not louder than a shot. GSAudioSynth.bank(..., stock = true) uses them in place of the sweeps.
 """
 import argparse, sys
 from pathlib import Path

@@ -10,14 +10,14 @@ const MISSING := "res://sounds/not_shipped.ogg"
 
 
 func _ready() -> void:
-	var manager := DotAudioManager.new()
+	var manager := GSAudioManager.new()
 	manager.register_as_service = false
 	manager.apply_mixer_to_buses = false
 	manager.limit_master = false
 	manager.voices = VOICES
 	manager.catalogue = _catalogue()
-	var sink := DotAudioSinkGodot.new(manager, VOICES)
-	sink.bank = {MISSING: DotAudioSynth.bake(180.0, 60.0, 0.2)}
+	var sink := GSAudioSinkGodot.new(manager, VOICES)
+	sink.bank = {MISSING: GSAudioSynth.bake(180.0, 60.0, 0.2)}
 	manager.sink = sink
 	add_child(manager)
 	var res := manager.setup()
@@ -51,12 +51,12 @@ func _ready() -> void:
 	manager.stop_all()
 	manager.queue_free()
 	await get_tree().process_frame
-	DotAudioSinkGodot.clear_streams()
+	GSAudioSinkGodot.clear_streams()
 	get_tree().quit(0)
 
 
 ## Fills the pool with [param id] and empties it again; only the plays are timed.
-func _round(manager: DotAudioManager, id: StringName, spent: Array) -> void:
+func _round(manager: GSAudioManager, id: StringName, spent: Array) -> void:
 	var heard := 0
 	var t := Time.get_ticks_usec()
 	for i in range(VOICES):
@@ -69,8 +69,8 @@ func _round(manager: DotAudioManager, id: StringName, spent: Array) -> void:
 		spent[1] += heard
 
 
-func _catalogue() -> DotAudioCatalogue:
-	var c := DotAudioCatalogue.new()
+func _catalogue() -> GSAudioCatalogue:
+	var c := GSAudioCatalogue.new()
 	c.add(_def(&"file", FILE, 0.0))
 	c.add(_def(&"banked", MISSING, 0.0))
 	# Past its own range: what a sound nobody can hear costs.
@@ -78,11 +78,11 @@ func _catalogue() -> DotAudioCatalogue:
 	return c
 
 
-func _def(id: StringName, path: String, reach: float) -> DotAudioDef:
-	var d := DotAudioDef.new()
+func _def(id: StringName, path: String, reach: float) -> GSAudioDef:
+	var d := GSAudioDef.new()
 	d.id = id
 	d.path = path
-	d.kind = DotAudioDef.Kind.POSITIONAL_3D
+	d.kind = GSAudioDef.Kind.POSITIONAL_3D
 	d.max_distance = reach
 	d.max_concurrent = 0
 	if reach > 0.0:

@@ -1,11 +1,11 @@
-class_name DotAudioStock
+class_name GSAudioStock
 extends RefCounted
 
-## The family's stock footsteps and ambience beds, as [DotAudioDef]s a game adds to its own
+## The family's stock footsteps and ambience beds, as [GSAudioDef]s a game adds to its own
 ## catalogue. Files in [code]stock/[/code] beside this addon, every one CC0 (stock/CREDITS.md).
 ##
 ## [codeblock]
-## DotAudioStock.add_to(catalogue)          # skips any id the game already defines
+## GSAudioStock.add_to(catalogue)          # skips any id the game already defines
 ## [/codeblock]
 ##
 ## [b]Why an addon that "ships no audio" ships these.[/b] The rule is about the catalogue: a
@@ -89,7 +89,7 @@ static func warn_if_missing(rel: String) -> void:
 	if has(rel) or _warned.has(rel):
 		return
 	_warned[rel] = true
-	DotLog.warn("dot_audio", "stock sound missing: not in this build nor in fallback_roots", {"file": rel, "roots": fallback_roots.size()})
+	GSLog.warn("dot_audio", "stock sound missing: not in this build nor in fallback_roots", {"file": rel, "roots": fallback_roots.size()})
 
 
 static var _warned := {}
@@ -104,11 +104,11 @@ static func _present(path: String) -> bool:
 static func directory() -> String:
 	if not directory_override.is_empty():
 		return directory_override
-	var here: String = (DotAudioStock as Script).resource_path
+	var here: String = (GSAudioStock as Script).resource_path
 	return here.get_base_dir().get_base_dir().path_join("stock")
 
 
-## The stock mood set for [DotAmbience] (`moods.json` and its files, CC0, `moods/CREDITS.md`).
+## The stock mood set for [GSAmbience] (`moods.json` and its files, CC0, `moods/CREDITS.md`).
 static func moods_directory() -> String:
 	return resolve("moods/moods.json").get_base_dir()
 
@@ -161,16 +161,16 @@ static func slide_id(surface: StringName) -> StringName:
 
 
 ## One looping def per surface plus `slide_generic` (CC0 scrapes, `stock/CREDITS.md`).
-static func slide_defs() -> Array[DotAudioDef]:
-	var out: Array[DotAudioDef] = []
+static func slide_defs() -> Array[GSAudioDef]:
+	var out: Array[GSAudioDef] = []
 	var dir := directory().path_join("slides")
 	var names: Array[StringName] = [&"generic"]
 	names.append_array(SURFACES)
 	for s in names:
-		var d := DotAudioDef.new()
+		var d := GSAudioDef.new()
 		d.id = StringName(SLIDE_PREFIX + String(s))
 		d.path = dir.path_join("slide_%s.ogg" % s)
-		d.kind = DotAudioDef.Kind.POSITIONAL_3D
+		d.kind = GSAudioDef.Kind.POSITIONAL_3D
 		d.bus = &"SFX"
 		d.looping = true
 		d.gain_db = 0.0
@@ -184,11 +184,11 @@ static func slide_defs() -> Array[DotAudioDef]:
 
 
 ## The surf glide loop: quiet, positional, looping.
-static func surf_defs() -> Array[DotAudioDef]:
-	var d := DotAudioDef.new()
+static func surf_defs() -> Array[GSAudioDef]:
+	var d := GSAudioDef.new()
 	d.id = SURF_GLIDE_ID
 	d.path = directory().path_join("surf").path_join("surf_glide.ogg")
-	d.kind = DotAudioDef.Kind.POSITIONAL_3D
+	d.kind = GSAudioDef.Kind.POSITIONAL_3D
 	d.bus = &"SFX"
 	d.looping = true
 	d.gain_db = 0.0
@@ -200,13 +200,13 @@ static func surf_defs() -> Array[DotAudioDef]:
 	return [d]
 
 
-static func footstep_defs() -> Array[DotAudioDef]:
-	var out: Array[DotAudioDef] = []
+static func footstep_defs() -> Array[GSAudioDef]:
+	var out: Array[GSAudioDef] = []
 	var dir := directory().path_join("footsteps")
 	for s in SURFACES:
-		var d := DotAudioDef.new()
+		var d := GSAudioDef.new()
 		d.id = StringName(FOOTSTEP_PREFIX + String(s))
-		d.kind = DotAudioDef.Kind.POSITIONAL_3D
+		d.kind = GSAudioDef.Kind.POSITIONAL_3D
 		d.bus = &"SFX"
 		var variants := PackedStringArray()
 		for i in 5:
@@ -231,14 +231,14 @@ static func footstep_defs() -> Array[DotAudioDef]:
 
 ## The flashlight's switch clicks: 3D at the player, quieter than a footstep so a
 ## neighbour hears them and a room away does not.
-static func flashlight_defs() -> Array[DotAudioDef]:
-	var out: Array[DotAudioDef] = []
+static func flashlight_defs() -> Array[GSAudioDef]:
+	var out: Array[GSAudioDef] = []
 	var dir := directory().path_join("flashlight")
 	for s: StringName in FLASHLIGHT_IDS:
-		var d := DotAudioDef.new()
+		var d := GSAudioDef.new()
 		d.id = s
 		d.path = dir.path_join(String(s) + ".ogg")
-		d.kind = DotAudioDef.Kind.POSITIONAL_3D
+		d.kind = GSAudioDef.Kind.POSITIONAL_3D
 		d.bus = &"SFX"
 		d.gain_db = -9.0
 		d.pitch_min = 0.96
@@ -253,14 +253,14 @@ static func flashlight_defs() -> Array[DotAudioDef]:
 
 
 ## The landing thumps: 3D at the player, mild, a neighbour hears a hard one.
-static func landing_defs() -> Array[DotAudioDef]:
-	var out: Array[DotAudioDef] = []
+static func landing_defs() -> Array[GSAudioDef]:
+	var out: Array[GSAudioDef] = []
 	var dir := directory().path_join("landing")
 	for s: StringName in LANDING_IDS:
-		var d := DotAudioDef.new()
+		var d := GSAudioDef.new()
 		d.id = s
 		d.path = dir.path_join(String(s) + ".ogg")
-		d.kind = DotAudioDef.Kind.POSITIONAL_3D
+		d.kind = GSAudioDef.Kind.POSITIONAL_3D
 		d.bus = &"SFX"
 		d.gain_db = -8.0
 		d.pitch_min = 0.95
@@ -283,13 +283,13 @@ static func landing_id(impact: float) -> StringName:
 	return &"landing_light"
 
 
-static func ambience_defs() -> Array[DotAudioDef]:
-	var out: Array[DotAudioDef] = []
+static func ambience_defs() -> Array[GSAudioDef]:
+	var out: Array[GSAudioDef] = []
 	for b in BEDS:
-		var d := DotAudioDef.new()
+		var d := GSAudioDef.new()
 		d.id = b
 		d.path = resolve("ambience/%s.ogg" % b)
-		d.kind = DotAudioDef.Kind.FLAT
+		d.kind = GSAudioDef.Kind.FLAT
 		d.bus = &"Ambience"
 		d.looping = true
 		# A bed is never stolen: a silent stretch where the world was is worse than one
@@ -315,16 +315,16 @@ static func ids(weapons: bool = true) -> Array[StringName]:
 	out.append_array(FLASHLIGHT_IDS)
 	out.append_array(LANDING_IDS)
 	if weapons:
-		for sound: StringName in DotAudioWeaponStock.COUNTS:
-			out.append(DotAudioWeaponStock.id_of(sound))
+		for sound: StringName in GSAudioWeaponStock.COUNTS:
+			out.append(GSAudioWeaponStock.id_of(sound))
 	return out
 
 
 ## Adds every stock def whose id the catalogue does not already have, the weapon sounds
-## ([DotAudioWeaponStock]) included unless [param weapons] is false, so every game that
+## ([GSAudioWeaponStock]) included unless [param weapons] is false, so every game that
 ## takes the stock has them. Returns how many.
-static func add_to(catalogue: DotAudioCatalogue, weapons: bool = true) -> int:
-	var added := DotAudioWeaponStock.add_to(catalogue) if weapons else 0
+static func add_to(catalogue: GSAudioCatalogue, weapons: bool = true) -> int:
+	var added := GSAudioWeaponStock.add_to(catalogue) if weapons else 0
 	for d in footstep_defs() + slide_defs() + surf_defs() + ambience_defs() + flashlight_defs() + landing_defs():
 		if catalogue.has(d.id):
 			continue

@@ -15,34 +15,34 @@ class LandingCvar extends RefCounted:
 func _test_stock() -> void:
 	_section("Stock footsteps and beds: real files, every one")
 
-	var cat := DotAudioCatalogue.new()
-	var mine := DotAudioDef.new()
+	var cat := GSAudioCatalogue.new()
+	var mine := GSAudioDef.new()
 	mine.id = &"footstep_wood"
 	mine.path = "res://fixtures/silent.wav"
 	cat.add(mine)
-	var added := DotAudioStock.add_to(cat)
+	var added := GSAudioStock.add_to(cat)
 	_check(
-		added == DotAudioStock.SURFACES.size() - 1 + DotAudioStock.BEDS.size() + DotAudioStock.slide_defs().size() + DotAudioStock.surf_defs().size() + DotAudioStock.FLASHLIGHT_IDS.size() + DotAudioStock.LANDING_IDS.size() + DotAudioWeaponStock.COUNTS.size(),
+		added == GSAudioStock.SURFACES.size() - 1 + GSAudioStock.BEDS.size() + GSAudioStock.slide_defs().size() + GSAudioStock.surf_defs().size() + GSAudioStock.FLASHLIGHT_IDS.size() + GSAudioStock.LANDING_IDS.size() + GSAudioWeaponStock.COUNTS.size(),
 		"add_to adds every stock id the game has not defined (%d)" % added
 	)
 	_check(cat.find(&"footstep_wood").path == "res://fixtures/silent.wav", "and a game's own id wins")
 	_check(cat.validate().ok, "the stock defs validate")
-	_check(DotAudioStock.ids().all(func(i: StringName) -> bool: return cat.has(i)) and DotAudioStock.ids(false).size() == 28 and DotAudioStock.ids().size() == 28 + DotAudioWeaponStock.COUNTS.size(), "ids() names every one")
+	_check(GSAudioStock.ids().all(func(i: StringName) -> bool: return cat.has(i)) and GSAudioStock.ids(false).size() == 28 and GSAudioStock.ids().size() == 28 + GSAudioWeaponStock.COUNTS.size(), "ids() names every one")
 
 	# The armed half: a def naming a file nobody shipped passes validate() and is silent for
 	# ever. Every path and every variant must exist on disk.
 	var missing := PackedStringArray()
-	for d in DotAudioStock.footstep_defs() + DotAudioStock.slide_defs() + DotAudioStock.ambience_defs() + DotAudioStock.flashlight_defs() + DotAudioStock.landing_defs():
+	for d in GSAudioStock.footstep_defs() + GSAudioStock.slide_defs() + GSAudioStock.ambience_defs() + GSAudioStock.flashlight_defs() + GSAudioStock.landing_defs():
 		for p in d.variants if not d.variants.is_empty() else PackedStringArray([d.path]):
 			if not ResourceLoader.exists(p):
 				missing.append(p)
 	_check(missing.is_empty(), "every stock file is there (%s)" % ", ".join(missing))
 
-	var fl_on := load(DotAudioStock.flashlight_defs()[0].path) as AudioStream
+	var fl_on := load(GSAudioStock.flashlight_defs()[0].path) as AudioStream
 	_check(fl_on != null and fl_on.get_length() < 0.3 and cat.find(&"flashlight_off").gain_db < cat.find(&"footstep_concrete").gain_db, "the flashlight clicks are short and quieter than a footstep")
 
-	_check(DotAudioStock.landing_id(3.0) == &"landing_light" and DotAudioStock.landing_id(10.0) == &"landing_medium" and DotAudioStock.landing_id(20.0) == &"landing_hard", "a landing picks a thump by impact")
-	var lrules := DotAudioLandingRules.new()
+	_check(GSAudioStock.landing_id(3.0) == &"landing_light" and GSAudioStock.landing_id(10.0) == &"landing_medium" and GSAudioStock.landing_id(20.0) == &"landing_hard", "a landing picks a thump by impact")
+	var lrules := GSAudioLandingRules.new()
 	_check(lrules.volume_for(2.0) == 0.0 and lrules.volume_for(20.0) > lrules.volume_for(6.0) and lrules.volume_for(20.0) < 1.0, "a soft landing is silent, a harder one louder, and the default is mild")
 	lrules.volume = 0.0
 	_check(lrules.volume_for(20.0) == 0.0, "volume 0 mutes landings")
@@ -51,64 +51,64 @@ func _test_stock() -> void:
 	lcv.changed.emit("0", "0.9")
 	_check(made.size() == 1 and is_equal_approx(lrules.volume, 0.9), "cl_landing_volume follows its cvar live")
 
-	var bed := load(DotAudioStock.ambience_defs()[0].path) as AudioStream
+	var bed := load(GSAudioStock.ambience_defs()[0].path) as AudioStream
 	_check(bed != null and bed.get_length() > 20.0, "a bed loads and is a long loop, not a one-shot")
 	_check(
-		DotAudioStock.ambience_defs().all(func(d: DotAudioDef) -> bool: return d.looping and d.bus == &"Ambience"),
+		GSAudioStock.ambience_defs().all(func(d: GSAudioDef) -> bool: return d.looping and d.bus == &"Ambience"),
 		"every bed loops on the Ambience bus"
 	)
 
-	_check(DotAudioStock.surface_of("Floor_Wood_02") == &"wood", "a node name with a surface word names it")
-	_check(DotAudioStock.surface_of("asphalt") == &"concrete", "an alias folds onto a surface with files")
-	_check(DotAudioStock.surface_of("snowbank") == &"snow", "a longer word containing one too")
-	_check(DotAudioStock.surface_of("lava") == &"", "and an unknown one says nothing")
-	_check(DotAudioStock.footstep_id(&"lava") == &"footstep_concrete", "so a step on it is concrete")
+	_check(GSAudioStock.surface_of("Floor_Wood_02") == &"wood", "a node name with a surface word names it")
+	_check(GSAudioStock.surface_of("asphalt") == &"concrete", "an alias folds onto a surface with files")
+	_check(GSAudioStock.surface_of("snowbank") == &"snow", "a longer word containing one too")
+	_check(GSAudioStock.surface_of("lava") == &"", "and an unknown one says nothing")
+	_check(GSAudioStock.footstep_id(&"lava") == &"footstep_concrete", "so a step on it is concrete")
 
 	_stock_weapons()
 
 
 func _stock_weapons() -> void:
-	var wcat := DotAudioCatalogue.new()
-	_check(DotAudioWeaponStock.add_to(wcat) == DotAudioWeaponStock.COUNTS.size(), "weapon stock adds one def per sound")
-	var far_def: DotAudioDef = wcat.find(&"weapon_magnum_far")
+	var wcat := GSAudioCatalogue.new()
+	_check(GSAudioWeaponStock.add_to(wcat) == GSAudioWeaponStock.COUNTS.size(), "weapon stock adds one def per sound")
+	var far_def: GSAudioDef = wcat.find(&"weapon_magnum_far")
 	_check(far_def != null and far_def.max_distance >= 500.0, "a distant report is audible from far, not culled like a click")
 	_check(wcat.validate().ok, "the weapon defs validate")
-	var plain := DotAudioCatalogue.new()
-	DotAudioStock.add_to(plain, false)
-	var both := DotAudioCatalogue.new()
-	DotAudioStock.add_to(both)
-	_check(not plain.has(&"weapon_light_fire") and both.has(&"weapon_light_fire"), "DotAudioStock.add_to brings the weapon sounds unless told not to")
-	var own := DotAudioDef.new()
+	var plain := GSAudioCatalogue.new()
+	GSAudioStock.add_to(plain, false)
+	var both := GSAudioCatalogue.new()
+	GSAudioStock.add_to(both)
+	_check(not plain.has(&"weapon_light_fire") and both.has(&"weapon_light_fire"), "GSAudioStock.add_to brings the weapon sounds unless told not to")
+	var own := GSAudioDef.new()
 	own.id = &"weapon_swing"
 	own.path = "res://own.ogg"
 	both.add(own)
 	_check(both.validate().ok and both.find(&"weapon_swing") == own, "a game's own def for a stock id replaces the stock one")
 	var wmissing := PackedStringArray()
-	for d in DotAudioWeaponStock.defs():
+	for d in GSAudioWeaponStock.defs():
 		for p in d.variants:
 			if not ResourceLoader.exists(p):
 				wmissing.append(p)
 	_check(wmissing.is_empty(), "every weapon file is there (%s)" % ", ".join(wmissing))
 	# Stock voices: opt-in, a real file per voice, the sine-sweep bake unchanged by default.
-	var vcat := DotAudioCatalogue.new()
-	var vd := DotAudioDef.new()
+	var vcat := GSAudioCatalogue.new()
+	var vd := GSAudioDef.new()
 	vd.id = &"v_shot"
 	vd.path = "res://v/shot.ogg"
 	vcat.add(vd)
-	var v_off := DotAudioSynth.bank(vcat, {&"v_shot": DotAudioSynth.Voice.SHOT})
-	var v_on := DotAudioSynth.bank(vcat, {&"v_shot": DotAudioSynth.Voice.SHOT}, true)
+	var v_off := GSAudioSynth.bank(vcat, {&"v_shot": GSAudioSynth.Voice.SHOT})
+	var v_on := GSAudioSynth.bank(vcat, {&"v_shot": GSAudioSynth.Voice.SHOT}, true)
 	_check(v_off[&"v_shot"] is AudioStreamWAV, "the voice bank is the sine-sweep bake unless stock is asked for")
 	_check(v_on[&"v_shot"] is AudioStreamOggVorbis and v_on["res://v/shot.ogg"] is AudioStreamOggVorbis, "stock = true answers with the synthesised file")
 	var on_disk := 0
-	for f in DirAccess.get_files_at(DotAudioWeaponStock.directory()):
-		# cue_* are reload/handling cues the rig plays by name (DotWeaponSound.pick finds them on disk); no catalogue def.
+	for f in DirAccess.get_files_at(GSAudioWeaponStock.directory()):
+		# cue_* are reload/handling cues the rig plays by name (GSWeaponSound.pick finds them on disk); no catalogue def.
 		if f.ends_with(".ogg") and not f.begins_with("cue_"):
 			on_disk += 1
 	var listed := 0
-	for n: StringName in DotAudioWeaponStock.COUNTS:
-		listed += int(DotAudioWeaponStock.COUNTS[n])
+	for n: StringName in GSAudioWeaponStock.COUNTS:
+		listed += int(GSAudioWeaponStock.COUNTS[n])
 	_check(on_disk == listed, "COUNTS names every file on disk (%d of %d)" % [listed, on_disk])
-	var shot := load(DotAudioWeaponStock.defs()[0].path) as AudioStream
+	var shot := load(GSAudioWeaponStock.defs()[0].path) as AudioStream
 	_check(shot != null and shot.get_length() > 0.05, "a weapon sound loads")
 
 # Section 11
@@ -116,11 +116,11 @@ func _stock_weapons() -> void:
 func _test_footsteps() -> void:
 	_section("A step is distance travelled, and slow is silent")
 
-	var cat := DotAudioCatalogue.new()
-	DotAudioStock.add_to(cat)
+	var cat := GSAudioCatalogue.new()
+	GSAudioStock.add_to(cat)
 	var m := _manager(cat, 32)
-	var sink := m.sink as DotAudioSinkNull
-	var steps := DotAudioFootsteps.new()
+	var sink := m.sink as GSAudioSinkNull
+	var steps := GSAudioFootsteps.new()
 	steps.manager = m
 	steps.default_surface = &"grass"
 	add_child(steps)
@@ -180,7 +180,7 @@ func _test_footsteps() -> void:
 
 
 ## Past hear_distance a body is neither stepped nor asked for its ground, and steps again once the listener comes near.
-func _footsteps_hear_distance(steps: DotAudioFootsteps, body: Node3D, m: DotAudioManager, heard: Array) -> void:
+func _footsteps_hear_distance(steps: GSAudioFootsteps, body: Node3D, m: GSAudioManager, heard: Array) -> void:
 	# The body is some 70 m from a listener at the origin by now.
 	heard.clear()
 	var asked := [0]
@@ -201,7 +201,7 @@ func _footsteps_hear_distance(steps: DotAudioFootsteps, body: Node3D, m: DotAudi
 	steps.hear_distance = 0.0
 
 ## Surface lookup and track()/keep() bookkeeping, split out of _test_footsteps.
-func _check_surface_lookup(steps: DotAudioFootsteps, body: Node3D) -> void:
+func _check_surface_lookup(steps: GSAudioFootsteps, body: Node3D) -> void:
 	var floor := StaticBody3D.new()
 	floor.name = "Ground"
 	floor.set_meta(&"surface", "plank")
@@ -217,15 +217,15 @@ func _check_surface_lookup(steps: DotAudioFootsteps, body: Node3D) -> void:
 	floor.add_child(box)
 	add_child(floor)
 	add_child(tile)
-	_check(DotAudioFootsteps.surface_of_collider(floor) == &"wood", "a collider's surface meta names it")
+	_check(GSAudioFootsteps.surface_of_collider(floor) == &"wood", "a collider's surface meta names it")
 	var fps_floor := StaticBody3D.new()
 	fps_floor.name = "Box"
 	fps_floor.set_meta(&"dot_fps_surface", &"ice")
-	_check(DotAudioFootsteps.surface_of_collider(fps_floor) == &"snow", "so does dot-player-controller's dot_fps_surface")
+	_check(GSAudioFootsteps.surface_of_collider(fps_floor) == &"snow", "so does dot-player-controller's dot_fps_surface")
 	fps_floor.free()
-	_check(DotAudioFootsteps.surface_of_collider(child) == &"concrete", "a parent's surface group does too")
+	_check(GSAudioFootsteps.surface_of_collider(child) == &"concrete", "a parent's surface group does too")
 	_check(
-		DotAudioFootsteps.surface_of_collider(floor, 0) == &"wood" and DotAudioStock.surface_of("sidewalk") == &"concrete",
+		GSAudioFootsteps.surface_of_collider(floor, 0) == &"wood" and GSAudioStock.surface_of("sidewalk") == &"concrete",
 		"and the hit shape's own meta comes first, for a body built of many boxes"
 	)
 	steps.track(floor, {"surface": &"metal"})
@@ -243,19 +243,19 @@ func _check_surface_lookup(steps: DotAudioFootsteps, body: Node3D) -> void:
 func _test_slide() -> void:
 	_section("A slide scrapes the surface under it, once per slide")
 
-	var cat := DotAudioCatalogue.new()
-	DotAudioStock.add_to(cat)
+	var cat := GSAudioCatalogue.new()
+	GSAudioStock.add_to(cat)
 	var m := _manager(cat, 32)
-	var sink := m.sink as DotAudioSinkNull
-	var slide := DotAudioSlide.new()
+	var sink := m.sink as GSAudioSinkNull
+	var slide := GSAudioSlide.new()
 	slide.manager = m
 	add_child(slide)
 	slide.set_physics_process(false)
 
-	_check(DotAudioStock.slide_id(&"Floor_Wood_02") == &"slide_wood", "a surface word picks its loop")
-	_check(DotAudioStock.slide_id(&"asphalt") == &"slide_concrete", "an alias folds onto one")
-	_check(DotAudioStock.slide_id(&"lava") == &"slide_generic" and DotAudioStock.slide_id(&"") == &"slide_generic", "anything else is the generic ground scrape")
-	_check(DotAudioStock.slide_defs().all(func(d: DotAudioDef) -> bool: return d.looping), "every slide def loops")
+	_check(GSAudioStock.slide_id(&"Floor_Wood_02") == &"slide_wood", "a surface word picks its loop")
+	_check(GSAudioStock.slide_id(&"asphalt") == &"slide_concrete", "an alias folds onto one")
+	_check(GSAudioStock.slide_id(&"lava") == &"slide_generic" and GSAudioStock.slide_id(&"") == &"slide_generic", "anything else is the generic ground scrape")
+	_check(GSAudioStock.slide_defs().all(func(d: GSAudioDef) -> bool: return d.looping), "every slide def loops")
 
 	var body := Node3D.new()
 	add_child(body)
@@ -316,8 +316,8 @@ func _test_slide() -> void:
 
 
 ## A body out of earshot of the listener is not asked whether it slides, and its loop stops.
-func _check_reach(m: DotAudioManager) -> void:
-	var slide := DotAudioSlide.new()
+func _check_reach(m: GSAudioManager) -> void:
+	var slide := GSAudioSlide.new()
 	slide.manager = m
 	add_child(slide)
 	slide.set_physics_process(false)
@@ -349,8 +349,8 @@ func _check_reach(m: DotAudioManager) -> void:
 
 
 ## A surf node asks "surfing?" only of a body that is gliding or fast enough to be heard.
-func _check_surf_asks(m: DotAudioManager) -> void:
-	var surf := DotAudioSurf.new()
+func _check_surf_asks(m: GSAudioManager) -> void:
+	var surf := GSAudioSurf.new()
 	surf.manager = m
 	add_child(surf)
 	surf.set_physics_process(false)
@@ -377,7 +377,7 @@ func _check_surf_asks(m: DotAudioManager) -> void:
 	body.queue_free()
 
 
-func _check_freed_slide(m: DotAudioManager, slide: DotAudioSlide) -> void:
+func _check_freed_slide(m: GSAudioManager, slide: GSAudioSlide) -> void:
 	var doomed := Node3D.new()
 	add_child(doomed)
 	slide.track(doomed, func() -> bool: return true, {"surface": &"metal"})
@@ -394,7 +394,7 @@ func _check_freed_slide(m: DotAudioManager, slide: DotAudioSlide) -> void:
 	_check(slide.describe()["bodies"] == 0 and catcher.errors.is_empty(), "and drops silently, no engine error " + str(catcher.errors))
 
 
-class FakeSurf extends DotAudioSurfRules:
+class FakeSurf extends GSAudioSurfRules:
 	var on: bool = true
 
 	func is_surfing(_body: Node3D) -> bool:
@@ -404,22 +404,22 @@ class FakeSurf extends DotAudioSurfRules:
 func _test_surf() -> void:
 	_section("Surfing glides quietly, and makes no steps or landings")
 
-	var cat := DotAudioCatalogue.new()
-	DotAudioStock.add_to(cat)
+	var cat := GSAudioCatalogue.new()
+	GSAudioStock.add_to(cat)
 	var m := _manager(cat, 32)
-	var sink := m.sink as DotAudioSinkNull
+	var sink := m.sink as GSAudioSinkNull
 	var rules := _check_surf_rules()
-	var stock_def := DotAudioStock.surf_defs()
-	_check(stock_def.size() == 1 and stock_def[0].looping and DotAudioStock.ids().has(DotAudioStock.SURF_GLIDE_ID), "the glide is a stock looping def")
+	var stock_def := GSAudioStock.surf_defs()
+	_check(stock_def.size() == 1 and stock_def[0].looping and GSAudioStock.ids().has(GSAudioStock.SURF_GLIDE_ID), "the glide is a stock looping def")
 	var stream := load(stock_def[0].path) as AudioStream
 	_check(stream != null and stream.get_length() > 1.0, "and its file loads")
 
-	var steps := DotAudioFootsteps.new()
+	var steps := GSAudioFootsteps.new()
 	steps.manager = m
 	steps.default_surface = &"grass"
 	add_child(steps)
 	steps.set_physics_process(false)
-	var glide := DotAudioSurf.new()
+	var glide := GSAudioSurf.new()
 	glide.manager = m
 	glide.rules = rules
 	add_child(glide)
@@ -492,10 +492,10 @@ func _check_surf_rules() -> FakeSurf:
 
 func _test_raw_fallback() -> void:
 	_section("An addon pack's sound with no imported output still plays")
-	var stock := DotAudioStock.directory().path_join("footsteps/footstep_wood_0.ogg")
-	var imported := DotAudioSinkGodot.stream_at(stock)
+	var stock := GSAudioStock.directory().path_join("footsteps/footstep_wood_0.ogg")
+	var imported := GSAudioSinkGodot.stream_at(stock)
 	_check(imported is AudioStreamOggVorbis, "a stock file in this build loads through its import")
-	_check(not DotAudioSinkGodot._RAW.streams.has(stock), "and is not decoded a second way")
+	_check(not GSAudioSinkGodot._RAW.streams.has(stock), "and is not decoded a second way")
 
 	# The shape an overlay pack has: the release zip's .ogg and .ogg.import, and no
 	# .godot/imported output behind the marker.
@@ -512,23 +512,23 @@ func _test_raw_fallback() -> void:
 	packer.flush()
 	_check(ProjectSettings.load_resource_pack(pck), "a pack shaped like an addon overlay mounts")
 	var path := "res://dot_audio_probe/step.ogg"
-	_check(not DotAudioSinkGodot._import_output_present(path), "its marker names an output the build does not have")
-	var raw := DotAudioSinkGodot.stream_at(path)
+	_check(not GSAudioSinkGodot._import_output_present(path), "its marker names an output the build does not have")
+	var raw := GSAudioSinkGodot.stream_at(path)
 	_check(raw is AudioStreamOggVorbis and raw.get_length() > 0.05, "so the sound is decoded from its own bytes (%.2f s)" % (raw.get_length() if raw != null else 0.0))
-	_check(DotAudioSinkGodot.stream_at(path) == raw, "once: the next play reuses it")
-	_check(DotAudioSinkGodot.stream_at("res://dot_audio_probe/none.ogg") == null, "and a file that is not there is still silence")
+	_check(GSAudioSinkGodot.stream_at(path) == raw, "once: the next play reuses it")
+	_check(GSAudioSinkGodot.stream_at("res://dot_audio_probe/none.ogg") == null, "and a file that is not there is still silence")
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(marker))
-	DotAudioSinkGodot.clear_streams()
-	_check(DotAudioSinkGodot._RAW.streams.is_empty(), "clear_streams() drops the cache so a process can exit with no stream in use")
+	GSAudioSinkGodot.clear_streams()
+	_check(GSAudioSinkGodot._RAW.streams.is_empty(), "clear_streams() drops the cache so a process can exit with no stream in use")
 
 
 func _test_cheap_starts() -> void:
 	_section("A play resolves its path once, and a short compressed sound is decoded once")
-	var path := DotAudioStock.directory().path_join("footsteps/footstep_wood_0.ogg")
-	var source := DotAudioSinkGodot.stream_at(path)
+	var path := GSAudioStock.directory().path_join("footsteps/footstep_wood_0.ogg")
+	var source := GSAudioSinkGodot.stream_at(path)
 	var rate := int(AudioServer.get_mix_rate())
 	var out: Array = []
-	DotAudioSinkGodot._PCM.decode(source, rate, out)
+	GSAudioSinkGodot._PCM.decode(source, rate, out)
 	var wav := out[0] as AudioStreamWAV if out.size() == 1 else null
 	_check(wav != null and absf(wav.get_length() - source.get_length()) < 0.02, "the decoded copy is as long as its source (%.3f s)" % (wav.get_length() if wav != null else 0.0))
 	var peak := 0
@@ -550,8 +550,8 @@ func _test_cheap_starts() -> void:
 
 	var host := Node.new()
 	add_child(host)
-	var sink := DotAudioSinkGodot.new(host, 4)
-	var request := {"id": "step", "path": path, "kind": DotAudioDef.Kind.FLAT, "priority": 50}
+	var sink := GSAudioSinkGodot.new(host, 4)
+	var request := {"id": "step", "path": path, "kind": GSAudioDef.Kind.FLAT, "priority": 50}
 	var first := sink.play(request)
 	_check(_cheap_stream(host, first) == source, "the first play is the compressed stream, so nothing waits on the decode")
 	_check(sink._resolved.get(path) == source, "and the path is resolved once, not read from disk per play")
@@ -571,16 +571,16 @@ func _test_cheap_starts() -> void:
 	_check(looped is AudioStreamOggVorbis, "a looping play keeps the compressed stream and its exact seam")
 
 	sink.pcm_max_seconds = 0.0
-	var other := DotAudioStock.directory().path_join("footsteps/footstep_wood_1.ogg")
-	var _h := sink.play({"id": "step", "path": other, "kind": DotAudioDef.Kind.FLAT, "priority": 50})
+	var other := GSAudioStock.directory().path_join("footsteps/footstep_wood_1.ogg")
+	var _h := sink.play({"id": "step", "path": other, "kind": GSAudioDef.Kind.FLAT, "priority": 50})
 	sink.close()
-	var pcm: GDScript = DotAudioSinkGodot._PCM
+	var pcm: GDScript = GSAudioSinkGodot._PCM
 	_check(not pcm._copies.has(other) and not pcm._jobs.has(other), "pcm_max_seconds 0 turns the decoding off")
 
-	sink.bank = {"res://dot_audio_probe/absent.ogg": DotAudioSynth.bake(300.0, 300.0, 0.05, 0.2, 0.0)}
-	var absent := {"id": "x", "path": "res://dot_audio_probe/absent.ogg", "kind": DotAudioDef.Kind.FLAT, "priority": 90}
+	sink.bank = {"res://dot_audio_probe/absent.ogg": GSAudioSynth.bake(300.0, 300.0, 0.05, 0.2, 0.0)}
+	var absent := {"id": "x", "path": "res://dot_audio_probe/absent.ogg", "kind": GSAudioDef.Kind.FLAT, "priority": 90}
 	_check(sink.play(absent) != 0 and sink._absent_ms.has(absent["path"]), "a path with no file plays its stand-in and is remembered as absent")
-	sink._absent_ms[absent["path"]] = Time.get_ticks_msec() - DotAudioSinkGodot.ABSENT_RECHECK_MS
+	sink._absent_ms[absent["path"]] = Time.get_ticks_msec() - GSAudioSinkGodot.ABSENT_RECHECK_MS
 	sink.bank.erase(absent["path"])
 	_check(sink.play(absent) == 0 and int(sink._absent_ms[absent["path"]]) > Time.get_ticks_msec() - 10000, "and the disk is asked again once that is stale, so a file that arrives late wins")
 
@@ -593,14 +593,14 @@ func _test_cheap_starts() -> void:
 ## suite takes that path on purpose here and holds it to the threaded decode's result.
 func _test_sliced_decode() -> void:
 	_section("Without threads a short sound is decoded in slices, to the same PCM")
-	var pcm: GDScript = DotAudioSinkGodot._PCM
+	var pcm: GDScript = GSAudioSinkGodot._PCM
 	pcm.clear()
 	pcm.slice_always = true
 	var rate := int(AudioServer.get_mix_rate())
-	var step := DotAudioStock.directory().path_join("footsteps/footstep_wood_0.ogg")
-	var shot := DotAudioStock.directory().path_join("shots/rifle/attack_0.ogg")
-	var bed := DotAudioStock.directory().path_join("moods/industrial/machine_a.ogg")
-	var sources := {step: DotAudioSinkGodot.stream_at(step), shot: DotAudioSinkGodot.stream_at(shot), bed: DotAudioSinkGodot.stream_at(bed)}
+	var step := GSAudioStock.directory().path_join("footsteps/footstep_wood_0.ogg")
+	var shot := GSAudioStock.directory().path_join("shots/rifle/attack_0.ogg")
+	var bed := GSAudioStock.directory().path_join("moods/industrial/machine_a.ogg")
+	var sources := {step: GSAudioSinkGodot.stream_at(step), shot: GSAudioSinkGodot.stream_at(shot), bed: GSAudioSinkGodot.stream_at(bed)}
 	var first := pcm.copy_for(step, sources[step]) as AudioStream
 	var _s := pcm.copy_for(shot, sources[shot]) as AudioStream
 	var _d := pcm.copy_for(bed, sources[bed]) as AudioStream
@@ -647,20 +647,20 @@ func _test_sliced_decode() -> void:
 
 func _test_warm() -> void:
 	_section("Warming loads and decodes the files before their first play, nothing dropped")
-	var pcm: GDScript = DotAudioSinkGodot._PCM
+	var pcm: GDScript = GSAudioSinkGodot._PCM
 	pcm.clear()
 	pcm.slice_always = true
 	var host := Node.new()
 	add_child(host)
-	var cat := DotAudioCatalogue.new()
-	DotAudioStock.add_to(cat, false)
-	var mgr := DotAudioManager.new()
+	var cat := GSAudioCatalogue.new()
+	GSAudioStock.add_to(cat, false)
+	var mgr := GSAudioManager.new()
 	mgr.catalogue = cat
 	mgr.register_as_service = false
-	var sink := DotAudioSinkGodot.new(mgr, 4)
+	var sink := GSAudioSinkGodot.new(mgr, 4)
 	mgr.sink = sink
 	host.add_child(mgr)
-	var ids: Array = [DotAudioStock.footstep_id(&"wood"), DotAudioStock.footstep_id(&"metal"), &"no_such_id"]
+	var ids: Array = [GSAudioStock.footstep_id(&"wood"), GSAudioStock.footstep_id(&"metal"), &"no_such_id"]
 	var queued := mgr.warm(ids)
 	_check(queued > 0 and pcm.warm_pending() > 0, "queued %d files, %d pending; the unknown id is skipped" % [queued, pcm.warm_pending()])
 	_check(mgr.warm(ids) == 0, "a second warm of the same ids queues nothing")
@@ -670,7 +670,7 @@ func _test_warm() -> void:
 		frames += 1
 	var st: Dictionary = pcm.warm_stats()
 	_check(pcm.warm_pending() == 0 and int(st["copied"]) == queued, "every queued file ends decoded (%d of %d, %d frames)" % [int(st["copied"]), queued, frames])
-	var def := cat.find(DotAudioStock.footstep_id(&"wood"))
+	var def := cat.find(GSAudioStock.footstep_id(&"wood"))
 	var first := def.variants[0] if not def.variants.is_empty() else def.path
 	_check(sink._resolved.has(first) and pcm._copies.has(first), "the first variant is resolved and held as PCM before any play")
 	pcm.clear()

@@ -1,4 +1,4 @@
-class_name DotBoxSounds
+class_name GSBoxSounds
 extends RefCounted
 
 ## Per-event sounds for a box (spawn, approach, open, reward, deny, effect end).
@@ -13,7 +13,7 @@ const AUDIO_EXTENSIONS: Array[String] = [".ogg", ".wav", ".mp3"]
 ## [param sound_id] is "" when nothing played (no manager, a silent slot, out of range).
 signal event_fired(box_id: StringName, event: StringName, position: Vector3, sound_id: StringName, handle: int)
 
-var manager: DotAudioManager = null
+var manager: GSAudioManager = null
 var _slots: Dictionary = {}
 var _installed: Dictionary = {}
 var _ended: Dictionary = {}
@@ -26,14 +26,14 @@ static func stock_id(event: StringName) -> StringName:
 
 
 ## The six stock sounds, generated (no files), one per event.
-static func stock_defs() -> Array[DotAudioDef]:
-	var out: Array[DotAudioDef] = []
+static func stock_defs() -> Array[GSAudioDef]:
+	var out: Array[GSAudioDef] = []
 	for event in EVENTS:
-		var d := DotAudioDef.new()
+		var d := GSAudioDef.new()
 		d.id = stock_id(event)
 		d.generated = true
 		d.bus = &"SFX"
-		d.kind = DotAudioDef.Kind.POSITIONAL_3D
+		d.kind = GSAudioDef.Kind.POSITIONAL_3D
 		d.max_concurrent = 4
 		d.unit_size = 8.0
 		d.max_distance = 60.0
@@ -42,15 +42,15 @@ static func stock_defs() -> Array[DotAudioDef]:
 	return out
 
 
-## Stock id to [enum DotAudioSynth.Voice], for a game's synthesised bank.
+## Stock id to [enum GSAudioSynth.Voice], for a game's synthesised bank.
 static func stock_recipes() -> Dictionary:
 	return {
-		stock_id(&"spawn"): DotAudioSynth.Voice.SPAWN,
-		stock_id(&"approach"): DotAudioSynth.Voice.BLIP,
-		stock_id(&"open"): DotAudioSynth.Voice.CLICK,
-		stock_id(&"reward"): DotAudioSynth.Voice.PICKUP,
-		stock_id(&"deny"): DotAudioSynth.Voice.DENY,
-		stock_id(&"effect_end"): DotAudioSynth.Voice.IMPACT,
+		stock_id(&"spawn"): GSAudioSynth.Voice.SPAWN,
+		stock_id(&"approach"): GSAudioSynth.Voice.BLIP,
+		stock_id(&"open"): GSAudioSynth.Voice.CLICK,
+		stock_id(&"reward"): GSAudioSynth.Voice.PICKUP,
+		stock_id(&"deny"): GSAudioSynth.Voice.DENY,
+		stock_id(&"effect_end"): GSAudioSynth.Voice.IMPACT,
 	}
 
 
@@ -81,7 +81,7 @@ static func is_asset(sound: String) -> bool:
 
 
 ## Adds the stock defs to [param catalogue] and returns their synth recipes.
-func install(catalogue: DotAudioCatalogue) -> Dictionary:
+func install(catalogue: GSAudioCatalogue) -> Dictionary:
 	for d in stock_defs():
 		if catalogue.find(d.id) == null:
 			catalogue.add(d)
@@ -125,9 +125,9 @@ func _define(box_id: StringName) -> Dictionary:
 		var sound := str(slot["sound"])
 		var source_id := stock_id(event) if sound == "" else StringName(sound)
 		var id := StringName("boxslot_%s_%s" % [box_id, event])
-		var def: DotAudioDef = null
+		var def: GSAudioDef = null
 		if is_asset(sound):
-			def = DotAudioDef.new()
+			def = GSAudioDef.new()
 			def.path = sound
 		else:
 			var base := cat.find(source_id)
@@ -136,11 +136,11 @@ func _define(box_id: StringName) -> Dictionary:
 				source_id = stock_id(event)
 			if base == null:
 				continue
-			def = base.duplicate() as DotAudioDef
+			def = base.duplicate() as GSAudioDef
 			if stock.has(source_id):
 				recipes[id] = stock[source_id]
 		def.id = id
-		def.kind = DotAudioDef.Kind.FLAT if slot["mode"] == "ui" else DotAudioDef.Kind.POSITIONAL_3D
+		def.kind = GSAudioDef.Kind.FLAT if slot["mode"] == "ui" else GSAudioDef.Kind.POSITIONAL_3D
 		if slot["mode"] == "ui":
 			def.bus = &"UI"
 		def.max_distance = float(slot["max_distance"])

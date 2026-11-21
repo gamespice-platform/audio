@@ -1,5 +1,5 @@
 @tool
-class_name DotAudioCatalogue
+class_name GSAudioCatalogue
 extends Resource
 
 ## Every sound a game has, as a document a server can check without a sound card.
@@ -12,14 +12,14 @@ extends Resource
 ## Tag on the stock defs: a game's own def for the same id replaces them in [method add].
 const STOCK_TAG := &"stock"
 
-@export var defs: Array[DotAudioDef] = []
+@export var defs: Array[GSAudioDef] = []
 
 var _by_id: Dictionary = {}
 
 
 ## A def replaces an earlier one with the same id that carries [constant STOCK_TAG], so a game's
 ## own voice for an id the stock also names wins; any other repeat is left for [method validate].
-func add(def: DotAudioDef) -> DotAudioCatalogue:
+func add(def: GSAudioDef) -> GSAudioCatalogue:
 	for i in defs.size():
 		if defs[i] != null and defs[i].id == def.id and defs[i].tags.has(STOCK_TAG) and not def.tags.has(STOCK_TAG):
 			defs[i] = def
@@ -30,7 +30,7 @@ func add(def: DotAudioDef) -> DotAudioCatalogue:
 	return self
 
 
-func find(id: StringName) -> DotAudioDef:
+func find(id: StringName) -> GSAudioDef:
 	_ensure_index()
 	return _by_id.get(id)
 
@@ -64,22 +64,22 @@ func _ensure_index() -> void:
 			_by_id[d.id] = d
 
 
-func validate() -> DotResult:
+func validate() -> GSResult:
 	var seen := {}
 	for d in defs:
 		if d == null:
-			return DotResult.fail(DotError.CODE_INVALID, "a null entry in the catalogue")
+			return GSResult.fail(GSError.CODE_INVALID, "a null entry in the catalogue")
 		var res := d.validate()
 		if not res.ok:
 			return res
 		if seen.has(d.id):
-			return DotResult.fail(
-				DotError.CODE_INVALID,
+			return GSResult.fail(
+				GSError.CODE_INVALID,
 				"sound id '%s' appears twice" % d.id,
 				"the second one is unreachable, and nothing would ever say so"
 			)
 		seen[d.id] = true
-	return DotResult.success(null)
+	return GSResult.success(null)
 
 
 ## Which paths in this catalogue are not present. Asked, never assumed.
@@ -96,7 +96,7 @@ func missing_files() -> PackedStringArray:
 	return out
 
 
-func _paths_of(d: DotAudioDef) -> PackedStringArray:
+func _paths_of(d: GSAudioDef) -> PackedStringArray:
 	if d.generated:
 		# There is no file to be missing. A generated sound reported as missing would put
 		# a game that ships no audio at all permanently in the "content is broken" state.

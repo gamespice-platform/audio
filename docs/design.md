@@ -10,10 +10,10 @@ The obvious implementation (`AudioStreamPlayer.new()`, `play()`, `queue_free()` 
 
 **`AudioServer` reports a working sound card when there is none.** Headless, `get_mix_rate()` is 44100, `get_input_device_list()` is `["Default"]` and `get_output_latency()` is 0.0; only `get_driver_name()` says `"Dummy"`. dot-voice found that ([its design](../../dot-voice/docs/design.md#audioserver-lies-about-having-a-sound-card)), and the suite's first section asserts it so this addon cannot regress into believing a plausible answer.
 
-`DotAudioSink.device_present()` is the only honest question, asked once in `DotAudioManager.setup()`. Below it:
+`GSAudioSink.device_present()` is the only honest question, asked once in `GSAudioManager.setup()`. Below it:
 
-- `DotAudioSinkGodot`: a fixed pool, priority stealing, real players.
-- `DotAudioSinkNull`: writes down what it would have played. The server's sink and the suite's.
+- `GSAudioSinkGodot`: a fixed pool, priority stealing, real players.
+- `GSAudioSinkNull`: writes down what it would have played. The server's sink and the suite's.
 
 **The null sink is not a mock.** The catalogue, the distance cull, the cooldowns, the concurrency caps, the reaping and the music state machine are the real ones in both cases, which is what makes `audio_selftest` a test of this system and not of a stand-in.
 
@@ -21,20 +21,20 @@ The obvious implementation (`AudioStreamPlayer.new()`, `play()`, `queue_free()` 
 
 | | |
 | --- | --- |
-| `DotAudioDef` | One sound, as a document. Names a file by path and never loads one. |
-| `DotAudioCatalogue` | All of them. `validate()` asks about the document; `missing_files()` asks about the disk. |
-| `DotAudioSink` | Where a sound goes, and the honest device check. |
-| `DotAudioSinkGodot` | A fixed pool with priority stealing, looping, the synth `bank`. A short compressed stream is decoded to PCM on a worker thread after its first play (without threads, as on the web, in slices on the game thread) (`pcm_max_seconds`, `pcm_budget_bytes`), so a sound that fires many times a second does not set a decoder up each time. |
-| `DotAudioSinkNull` | Records what it would have played. |
-| `DotAudioMixer` | The sliders, and the `linear_to_db` curve. A `DotConfig`. |
-| `DotAudioManager` | Ids in, limits applied, requests out; `move`, `shape` and `stop` a playing voice by handle. |
-| `DotAudioSynth` | Sound made of arithmetic, for a deployment with no audio files yet. |
+| `GSAudioDef` | One sound, as a document. Names a file by path and never loads one. |
+| `GSAudioCatalogue` | All of them. `validate()` asks about the document; `missing_files()` asks about the disk. |
+| `GSAudioSink` | Where a sound goes, and the honest device check. |
+| `GSAudioSinkGodot` | A fixed pool with priority stealing, looping, the synth `bank`. A short compressed stream is decoded to PCM on a worker thread after its first play (without threads, as on the web, in slices on the game thread) (`pcm_max_seconds`, `pcm_budget_bytes`), so a sound that fires many times a second does not set a decoder up each time. |
+| `GSAudioSinkNull` | Records what it would have played. |
+| `GSAudioMixer` | The sliders, and the `linear_to_db` curve. A `GSConfig`. |
+| `GSAudioManager` | Ids in, limits applied, requests out; `move`, `shape` and `stop` a playing voice by handle. |
+| `GSAudioSynth` | Sound made of arithmetic, for a deployment with no audio files yet. |
 
 ## Decisions
 
 ### A path, not a stream
 
-`DotAudioDef.path` is a `String`. A mounted pack's `class_name` globals are not registered in the host (the reason GameSpice Props names a prop's script by path), so a catalogue that `preload`s cannot describe delivered content. It also lets a server validate a catalogue for files it does not have, which is most servers. A def with no file at all must set `generated`: the sink makes the sound (game-hungario's `HungrySoundSink` is why it exists).
+`GSAudioDef.path` is a `String`. A mounted pack's `class_name` globals are not registered in the host (the reason GameSpice Props names a prop's script by path), so a catalogue that `preload`s cannot describe delivered content. It also lets a server validate a catalogue for files it does not have, which is most servers. A def with no file at all must set `generated`: the sink makes the sound (game-hungario's `HungrySoundSink` is why it exists).
 
 ### Culling is in the manager, not the sink
 
@@ -50,7 +50,7 @@ When the pool is full, the lowest-priority voice below the incoming one is stopp
 
 ### Variation belongs in the document
 
-`variants` is on the def rather than in the caller, because a caller that picks the variant has to hold the list, and then the list is in two places. Both the variant and the pitch come from a roll, so setting `roll_source` to dot-core's `DotRandomStream` (anything with `unit_at(index)`) makes them reproducible: the same shot sounds the same on the server and every client, and an audio bug that cannot be reproduced is one nobody fixes.
+`variants` is on the def rather than in the caller, because a caller that picks the variant has to hold the list, and then the list is in two places. Both the variant and the pitch come from a roll, so setting `roll_source` to dot-core's `GSRandomStream` (anything with `unit_at(index)`) makes them reproducible: the same shot sounds the same on the server and every client, and an audio bug that cannot be reproduced is one nobody fixes.
 
 ### A missing sound is silence, not an error
 
@@ -58,7 +58,7 @@ An unknown id, a file that is not there, a pack still downloading: all refusals,
 
 ### Looping copies the stream
 
-`DotAudioManager` puts `def.looping` in every request, and the sink loops natively where the stream can (an `AudioStreamWAV` by its loop points, which every synth voice is; anything with a `loop` property such as Ogg or MP3), and otherwise restarts the player on `finished` under the same handle. **It loops a copy, never the stream** (`_looped`): `load()` returns the cached resource every caller of that path shares, and a bank entry is shared by every play of its id, so setting `loop_mode` in place would make the next one-shot of that sound loop for ever. One copy per source stream, kept.
+`GSAudioManager` puts `def.looping` in every request, and the sink loops natively where the stream can (an `AudioStreamWAV` by its loop points, which every synth voice is; anything with a `loop` property such as Ogg or MP3), and otherwise restarts the player on `finished` under the same handle. **It loops a copy, never the stream** (`_looped`): `load()` returns the cached resource every caller of that path shares, and a bank entry is shared by every play of its id, so setting `loop_mode` in place would make the next one-shot of that sound loop for ever. One copy per source stream, kept.
 
 ### Reaping happens at the point of refusal
 
@@ -66,17 +66,17 @@ Concurrency counts drop when the sink reports a sound finished. `_process` does 
 
 ### The synthesiser is consulted after the filesystem, never before
 
-`DotAudioSynth` bakes an `AudioStreamWAV` from a handful of numbers, and `DotAudioSinkGodot.bank` holds the result keyed by path and by id. The sink loads the def's path first and only falls through to the bank when there is no file. A stand-in that outranked a shipped asset would be a placeholder somebody has to remember to remove, which is how placeholders ship.
+`GSAudioSynth` bakes an `AudioStreamWAV` from a handful of numbers, and `GSAudioSinkGodot.bank` holds the result keyed by path and by id. The sink loads the def's path first and only falls through to the bank when there is no file. A stand-in that outranked a shipped asset would be a placeholder somebody has to remember to remove, which is how placeholders ship.
 
-It does not break "ships no audio": that rule is about what a `DotAudioDef` may hold, and a synthesiser holds nothing. It is in the addon because it was about to be written in every game; the numbers worth arguing about (a shot against a footstep) are the same everywhere, so `Voice` names roles rather than sounds. Which voice stands in for which id stays with the **game**, in its own `sound_recipes()`, for the same reason the cull distances are the game's: an addon that inferred "rail sounds tonal" from an id called `fire_rail` would be guessing at vocabulary it does not own.
+It does not break "ships no audio": that rule is about what a `GSAudioDef` may hold, and a synthesiser holds nothing. It is in the addon because it was about to be written in every game; the numbers worth arguing about (a shot against a footstep) are the same everywhere, so `Voice` names roles rather than sounds. Which voice stands in for which id stays with the **game**, in its own `sound_recipes()`, for the same reason the cull distances are the game's: an addon that inferred "rail sounds tonal" from an id called `fire_rail` would be guessing at vocabulary it does not own.
 
 ### A playing voice is shaped in play()'s units
 
-`DotAudioManager.shape(handle, volume_scale, pitch_scale)` changes a playing voice's loudness and pitch without restarting it, for a sound whose level is information every frame (an engine following speed and throttle). The scales mean what they mean to `play()`: a linear scale on the def's `gain_db` and a multiplier on the pitch the def rolled at the start, both remembered per handle, so `play(id, v, p)` then `shape(h, v, p)` changes nothing. A pass-through of raw decibels to the sink would make every caller re-add the catalogue's gain and drop its variation each frame. It returns false for a voice that has ended or been stolen, so a caller keeping a loop alive starts it again, and it reaps the ended one on the spot for the reason refusal does. The sink side is `DotAudioSink.shape(handle, volume_db, pitch)`, a no-op on the base class so a sink written before API level 2 still loads; `voice(handle)` reads a voice back (from the engine's own player on the Godot sink, which is what a probe under xvfb wants). Added after mg-dangerous-delivery had to subclass the Godot sink and read its private pool to do this.
+`GSAudioManager.shape(handle, volume_scale, pitch_scale)` changes a playing voice's loudness and pitch without restarting it, for a sound whose level is information every frame (an engine following speed and throttle). The scales mean what they mean to `play()`: a linear scale on the def's `gain_db` and a multiplier on the pitch the def rolled at the start, both remembered per handle, so `play(id, v, p)` then `shape(h, v, p)` changes nothing. A pass-through of raw decibels to the sink would make every caller re-add the catalogue's gain and drop its variation each frame. It returns false for a voice that has ended or been stolen, so a caller keeping a loop alive starts it again, and it reaps the ended one on the spot for the reason refusal does. The sink side is `GSAudioSink.shape(handle, volume_db, pitch)`, a no-op on the base class so a sink written before API level 2 still loads; `voice(handle)` reads a voice back (from the engine's own player on the Godot sink, which is what a probe under xvfb wants). Added after mg-dangerous-delivery had to subclass the Godot sink and read its private pool to do this.
 
 ## Deliberately not here
 
-- **Game audio.** A game's own sounds are the game's. The exceptions are the stock footsteps and ambience beds in `stock/`, which are the same files in every game ([loudness.md](loudness.md#the-stock-set)); `DotAudioSynth` is arithmetic and a stand-in, not an asset library: thirteen voices and no way to author a fourteenth from data, on purpose.
+- **Game audio.** A game's own sounds are the game's. The exceptions are the stock footsteps and ambience beds in `stock/`, which are the same files in every game ([loudness.md](loudness.md#the-stock-set)); `GSAudioSynth` is arithmetic and a stand-in, not an asset library: thirteen voices and no way to author a fourteenth from data, on purpose.
 - **DSP and effect design.** Reverb zones, filters and sends are the engine's buses.
 - **Per-voice fades.** The shipped fade goes through the bus, which is what almost every game wants and costs nothing per voice. A game that eases a voice itself calls `shape()` each frame; `_ramp` is the subclass point for sample-accurate stem control.
 - **A music stem player.** Layered stems in phase need one stream and a mix, which is a different class. `play_music` crossfades whole tracks.
@@ -84,8 +84,8 @@ It does not break "ships no audio": that rule is about what a `DotAudioDef` may 
 
 ## Voice queue (API level 16)
 
-`DotVoiceQueue` keeps simultaneous announcer and medal lines from talking over each other. Idle: a line plays at once. Busy: a line that outranks the speaker by `interrupt_margin` (20) cuts it off; otherwise it waits, highest priority first and then first in. A queued id is not queued twice (it keeps the higher priority), the queue holds `max_queued` (4) and drops the lowest, a line older than `max_wait` (3 s) is dropped, and `gap` (0.12 s) separates lines. The end of a line is read from `DotAudioManager.is_playing`, which the manager's `_process` keeps current, so a suite using a null sink must call `manager._process(0.0)` after `sink.finish`. Nobody has listened to the priorities on a real build.
+`GSVoiceQueue` keeps simultaneous announcer and medal lines from talking over each other. Idle: a line plays at once. Busy: a line that outranks the speaker by `interrupt_margin` (20) cuts it off; otherwise it waits, highest priority first and then first in. A queued id is not queued twice (it keeps the higher priority), the queue holds `max_queued` (4) and drops the lowest, a line older than `max_wait` (3 s) is dropped, and `gap` (0.12 s) separates lines. The end of a line is read from `GSAudioManager.is_playing`, which the manager's `_process` keeps current, so a suite using a null sink must call `manager._process(0.0)` after `sink.finish`. Nobody has listened to the priorities on a real build.
 
 ## Warming (API level 23)
 
-A first play pays for the file load, the stream decode and, for a short compressed sound, the PCM copy. `DotAudioManager.warm(ids)` pays all three early: it resolves every path and variant of each id through the sink and queues the PCM copies in `DotAudioPcm.warm`, a slice per frame (`DotAudioPcm.warm_usec`, 1500 by default; 0 or less does one item per frame). Nothing is capped: when the decode workers or the slice queue are full the item waits its turn, and only a file the decoder refuses (too long, over the byte budget) is dropped. A second call for the same files queues nothing. Footsteps, landings and impacts are ids like any other, so a game warms them by passing `DotAudioStock.ids()` or the ones its map can play. `DotAudioPcm.warm_pending()` and `warm_stats()` say how far it is; `DotAudioPcm.clear()` drops the queue.
+A first play pays for the file load, the stream decode and, for a short compressed sound, the PCM copy. `GSAudioManager.warm(ids)` pays all three early: it resolves every path and variant of each id through the sink and queues the PCM copies in `GSAudioPcm.warm`, a slice per frame (`GSAudioPcm.warm_usec`, 1500 by default; 0 or less does one item per frame). Nothing is capped: when the decode workers or the slice queue are full the item waits its turn, and only a file the decoder refuses (too long, over the byte budget) is dropped. A second call for the same files queues nothing. Footsteps, landings and impacts are ids like any other, so a game warms them by passing `GSAudioStock.ids()` or the ones its map can play. `GSAudioPcm.warm_pending()` and `warm_stats()` say how far it is; `GSAudioPcm.clear()` drops the queue.

@@ -1,8 +1,8 @@
-class_name DotAmbienceRules
+class_name GSAmbienceRules
 extends RefCounted
 
 ## The ambience cvars (`<prefix>_ambient*`, the game picks the prefix). A server owner's choices are REPLICATED,
-## so every player hears the server's intent; a player's own sliders multiply on top ([method DotAmbienceDirector.follow_settings]).
+## so every player hears the server's intent; a player's own sliders multiply on top ([method GSAmbienceDirector.follow_settings]).
 ## `<prefix>_ambient_dir` is a path on the machine that plays and is never replicated.
 
 signal changed

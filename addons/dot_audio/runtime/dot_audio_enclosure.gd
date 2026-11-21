@@ -1,4 +1,4 @@
-class_name DotAudioEnclosure
+class_name GSAudioEnclosure
 extends Node
 
 ## Measures the room around the listener with a few rays a frame (a fibonacci sphere of 16-32): the mean hit distance
@@ -10,7 +10,7 @@ const CHANNEL := "audio.enclosure"
 const BUS := &"ShotReverb"
 ## Where the reverb bus sends its output.
 @export var send_bus: StringName = &"SFX"
-var rules: DotShotRules = DotShotRules.new()
+var rules: GSShotRules = GSShotRules.new()
 ## A ray that reaches nothing within this many metres is a miss.
 @export_range(5.0, 200.0, 1.0) var max_range := 40.0
 @export_range(1, 16, 1) var rays_per_step := 4
@@ -118,7 +118,7 @@ static func tightness(room_size: float, open: float) -> float:
 
 
 ## Creates the reverb bus when missing. Safe to call twice.
-func ensure_bus() -> DotResult:
+func ensure_bus() -> GSResult:
 	_bus_index = AudioServer.get_bus_index(BUS)
 	if _bus_index < 0:
 		AudioServer.add_bus()
@@ -148,7 +148,7 @@ func ensure_bus() -> DotResult:
 		_reverb.dry = 1.0
 		AudioServer.add_bus_effect(_bus_index, _reverb)
 	_apply_reverb()
-	return DotResult.success(_bus_index)
+	return GSResult.success(_bus_index)
 
 
 ## Casts [member rays_per_step] rays from [param at] and moves the smoothing on by [param delta].
@@ -169,7 +169,7 @@ func step(delta: float, at: Vector3, space: PhysicsDirectSpaceState3D) -> void:
 	advance(delta)
 
 
-## One ray's answer: the hit distance in metres, or negative for a miss. A sweep ends after [member DotShotRules.rays] rays.
+## One ray's answer: the hit distance in metres, or negative for a miss. A sweep ends after [member GSShotRules.rays] rays.
 func feed(distance: float) -> void:
 	if distance < 0.0 or distance >= max_range:
 		_misses += 1
@@ -198,7 +198,7 @@ func advance(delta: float) -> void:
 	_apply_reverb()
 
 
-## Reverb parameters for the current room: room_size 0-1, damping 0-1, wet 0-1 (before [member DotShotRules.reverb]).
+## Reverb parameters for the current room: room_size 0-1, damping 0-1, wet 0-1 (before [member GSShotRules.reverb]).
 func reverb_params() -> Dictionary:
 	return {
 		"room_size": clampf(size / 30.0, 0.1, 1.0),
@@ -250,7 +250,7 @@ func _pick_class() -> void:
 	if next != tail_class:
 		var from := tail_class
 		tail_class = next
-		DotLog.debug(CHANNEL, "room class changed", {"from": String(from), "to": String(next), "size": size, "open": openness})
+		GSLog.debug(CHANNEL, "room class changed", {"from": String(from), "to": String(next), "size": size, "open": openness})
 		class_changed.emit(from, next)
 
 

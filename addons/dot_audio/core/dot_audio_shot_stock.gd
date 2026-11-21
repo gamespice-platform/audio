@@ -1,7 +1,7 @@
-class_name DotAudioShotStock
+class_name GSAudioShotStock
 extends RefCounted
 
-## The stock layered shots in stock/shots/ (CC0, see stock/CREDITS.md) as [DotShotDef]s: one per weapon class, ids
+## The stock layered shots in stock/shots/ (CC0, see stock/CREDITS.md) as [GSShotDef]s: one per weapon class, ids
 ## `shot_<class>`. [constant COUNTS] must match the disk (the suite checks). A pack assigns its own files instead.
 
 const PREFIX := "shot_"
@@ -12,7 +12,7 @@ const SUPPRESSED_COUNT := 4
 
 
 static func directory() -> String:
-	return DotAudioStock.directory().path_join("shots")
+	return GSAudioStock.directory().path_join("shots")
 
 
 static func id_of(weapon_class: StringName) -> StringName:
@@ -20,11 +20,11 @@ static func id_of(weapon_class: StringName) -> StringName:
 
 
 ## The stock shot for [param weapon_class], or null for an unknown class. Its suppressed layers are the shared pistol set.
-static func shot(weapon_class: StringName) -> DotShotDef:
+static func shot(weapon_class: StringName) -> GSShotDef:
 	if not COUNTS.has(weapon_class):
 		return null
-	DotAudioStock.warn_if_missing("shots/%s/attack_0.ogg" % weapon_class)
-	var d := DotShotDef.new()
+	GSAudioStock.warn_if_missing("shots/%s/attack_0.ogg" % weapon_class)
+	var d := GSShotDef.new()
 	d.id = id_of(weapon_class)
 	var base := "shots/" + String(weapon_class)
 	d.attack = _files(base, "attack", int(COUNTS[weapon_class]))
@@ -48,17 +48,17 @@ static func shot(weapon_class: StringName) -> DotShotDef:
 
 
 ## Every stock shot.
-static func shots() -> Array[DotShotDef]:
-	var out: Array[DotShotDef] = []
+static func shots() -> Array[GSShotDef]:
+	var out: Array[GSShotDef] = []
 	for weapon_class: StringName in COUNTS:
 		out.append(shot(weapon_class))
 	return out
 
 
-## [param folder] is relative to stock/; each file goes through [method DotAudioStock.resolve], so a build without it
-## (the client shell) finds it in [member DotAudioStock.fallback_roots], and a missing one fails at its own path.
+## [param folder] is relative to stock/; each file goes through [method GSAudioStock.resolve], so a build without it
+## (the client shell) finds it in [member GSAudioStock.fallback_roots], and a missing one fails at its own path.
 static func _files(folder: String, layer: String, count: int) -> PackedStringArray:
 	var out := PackedStringArray()
 	for i in count:
-		out.append(DotAudioStock.resolve(folder.path_join("%s_%d.ogg" % [layer, i])))
+		out.append(GSAudioStock.resolve(folder.path_join("%s_%d.ogg" % [layer, i])))
 	return out

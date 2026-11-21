@@ -1,5 +1,5 @@
-class_name DotAudioSinkNull
-extends DotAudioSink
+class_name GSAudioSinkNull
+extends GSAudioSink
 
 ## A sink that records what it would have played. The headless deployment, and the suite.
 ##

@@ -1,20 +1,20 @@
-# The creepy-ambience layer (`DotAmbience`)
+# The creepy-ambience layer (`GSAmbience`)
 
-A mood is a named set of looping **beds** (they play together) and sparse random **one-shots** (a creak, a moan, a far door). The layer plays one mood, crossfades to the next when the game or the settings change it, and stays quiet: the default level is nominal for files normalised to a quiet bed (-30 LUFS beds, about -26 LUFS one-shots), so it is felt rather than listened to. It is separate from [`DotAudioAmbience`](loudness.md), the per-map bed and indoor zones; use either or both.
+A mood is a named set of looping **beds** (they play together) and sparse random **one-shots** (a creak, a moan, a far door). The layer plays one mood, crossfades to the next when the game or the settings change it, and stays quiet: the default level is nominal for files normalised to a quiet bed (-30 LUFS beds, about -26 LUFS one-shots), so it is felt rather than listened to. It is separate from [`GSAudioAmbience`](loudness.md), the per-map bed and indoor zones; use either or both.
 
 ```gdscript
-var amb := DotAmbience.new()
-amb.manager = audio_manager            # or leave empty: the registered DotAudioManager service
+var amb := GSAmbience.new()
+amb.manager = audio_manager            # or leave empty: the registered GSAudioManager service
 add_child(amb)
 amb.add_set_dir("res://sounds/ambience")   # moods.json + files; a game ships this
 amb.load_custom()                          # config.sound_dir: the owner's own set, wins by mood name
-amb.set_mood(&"cave_tunnel")               # DotResult; refused for an unknown mood
+amb.set_mood(&"cave_tunnel")               # GSResult; refused for an unknown mood
 amb.duck(&"fight", 0.3); amb.unduck(&"fight")   # holders, reference-counted like the manager's duck
 amb.hush(&"x") / amb.pause(&"menu")        # no new one-shots / everything fades out
 print(amb.describe())
 ```
 
-## Settings (`DotAmbienceConfig`, a `DotConfig`)
+## Settings (`GSAmbienceConfig`, a `GSConfig`)
 
 Defaults < JSON file < environment (`DOT_AMBIENCE_*`) < command line (`--ambience-*`). All are read live each step.
 
@@ -45,19 +45,19 @@ Defaults < JSON file < environment (`DOT_AMBIENCE_*`) < command line (`--ambienc
 
 ## Map to mood
 
-`DotAmbienceMoods.vote(names, fallback)` counts keyword hits (soundscape names, ambient sound file names and stand-ins from a converted map's `sounds` block, via `names_in`) for eight moods: `outdoor_night`, `indoor_hall`, `industrial`, `cave_tunnel`, `snow_wind`, `swamp`, `city_ruins`, `interior_horror`. A tie goes to the earlier row (horror first). A game lets its own per-map field win over the vote.
+`GSAmbienceMoods.vote(names, fallback)` counts keyword hits (soundscape names, ambient sound file names and stand-ins from a converted map's `sounds` block, via `names_in`) for eight moods: `outdoor_night`, `indoor_hall`, `industrial`, `cave_tunnel`, `snow_wind`, `swamp`, `city_ruins`, `interior_horror`. A tie goes to the earlier row (horror first). A game lets its own per-map field win over the vote.
 
 ## Indoors and outdoors
 
-A game sets `ambience.indoor_mood` (the mood to use under a roof) and calls `set_indoors(bool)`; `effective_mood` then prefers `indoor_mood` while indoors, if `DotAmbienceConfig.follow_indoors` is on and the mood is allowed, and the usual crossfade does the rest. `indoors()` and `mood_def(id)` read the state back, and `describe()` shows both. `DotAmbienceRoof` finds the roof: `step(delta, at, space)` casts one reused upward ray (`height` 8 m, every `interval` 0.25 s) and returns true when `roofed` flips; it needs 2 hits in a row to go indoors and 4 misses to leave, so a doorway or a lamp post does not flap the mood. `DotAmbienceMood.with_oneshots_of(other, name)` builds a mood that adds another's one-shots to its own.
+A game sets `ambience.indoor_mood` (the mood to use under a roof) and calls `set_indoors(bool)`; `effective_mood` then prefers `indoor_mood` while indoors, if `GSAmbienceConfig.follow_indoors` is on and the mood is allowed, and the usual crossfade does the rest. `indoors()` and `mood_def(id)` read the state back, and `describe()` shows both. `GSAmbienceRoof` finds the roof: `step(delta, at, space)` casts one reused upward ray (`height` 8 m, every `interval` 0.25 s) and returns true when `roofed` flips; it needs 2 hits in a row to go indoors and 4 misses to leave, so a doorway or a lamp post does not flap the mood. `GSAmbienceMood.with_oneshots_of(other, name)` builds a mood that adds another's one-shots to its own.
 
-## The director (`DotAmbienceDirector`): what every game repeats
+## The director (`GSAmbienceDirector`): what every game repeats
 
-A game adopts the layer in a few lines: the stock set (`stock/moods/`, eight moods, CC0, `moods/CREDITS.md`) loads by itself, and the director does the map to mood choice (document `"ambient"`, then `map_moods`, then `prefix_moods`, then the name vote, then `default_mood`), the `extra` merge, the roof, and the multiplication of the server's `DotAmbienceRules` (cvars `<prefix>_ambient*`, `bind_cvars`/`follow_cvars`) with the player's `ambient`, `ambient_volume` and `ambient_frequency` settings. The layer plays on the `Ambience` bus, so the master and ambience sliders and a mute reach it. See the class comment for the call sequence; game-fatal-contact and game-zombie-zone are the two users.
+A game adopts the layer in a few lines: the stock set (`stock/moods/`, eight moods, CC0, `moods/CREDITS.md`) loads by itself, and the director does the map to mood choice (document `"ambient"`, then `map_moods`, then `prefix_moods`, then the name vote, then `default_mood`), the `extra` merge, the roof, and the multiplication of the server's `GSAmbienceRules` (cvars `<prefix>_ambient*`, `bind_cvars`/`follow_cvars`) with the player's `ambient`, `ambient_volume` and `ambient_frequency` settings. The layer plays on the `Ambience` bus, so the master and ambience sliders and a mute reach it. See the class comment for the call sequence; game-fatal-contact and game-zombie-zone are the two users.
 
 ## Birds and a louder bed belong to the map
 
-By default no map plays the birdsong bed (`amb_outdoor` plays as `amb_wind`) and the bed layer sits at `DotAudioAmbience.level` 0.35. A map document asks for more: `"ambient": {"mood": "swamp", "lively": true, "level": 1.5}` (forest, swamp, park), while a city or interior writes `"ambient": {"mood": "city_ruins"}` and stays quiet. A bed that follows gameplay (wind with speed, a foot-bed off the wheel) sets `DotAudioAmbience.drive` (0 to 16, default 1, a multiplier on `level` x the profile, safe every frame), never `level`; a game then expresses its old absolute level as `drive = old / DotAudioAmbience.DEFAULT_LEVEL`. Give the director its `beds` node and it forwards `level` and `lively` on every `on_map`; without the director call `set_map_profile` or `set_map_bed(id, level, lively)`.
+By default no map plays the birdsong bed (`amb_outdoor` plays as `amb_wind`) and the bed layer sits at `GSAudioAmbience.level` 0.35. A map document asks for more: `"ambient": {"mood": "swamp", "lively": true, "level": 1.5}` (forest, swamp, park), while a city or interior writes `"ambient": {"mood": "city_ruins"}` and stays quiet. A bed that follows gameplay (wind with speed, a foot-bed off the wheel) sets `GSAudioAmbience.drive` (0 to 16, default 1, a multiplier on `level` x the profile, safe every frame), never `level`; a game then expresses its old absolute level as `drive = old / GSAudioAmbience.DEFAULT_LEVEL`. Give the director its `beds` node and it forwards `level` and `lively` on every `on_map`; without the director call `set_map_profile` or `set_map_bed(id, level, lively)`.
 
 ## Measuring the ambience bus headless
 
@@ -65,4 +65,4 @@ By default no map plays the birdsong bed (`amb_outdoor` plays as `amb_wind`) and
 
 ## Leaving the stock beds and moods out of a build
 
-The client shell leaves `stock/ambience` and `stock/moods` out of its pck and mounts them from a dot-cloud pack. `DotAudioStock.fallback_roots` lists folders laid out like `stock/`; `resolve(rel)` returns the build's own path when it carries the file and otherwise the first fallback that does. The bed defs and `moods_directory()` (so the director's `setup()`) go through it. Add the mounted pack's folder before `setup()`. `examples/stock_pack_selftest` proves it with a synthetic PCKPacker pack (25 checks). The shot stock (`stock/shots`) and weapon stock (`stock/weapons`) resolve per file the same way, so an audio pack may carry those folders too; a file in neither this build nor a root logs `stock sound missing` once (`DotAudioStock.warn_if_missing`). `DotAudioStock.directory_override` is for suites that stand in for a shell without the files.
+The client shell leaves `stock/ambience` and `stock/moods` out of its pck and mounts them from a dot-cloud pack. `GSAudioStock.fallback_roots` lists folders laid out like `stock/`; `resolve(rel)` returns the build's own path when it carries the file and otherwise the first fallback that does. The bed defs and `moods_directory()` (so the director's `setup()`) go through it. Add the mounted pack's folder before `setup()`. `examples/stock_pack_selftest` proves it with a synthetic PCKPacker pack (25 checks). The shot stock (`stock/shots`) and weapon stock (`stock/weapons`) resolve per file the same way, so an audio pack may carry those folders too; a file in neither this build nor a root logs `stock sound missing` once (`GSAudioStock.warn_if_missing`). `GSAudioStock.directory_override` is for suites that stand in for a shell without the files.

@@ -1,5 +1,5 @@
 @tool
-class_name DotShotDef
+class_name GSShotDef
 extends Resource
 
 ## One weapon's shot as layers: an attack (the crack), a body (the report), a tail per room class, a far set and an
@@ -65,18 +65,18 @@ func def_id(name: StringName, index: int) -> StringName:
 	return StringName("%s/%s/%d" % [id, name, index])
 
 
-## One [DotAudioDef] per variant file, ready for a catalogue: the player picks the file itself (no repeat), so the
+## One [GSAudioDef] per variant file, ready for a catalogue: the player picks the file itself (no repeat), so the
 ## manager's own variant roll is never used.
-func defs(tail_bus: StringName = &"SFX", bus: StringName = &"SFX") -> Array[DotAudioDef]:
-	var out: Array[DotAudioDef] = []
+func defs(tail_bus: StringName = &"SFX", bus: StringName = &"SFX") -> Array[GSAudioDef]:
+	var out: Array[GSAudioDef] = []
 	for name in layer_names():
 		var is_far := name == FAR or name == SUPPRESSED_FAR
 		var paths := layer(name)
 		for i in paths.size():
-			var d := DotAudioDef.new()
+			var d := GSAudioDef.new()
 			d.id = def_id(name, i)
 			d.path = paths[i]
-			d.kind = DotAudioDef.Kind.POSITIONAL_3D
+			d.kind = GSAudioDef.Kind.POSITIONAL_3D
 			d.bus = tail_bus if name.begins_with("tail_") else bus
 			d.gain_db = gain_db
 			d.unit_size = far_unit_size if is_far else near_unit_size
@@ -89,12 +89,12 @@ func defs(tail_bus: StringName = &"SFX", bus: StringName = &"SFX") -> Array[DotA
 	return out
 
 
-func validate() -> DotResult:
+func validate() -> GSResult:
 	if id == &"":
-		return DotResult.fail(DotError.CODE_INVALID, "a shot with no id")
+		return GSResult.fail(GSError.CODE_INVALID, "a shot with no id")
 	if body.is_empty() and suppressed_body.is_empty():
-		return DotResult.fail(DotError.CODE_INVALID, "shot '%s' has no body layer" % id,
+		return GSResult.fail(GSError.CODE_INVALID, "shot '%s' has no body layer" % id,
 				"a shot needs `body` (or `suppressed_body`) files")
 	if not suppressed_body.is_empty() and suppressed_far.is_empty() and far.is_empty():
-		return DotResult.fail(DotError.CODE_INVALID, "shot '%s' is suppressed with nothing for a far listener" % id)
-	return DotResult.success(null)
+		return GSResult.fail(GSError.CODE_INVALID, "shot '%s' is suppressed with nothing for a far listener" % id)
+	return GSResult.success(null)

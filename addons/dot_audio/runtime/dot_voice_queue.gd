@@ -1,9 +1,9 @@
-class_name DotVoiceQueue
+class_name GSVoiceQueue
 extends Node
 
 ## One voice at a time for announcer and medal lines: `voice.setup(audio)`, then `voice.say(&"medal_headshot", 40)`. A line
 ## outranking the speaking one by [member interrupt_margin] cuts it off; others wait, by priority then order, never queued twice,
-## lowest dropped past the cap and stale past [member max_wait]. The end of a line comes from [method DotAudioManager.is_playing].
+## lowest dropped past the cap and stale past [member max_wait]. The end of a line comes from [method GSAudioManager.is_playing].
 
 const PLAYING := &"playing"
 const INTERRUPTED := &"interrupted"
@@ -19,7 +19,7 @@ const DROPPED := &"dropped"
 ## Silence between two lines.
 @export var gap: float = 0.12
 
-var _manager: DotAudioManager = null
+var _manager: GSAudioManager = null
 var _handle: int = 0
 var _current_priority: int = 0
 var _gap_left: float = 0.0
@@ -28,7 +28,7 @@ var _now: float = 0.0
 var _queue: Array = []
 
 
-func setup(manager: DotAudioManager) -> void:
+func setup(manager: GSAudioManager) -> void:
 	_manager = manager
 
 

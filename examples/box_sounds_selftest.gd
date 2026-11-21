@@ -1,6 +1,6 @@
 extends "selftest/selftest_base.gd"
 
-## DotBoxSounds: every slot plays, stock fallback, effect end once, approach edge, silent slot, asset slot, signal.
+## GSBoxSounds: every slot plays, stock fallback, effect end once, approach edge, silent slot, asset slot, signal.
 
 const SECTIONS := 5
 const CHECKS := 23
@@ -9,19 +9,19 @@ var _events: Array = []
 
 
 func _ready() -> void:
-	DotLog.set_level(DotLog.Level.ERROR)
-	var cat := DotAudioCatalogue.new()
+	GSLog.set_level(GSLog.Level.ERROR)
+	var cat := GSAudioCatalogue.new()
 	var m := _manager(cat, 16)
-	var bs := DotBoxSounds.new()
+	var bs := GSBoxSounds.new()
 	bs.manager = m
 	var recipes := bs.install(cat)
 	bs.event_fired.connect(func(b: StringName, e: StringName, _p: Vector3, s: StringName, h: int) -> void: _events.append([b, e, s, h]))
-	var sink := m.sink as DotAudioSinkNull
+	var sink := m.sink as GSAudioSinkNull
 
 	_section("The stock set")
-	_check(recipes.size() == DotBoxSounds.EVENTS.size() and cat.validate().ok, "a stock sound per event, a valid catalogue")
+	_check(recipes.size() == GSBoxSounds.EVENTS.size() and cat.validate().ok, "a stock sound per event, a valid catalogue")
 	var _r := bs.set_slots(&"plain", {})
-	for e in DotBoxSounds.EVENTS:
+	for e in GSBoxSounds.EVENTS:
 		var h := bs.fire(&"plain", e, Vector3(1, 0, 1))
 		_check(h != 0, "empty slot %s plays the stock sound" % e)
 	_check(_events.size() == 6, "one signal per event (%d)" % _events.size())
@@ -34,7 +34,7 @@ func _ready() -> void:
 	_check(bs.fire(&"loud", &"deny") == 0 and _events.size() == 1 and _events[0][2] == &"", "a disabled slot is silent and still signals")
 	_check(bs.fire(&"loud", &"reward", Vector3.ZERO) != 0, "a slot naming a stock id plays it")
 	_check(sink.count_of(&"boxslot_loud_reward") == 1, "through its own def")
-	_check(DotBoxSounds.is_asset("res://a.ogg") and DotBoxSounds.is_asset("pack/x.wav") and not DotBoxSounds.is_asset("boxev_deny"), "an asset path is told from an id")
+	_check(GSBoxSounds.is_asset("res://a.ogg") and GSBoxSounds.is_asset("pack/x.wav") and not GSBoxSounds.is_asset("boxev_deny"), "an asset path is told from an id")
 	_check(bs.slot_of(&"nope", &"open")["sound"] == "", "an unknown box reads as stock")
 
 	_section("Distance")

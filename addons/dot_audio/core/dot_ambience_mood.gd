@@ -1,4 +1,4 @@
-class_name DotAmbienceMood
+class_name GSAmbienceMood
 extends RefCounted
 
 ## One mood: looping beds `{file, volume}` plus random one-shots `{files, interval, volume, pitch, distance}`.
@@ -17,8 +17,8 @@ var _ids_key := ""
 
 ## A mood from its JSON form; [param base] is prepended to every relative file. Entries whose
 ## files are all missing are dropped and named in [param dropped].
-static func from_dictionary(id: String, doc: Dictionary, base: String, dropped: PackedStringArray) -> DotAmbienceMood:
-	var m := DotAmbienceMood.new()
+static func from_dictionary(id: String, doc: Dictionary, base: String, dropped: PackedStringArray) -> GSAmbienceMood:
+	var m := GSAmbienceMood.new()
 	m.name = StringName(id)
 	m.volume = clampf(float(doc.get("volume", 1.0)), 0.0, 2.0)
 	for raw: Variant in doc.get("beds", []):
@@ -58,8 +58,8 @@ static func from_dictionary(id: String, doc: Dictionary, base: String, dropped: 
 
 ## A mood from a directory of files by naming: names starting `bed` or `loop` are beds, the
 ## rest one-shots at the default cadence.
-static func from_folder(id: String, dir: String) -> DotAmbienceMood:
-	var m := DotAmbienceMood.new()
+static func from_folder(id: String, dir: String) -> GSAmbienceMood:
+	var m := GSAmbienceMood.new()
 	m.name = StringName(id)
 	var shots := PackedStringArray()
 	for f in DirAccess.get_files_at(dir):
@@ -83,8 +83,8 @@ static func from_folder(id: String, dir: String) -> DotAmbienceMood:
 
 ## A copy of this mood named [param new_name] whose one-shots also include [param other]'s: a map that
 ## wants a few sounds from a second mood.
-func with_oneshots_of(other: DotAmbienceMood, new_name: StringName) -> DotAmbienceMood:
-	var m := DotAmbienceMood.new()
+func with_oneshots_of(other: GSAmbienceMood, new_name: StringName) -> GSAmbienceMood:
+	var m := GSAmbienceMood.new()
 	m.name = new_name
 	m.volume = volume
 	m.beds = beds.duplicate()

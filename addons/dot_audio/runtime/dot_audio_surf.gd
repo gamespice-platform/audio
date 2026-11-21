@@ -1,13 +1,13 @@
-class_name DotAudioSurf
-extends DotAudioSlide
+class_name GSAudioSurf
+extends GSAudioSlide
 
 ## The glide of a body surfing a ramp: one quiet looping voice per surfer, louder and higher the
 ## faster it goes (curve and switches in [member rules]). Call [method keep_surfers] each frame. Never on a server.
 
-var rules: DotAudioSurfRules = DotAudioSurfRules.new()
+var rules: GSAudioSurfRules = GSAudioSurfRules.new()
 
 
-## Follows exactly these bodies, each surfing by [method DotAudioSurfRules.is_surfing].
+## Follows exactly these bodies, each surfing by [method GSAudioSurfRules.is_surfing].
 func keep_surfers(bodies: Array) -> void:
 	keep(bodies, _is_surfer)
 
@@ -23,7 +23,7 @@ func _worth_asking(playing: bool, speed: float) -> bool:
 
 
 func _native_ok() -> bool:
-	return get_script() == DotAudioSurf
+	return get_script() == GSAudioSurf
 
 
 func _native_quiet() -> float:
@@ -46,7 +46,7 @@ func _native_surfing_on() -> bool:
 	return rules.enabled
 
 
-var _glide_ids: Array[StringName] = [DotAudioStock.SURF_GLIDE_ID]
+var _glide_ids: Array[StringName] = [GSAudioStock.SURF_GLIDE_ID]
 
 
 func _sound_ids() -> Array[StringName]:
@@ -54,7 +54,7 @@ func _sound_ids() -> Array[StringName]:
 
 
 func _sound_for(_surface: StringName) -> StringName:
-	return DotAudioStock.SURF_GLIDE_ID
+	return GSAudioStock.SURF_GLIDE_ID
 
 
 func _shape(speed: float, loudness: float) -> Vector2:

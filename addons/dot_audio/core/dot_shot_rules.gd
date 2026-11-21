@@ -1,4 +1,4 @@
-class_name DotShotRules
+class_name GSShotRules
 extends RefCounted
 
 ## What the layered shot sound does, as server and client cvars (default on): [signal changed] on any change. Presentation only.

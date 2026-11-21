@@ -3,18 +3,18 @@ extends "selftest_shots.gd"
 ## The synth sections of [code]audio_selftest.gd[/code]: generated sounds, the bank, the Godot sink and looping.
 
 
-func _synth_catalogue() -> DotAudioCatalogue:
-	var c := DotAudioCatalogue.new()
+func _synth_catalogue() -> GSAudioCatalogue:
+	var c := GSAudioCatalogue.new()
 
 	# Two variants, because the bank promises to keep them apart and a catalogue whose
 	# defs all have one path cannot show that it does.
-	var rifle := DotAudioDef.new()
+	var rifle := GSAudioDef.new()
 	rifle.id = &"synth_rifle"
 	rifle.path = "res://fixtures/rifle_a.ogg"
 	rifle.variants = PackedStringArray(["res://fixtures/rifle_b.ogg"])
 	c.add(rifle)
 
-	var step := DotAudioDef.new()
+	var step := GSAudioDef.new()
 	step.id = &"synth_step"
 	step.path = "res://fixtures/step.ogg"
 	c.add(step)
@@ -25,30 +25,30 @@ func _synth_catalogue() -> DotAudioCatalogue:
 func _test_synth() -> void:
 	_section("A synthesised stand-in, and the order it loses to a real file in")
 
-	var shot := DotAudioSynth.voice(DotAudioSynth.Voice.SHOT)
+	var shot := GSAudioSynth.voice(GSAudioSynth.Voice.SHOT)
 	_check(shot != null and not shot.data.is_empty(), "a voice bakes to bytes")
 	_check(
 		(
 			shot.format == AudioStreamWAV.FORMAT_16_BITS
 			and not shot.stereo
-			and shot.mix_rate == DotAudioSynth.RATE
+			and shot.mix_rate == GSAudioSynth.RATE
 		),
 		"16-bit mono at the documented rate"
 	)
 
 	var frames := shot.data.size() / 2
-	var seconds := float(frames) / float(DotAudioSynth.RATE)
-	var wanted: float = DotAudioSynth.RECIPES[DotAudioSynth.Voice.SHOT][2]
+	var seconds := float(frames) / float(GSAudioSynth.RATE)
+	var wanted: float = GSAudioSynth.RECIPES[GSAudioSynth.Voice.SHOT][2]
 	_check(absf(seconds - wanted) < 0.01, "and is as long as its recipe says")
 
 	_check(
-		DotAudioSynth.voice(DotAudioSynth.Voice.SHOT).data == shot.data,
+		GSAudioSynth.voice(GSAudioSynth.Voice.SHOT).data == shot.data,
 		"the same voice bakes byte-identical twice, so two clients hear one shot"
 	)
 
 	var every := true
-	for v in DotAudioSynth.RECIPES.keys():
-		var one := DotAudioSynth.voice(v)
+	for v in GSAudioSynth.RECIPES.keys():
+		var one := GSAudioSynth.voice(v)
 		if one == null or one.data.size() < 2:
 			every = false
 	_check(every, "every voice in the table bakes")
@@ -65,15 +65,15 @@ func _test_synth() -> void:
 
 	_check(
 		(
-			DotAudioSynth.bake(700.0, 90.0, 0.1, 0.5, 0.8, 0.004, 1).data
-			!= DotAudioSynth.bake(700.0, 90.0, 0.1, 0.5, 0.8, 0.004, 2).data
+			GSAudioSynth.bake(700.0, 90.0, 0.1, 0.5, 0.8, 0.004, 1).data
+			!= GSAudioSynth.bake(700.0, 90.0, 0.1, 0.5, 0.8, 0.004, 2).data
 		),
 		"a different salt is a different noise"
 	)
 
-	var long_one := DotAudioSynth.bake(400.0, 200.0, 60.0)
+	var long_one := GSAudioSynth.bake(400.0, 200.0, 60.0)
 	_check(
-		float(long_one.data.size() / 2) / float(DotAudioSynth.RATE) <= 4.01,
+		float(long_one.data.size() / 2) / float(GSAudioSynth.RATE) <= 4.01,
 		"an absurd length is clamped rather than allocating a minute of placeholder"
 	)
 
@@ -82,12 +82,12 @@ func _test_synth() -> void:
 
 func _test_synth_bank() -> void:
 	var cat := _synth_catalogue()
-	var bank := DotAudioSynth.bank(
+	var bank := GSAudioSynth.bank(
 		cat,
 		{
-			&"synth_rifle": DotAudioSynth.Voice.SHOT,
-			&"synth_step": DotAudioSynth.Voice.STEP,
-			&"not_in_the_catalogue": DotAudioSynth.Voice.CLICK,
+			&"synth_rifle": GSAudioSynth.Voice.SHOT,
+			&"synth_step": GSAudioSynth.Voice.STEP,
+			&"not_in_the_catalogue": GSAudioSynth.Voice.CLICK,
 		}
 	)
 
@@ -111,12 +111,12 @@ func _test_synth_sink(bank: Dictionary) -> void:
 	var host := Node.new()
 	add_child(host)
 
-	var sink := DotAudioSinkGodot.new(host, 8)
+	var sink := GSAudioSinkGodot.new(host, 8)
 
 	var missing := {
 		"id": "synth_rifle",
 		"path": "res://fixtures/rifle_a.ogg",
-		"kind": DotAudioDef.Kind.FLAT,
+		"kind": GSAudioDef.Kind.FLAT,
 		"priority": 50,
 	}
 	_check(sink.play(missing) == 0, "with neither a file nor a bank, nothing plays")
@@ -126,17 +126,17 @@ func _test_synth_sink(bank: Dictionary) -> void:
 	_check(sink.play(missing) != 0, "with a bank, the same request plays")
 	_check(sink.sink_name().begins_with("godot+bank"), "and says so, for a bug report")
 
-	var by_id := {"id": "synth_step", "path": "", "kind": DotAudioDef.Kind.FLAT, "priority": 50}
+	var by_id := {"id": "synth_step", "path": "", "kind": GSAudioDef.Kind.FLAT, "priority": 50}
 	_check(sink.play(by_id) != 0, "a def with no path at all resolves by id")
 
 	# A real file has to win, or the bank is a placeholder somebody has to remember to
 	# remove. user:// rather than res://, because a suite cannot write into its own build.
-	var real := DotAudioSynth.bake(300.0, 300.0, 0.05, 0.2, 0.0)
+	var real := GSAudioSynth.bake(300.0, 300.0, 0.05, 0.2, 0.0)
 	var probe_path := "user://dot_audio_probe.tres"
 	var saved := ResourceSaver.save(real, probe_path) == OK
-	sink.bank[probe_path] = DotAudioSynth.voice(DotAudioSynth.Voice.BOOM)
+	sink.bank[probe_path] = GSAudioSynth.voice(GSAudioSynth.Voice.BOOM)
 
-	var over := {"id": "probe", "path": probe_path, "kind": DotAudioDef.Kind.FLAT, "priority": 50}
+	var over := {"id": "probe", "path": probe_path, "kind": GSAudioDef.Kind.FLAT, "priority": 50}
 	var handle := sink.play(over)
 	var played: AudioStream = null
 	for child in host.get_children():
@@ -154,7 +154,7 @@ func _test_synth_sink(bank: Dictionary) -> void:
 	_test_synth_loop(host, sink, bank)
 
 
-func _test_synth_loop(host: Node, sink: DotAudioSinkGodot, bank: Dictionary) -> void:
+func _test_synth_loop(host: Node, sink: GSAudioSinkGodot, bank: Dictionary) -> void:
 	# Assert on the stream the player was handed; the dummy driver's clock is not one to wait on.
 	var stream_of := func(h: int) -> AudioStream:
 		for child in host.get_children():
@@ -162,7 +162,7 @@ func _test_synth_loop(host: Node, sink: DotAudioSinkGodot, bank: Dictionary) -> 
 				return child.get("stream") as AudioStream
 		return null
 
-	var hum := {"id": "synth_step", "path": "", "kind": DotAudioDef.Kind.FLAT, "priority": 50, "looping": true}
+	var hum := {"id": "synth_step", "path": "", "kind": GSAudioDef.Kind.FLAT, "priority": 50, "looping": true}
 	var hum_handle := sink.play(hum)
 	var hum_stream := stream_of.call(hum_handle) as AudioStreamWAV
 	var source := bank[&"synth_step"] as AudioStreamWAV
@@ -175,7 +175,7 @@ func _test_synth_loop(host: Node, sink: DotAudioSinkGodot, bank: Dictionary) -> 
 		source.loop_mode == AudioStreamWAV.LOOP_DISABLED,
 		"and the bank's own stream is untouched, so the next one-shot of it does not loop"
 	)
-	var once := sink.play({"id": "synth_step", "path": "", "kind": DotAudioDef.Kind.FLAT, "priority": 50})
+	var once := sink.play({"id": "synth_step", "path": "", "kind": GSAudioDef.Kind.FLAT, "priority": 50})
 	_check(
 		stream_of.call(once) == source,
 		"a one-shot of the same sound still plays the one-shot"
@@ -187,7 +187,7 @@ func _test_synth_loop(host: Node, sink: DotAudioSinkGodot, bank: Dictionary) -> 
 
 	# A stream type that cannot be told to loop goes round by restarting on `finished`.
 	sink.bank[&"generated"] = AudioStreamGenerator.new()
-	var gen := {"id": "generated", "path": "", "kind": DotAudioDef.Kind.FLAT, "priority": 50, "looping": true}
+	var gen := {"id": "generated", "path": "", "kind": GSAudioDef.Kind.FLAT, "priority": 50, "looping": true}
 	var gen_handle := sink.play(gen)
 	var gen_player: Node = null
 	for child in host.get_children():

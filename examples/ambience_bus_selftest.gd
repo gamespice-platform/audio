@@ -13,8 +13,8 @@ var _failed := 0
 
 
 func _ready() -> void:
-	DotLog.set_level(DotLog.Level.ERROR)
-	var m := DotAudioMixer.new()
+	GSLog.set_level(GSLog.Level.ERROR)
+	var m := GSAudioMixer.new()
 	m.master = 1.0
 	m.sfx = 0.5
 	m.ambience = 0.8
@@ -47,7 +47,7 @@ func _ready() -> void:
 
 	var beds_on_ambience := true
 	var found := 0
-	for d in DotAudioStock.ambience_defs():
+	for d in GSAudioStock.ambience_defs():
 		found += 1
 		if d.bus != &"Ambience":
 			beds_on_ambience = false
