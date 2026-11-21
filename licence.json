@@ -6,20 +6,20 @@
         "licence": "MIT",
         "author": "TMC",
         "url": "https://github.com/gamespice-platform/audio",
-        "title": "dot-audio (original content, including the synthesised sounds)"
+        "title": "gs-audio (original content, including the synthesised sounds)"
     },
     {
         "paths": [
-            "addons/dot_audio/stock/weapons"
+            "addons/gs_audio/stock/weapons"
         ],
         "licence": "CC-BY-3.0",
         "author": "Tabasco (text by Vincent Sevedge); Michel Baradari",
         "url": "https://opengameart.org/content/gunshot-sounds",
-        "title": "Weapon stock: layers of Gunshot Sounds and Michel Baradari's shot packs (modified); see addons/dot_audio/stock/CREDITS.md for the full source list, including CC-BY-4.0 and CC0 sources"
+        "title": "Weapon stock: layers of Gunshot Sounds and Michel Baradari's shot packs (modified); see addons/gs_audio/stock/CREDITS.md for the full source list, including CC-BY-4.0 and CC0 sources"
     },
     {
         "paths": [
-            "addons/dot_audio/stock/weapons"
+            "addons/gs_audio/stock/weapons"
         ],
         "licence": "CC-BY-4.0",
         "author": "KuraiWolf; jc-sounds",

@@ -102,7 +102,7 @@ func _stop() -> void:
 
 ## Peak and RMS in dBFS of a loop's file, or an empty dictionary when it cannot be decoded.
 func measure(path: String) -> Dictionary:
-	var tmp := OS.get_cache_dir().path_join("dot_audio_sound_compare.f32")
+	var tmp := OS.get_cache_dir().path_join("gs_audio_sound_compare.f32")
 	var out: Array = []
 	var code := OS.execute("ffmpeg", ["-v", "error", "-y", "-i", ProjectSettings.globalize_path(path),
 		"-ac", "1", "-ar", "44100", "-f", "f32le", tmp], out)

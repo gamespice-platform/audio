@@ -12,7 +12,7 @@ import numpy as np
 from scipy import signal
 
 RATE = 44100
-ROOT = Path(__file__).resolve().parent.parent / "addons/dot_audio"
+ROOT = Path(__file__).resolve().parent.parent / "addons/gs_audio"
 
 
 def decode(path):

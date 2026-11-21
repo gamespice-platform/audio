@@ -3,7 +3,7 @@ extends Node
 ## The ambience beds and mood set left out of the client shell's pck still resolve once a pack carrying them is mounted and listed in
 ## GSAudioStock.fallback_roots. The pack is built here (PCKPacker, tiny streams); no CDN, no GameSpice Cloud.
 
-const POOL := "res://dot_cloud/synth/1/stock"
+const POOL := "res://gs_cloud/synth/1/stock"
 const SHELL := "res://shell_without_stock"
 
 var _passed := 0
@@ -24,7 +24,7 @@ func _check(ok: bool, what: String) -> void:
 
 
 func _run() -> void:
-	print("dot-audio stock pack")
+	print("gs-audio stock pack")
 	var pck := _build_pack()
 	_check(not pck.is_empty(), "synthetic pack built")
 

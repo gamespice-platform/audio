@@ -5,7 +5,7 @@ extends Node
 
 const ROUNDS := 200
 const VOICES := 32
-const FILE := "res://addons/dot_audio/stock/weapons/bash_0.ogg"
+const FILE := "res://addons/gs_audio/stock/weapons/bash_0.ogg"
 const MISSING := "res://sounds/not_shipped.ogg"
 
 

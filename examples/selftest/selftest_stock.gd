@@ -220,8 +220,8 @@ func _check_surface_lookup(steps: GSAudioFootsteps, body: Node3D) -> void:
 	_check(GSAudioFootsteps.surface_of_collider(floor) == &"wood", "a collider's surface meta names it")
 	var fps_floor := StaticBody3D.new()
 	fps_floor.name = "Box"
-	fps_floor.set_meta(&"dot_fps_surface", &"ice")
-	_check(GSAudioFootsteps.surface_of_collider(fps_floor) == &"snow", "so does dot-player-controller's dot_fps_surface")
+	fps_floor.set_meta(&"gs_fps_surface", &"ice")
+	_check(GSAudioFootsteps.surface_of_collider(fps_floor) == &"snow", "so does gs-player-controller's gs_fps_surface")
 	fps_floor.free()
 	_check(GSAudioFootsteps.surface_of_collider(child) == &"concrete", "a parent's surface group does too")
 	_check(
@@ -500,23 +500,23 @@ func _test_raw_fallback() -> void:
 	# The shape an overlay pack has: the release zip's .ogg and .ogg.import, and no
 	# .godot/imported output behind the marker.
 	var source := ProjectSettings.globalize_path(stock)
-	var marker := "user://dot_audio_probe_step.ogg.import"
+	var marker := "user://gs_audio_probe_step.ogg.import"
 	var w := FileAccess.open(marker, FileAccess.WRITE)
-	w.store_string('[remap]\n\nimporter="oggvorbisstr"\ntype="AudioStreamOggVorbis"\npath="res://.godot/imported/dot_audio_probe_step.ogg-0000.oggvorbisstr"\n')
+	w.store_string('[remap]\n\nimporter="oggvorbisstr"\ntype="AudioStreamOggVorbis"\npath="res://.godot/imported/gs_audio_probe_step.ogg-0000.oggvorbisstr"\n')
 	w.close()
-	var pck := "user://dot_audio_probe.pck"
+	var pck := "user://gs_audio_probe.pck"
 	var packer := PCKPacker.new()
 	packer.pck_start(pck)
-	packer.add_file("res://dot_audio_probe/step.ogg", source)
-	packer.add_file("res://dot_audio_probe/step.ogg.import", ProjectSettings.globalize_path(marker))
+	packer.add_file("res://gs_audio_probe/step.ogg", source)
+	packer.add_file("res://gs_audio_probe/step.ogg.import", ProjectSettings.globalize_path(marker))
 	packer.flush()
 	_check(ProjectSettings.load_resource_pack(pck), "a pack shaped like an addon overlay mounts")
-	var path := "res://dot_audio_probe/step.ogg"
+	var path := "res://gs_audio_probe/step.ogg"
 	_check(not GSAudioSinkGodot._import_output_present(path), "its marker names an output the build does not have")
 	var raw := GSAudioSinkGodot.stream_at(path)
 	_check(raw is AudioStreamOggVorbis and raw.get_length() > 0.05, "so the sound is decoded from its own bytes (%.2f s)" % (raw.get_length() if raw != null else 0.0))
 	_check(GSAudioSinkGodot.stream_at(path) == raw, "once: the next play reuses it")
-	_check(GSAudioSinkGodot.stream_at("res://dot_audio_probe/none.ogg") == null, "and a file that is not there is still silence")
+	_check(GSAudioSinkGodot.stream_at("res://gs_audio_probe/none.ogg") == null, "and a file that is not there is still silence")
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(marker))
 	GSAudioSinkGodot.clear_streams()
 	_check(GSAudioSinkGodot._RAW.streams.is_empty(), "clear_streams() drops the cache so a process can exit with no stream in use")
@@ -560,7 +560,7 @@ func _test_cheap_starts() -> void:
 	_check(_cheap_stream(host, second) is AudioStreamWAV, "once decoded, the next play starts from PCM")
 	var made_up := 0.0
 	for child in host.get_children():
-		if int(child.get_meta(&"dot_audio_handle", 0)) == second:
+		if int(child.get_meta(&"gs_audio_handle", 0)) == second:
 			made_up = float(child.get("volume_db"))
 	_check(absf(made_up - 6.02) < 0.01 and absf(float(sink.voice(second)["volume_db"])) < 0.001, "at the same level: its headroom is made up on the player (%+.2f dB) and voice() reports the request's" % made_up)
 	sink.shape(second, -3.0, 1.0)
@@ -577,8 +577,8 @@ func _test_cheap_starts() -> void:
 	var pcm: GDScript = GSAudioSinkGodot._PCM
 	_check(not pcm._copies.has(other) and not pcm._jobs.has(other), "pcm_max_seconds 0 turns the decoding off")
 
-	sink.bank = {"res://dot_audio_probe/absent.ogg": GSAudioSynth.bake(300.0, 300.0, 0.05, 0.2, 0.0)}
-	var absent := {"id": "x", "path": "res://dot_audio_probe/absent.ogg", "kind": GSAudioDef.Kind.FLAT, "priority": 90}
+	sink.bank = {"res://gs_audio_probe/absent.ogg": GSAudioSynth.bake(300.0, 300.0, 0.05, 0.2, 0.0)}
+	var absent := {"id": "x", "path": "res://gs_audio_probe/absent.ogg", "kind": GSAudioDef.Kind.FLAT, "priority": 90}
 	_check(sink.play(absent) != 0 and sink._absent_ms.has(absent["path"]), "a path with no file plays its stand-in and is remembered as absent")
 	sink._absent_ms[absent["path"]] = Time.get_ticks_msec() - GSAudioSinkGodot.ABSENT_RECHECK_MS
 	sink.bank.erase(absent["path"])
@@ -681,7 +681,7 @@ func _test_warm() -> void:
 
 func _cheap_stream(host: Node, handle: int) -> AudioStream:
 	for child in host.get_children():
-		if int(child.get_meta(&"dot_audio_handle", 0)) == handle:
+		if int(child.get_meta(&"gs_audio_handle", 0)) == handle:
 			return child.get("stream") as AudioStream
 	return null
 
@@ -700,7 +700,7 @@ func _test_nothing_kept_alive_at_exit() -> void:
 	var code := OS.execute(OS.get_executable_path(), args, output, true)
 	var text := "\n".join(output)
 	_check(code == 0 and text.contains("exit probe: 2 scripts named"),
-		"a process that loads dot-audio as a game's suite does runs and quits (exit %d)" % code)
+		"a process that loads gs-audio as a game's suite does runs and quits (exit %d)" % code)
 	var kept := text.contains("still in use at exit") or text.contains("were leaked at exit")
 	_check(not kept, "and leaves nothing in use at exit%s" % (
 		"" if not kept else ": " + " | ".join(Array(text.split("\n")).filter(

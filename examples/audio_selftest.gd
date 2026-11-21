@@ -1,6 +1,6 @@
 extends "selftest/selftest_synth.gd"
 
-## Exercises dot-audio on a machine with no sound card, which is the point.
+## Exercises gs-audio on a machine with no sound card, which is the point.
 ##
 ## [b]Everything above the sink is the real thing.[/b] The catalogue, the culling, the
 ## cooldowns, the concurrency caps, the priority stealing and the music state machine all
@@ -23,7 +23,7 @@ func _ready() -> void:
 	await _run()
 
 func _run() -> void:
-	_line("dot-audio self-test")
+	_line("gs-audio self-test")
 	_line("")
 
 	_test_honesty_about_the_device()
@@ -609,7 +609,7 @@ func _test_shaping_godot_sink() -> void:
 	gs.bank = {&"tone": GSAudioSynth.voice(GSAudioSynth.Voice.STEP)}
 	var player_of := func(handle: int) -> Node:
 		for child in host.get_children():
-			if int(child.get_meta(&"dot_audio_handle", 0)) == handle:
+			if int(child.get_meta(&"gs_audio_handle", 0)) == handle:
 				return child
 		return null
 

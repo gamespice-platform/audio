@@ -5,12 +5,12 @@ extends Node
 ##
 ## [b]The order is the test.[/b] A [GSAudioDef] preloaded first, and only then a script naming
 ## [GSAudioManager], is what kept mg-dangerous-delivery's whole run alive at exit when
-## [GSAudioSinkGodot] held its cache in a `static var` (see dot_audio_raw_streams.gd). Naming
+## [GSAudioSinkGodot] held its cache in a `static var` (see gs_audio_raw_streams.gd). Naming
 ## the manager first does not do it, so a probe written the other way round would pass on the
 ## bug.
 
-const _DEF := preload("res://addons/dot_audio/core/dot_audio_def.gd")
-const _STOCK := preload("res://addons/dot_audio/core/dot_audio_stock.gd")
+const _DEF := preload("res://addons/gs_audio/core/gs_audio_def.gd")
+const _STOCK := preload("res://addons/gs_audio/core/gs_audio_stock.gd")
 
 var _named: Array[Script] = [GSAudioManager, GSAudioFootsteps]
 

@@ -18,7 +18,7 @@ from scipy import signal
 from scipy.io import wavfile
 
 RATE = 44100
-SHOTS = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "addons", "dot_audio", "stock", "shots")
+SHOTS = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "addons", "gs_audio", "stock", "shots")
 
 
 def load(path):

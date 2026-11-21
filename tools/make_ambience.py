@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generates dot-audio's stock ambience beds: seamless stereo loops made of arithmetic.
+"""Generates gs-audio's stock ambience beds: seamless stereo loops made of arithmetic.
 
     python3 -I tools/make_ambience.py [name ...]      # all of them by default
 
@@ -23,7 +23,7 @@ RATE = 44100
 SECONDS = 32.0
 # Under a game's mix by about seven loudness units at the family target (-17 LUFS).
 BED_LUFS = -24.0
-OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "addons", "dot_audio", "stock", "ambience")
+OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "addons", "gs_audio", "stock", "ambience")
 XFADE = 2.0
 
 

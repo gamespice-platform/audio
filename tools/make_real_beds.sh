@@ -3,7 +3,7 @@
 # (https://opengameart.org/content/park-ambiences). Usage: make_real_beds.sh <dir with park_ambience_{wind,birds}.wav>
 set -euo pipefail
 src=${1:?directory with park_ambience_wind.wav and park_ambience_birds.wav}
-out="$(dirname "$0")/../addons/dot_audio/stock/ambience"
+out="$(dirname "$0")/../addons/gs_audio/stock/ambience"
 bed() { # name file start seconds
   local tmp; tmp=$(mktemp -d)
   ffmpeg -v error -y -ss "$3" -t "$4" -i "$src/$2" -ac 1 -ar 44100 "$tmp/seg.wav"

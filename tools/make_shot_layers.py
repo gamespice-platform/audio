@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Builds the layered shot sets in addons/dot_audio/stock/shots/ from CC0 recordings.
+"""Builds the layered shot sets in addons/gs_audio/stock/shots/ from CC0 recordings.
 
     python3 -I tools/make_shot_layers.py [--extra DIR]   (DIR holds the downloads named in EXTRA)
 
@@ -17,7 +17,7 @@ import numpy as np
 from scipy import signal
 
 RATE = 44100
-ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "addons", "dot_audio", "stock")
+ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "addons", "gs_audio", "stock")
 WEAPONS = os.path.join(ROOT, "weapons")
 OUT = os.path.join(ROOT, "shots")
 

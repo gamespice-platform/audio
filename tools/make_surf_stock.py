@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Builds dot-audio's surf glide loop (stock/surf/surf_glide.ogg): a quiet, slick hiss.
+"""Builds gs-audio's surf glide loop (stock/surf/surf_glide.ogg): a quiet, slick hiss.
 
     python3 -I tools/make_surf_stock.py
 
@@ -15,7 +15,7 @@ import numpy as np
 RATE = 44100
 SECONDS = 4.0
 TARGET_RMS_DB = -27.0
-OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "addons", "dot_audio", "stock", "surf")
+OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "addons", "gs_audio", "stock", "surf")
 
 
 def shaped_noise(rng, n):

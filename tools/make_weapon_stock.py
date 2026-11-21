@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Builds dot-audio's stock weapon sounds from the CC0 recordings listed in stock/CREDITS.md.
+"""Builds gs-audio's stock weapon sounds from the CC0 recordings listed in stock/CREDITS.md.
 
     python3 -I tools/make_weapon_stock.py SOURCES_DIR [class ...]
 
@@ -19,7 +19,7 @@ import numpy as np
 from scipy import signal
 
 RATE = 44100
-OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "addons", "dot_audio", "stock", "weapons")
+OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "addons", "gs_audio", "stock", "weapons")
 MAX_VARIANTS = 5
 FAR_VARIANTS = 2
 

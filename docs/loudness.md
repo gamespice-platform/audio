@@ -17,17 +17,17 @@ The tool's verdict says `quiet` under −20 LUFS and `loud` over −14, which is
 - **Levels are set in the catalogue.** `gain_db` per def is the mix. A game that is out of band is mixed again, not limited harder.
 - **The master limiter is a backstop.** `GSAudioManager.limit_master` (on by default) puts an `AudioEffectHardLimiter` at the end of Master with its ceiling at −2 dBFS: a decibel under the true-peak ceiling because the peaks between samples of a limited signal land above its sample peaks (at −1.5 a game measured −0.9 dBTP). It catches ten things at once; a mix that leans on it sounds squashed.
 - **`GSAudioManager.loudness_trim_db`** is the whole-game nudge, added to every voice's gain (so it reaches the browser too), set from a measurement and never by ear.
-- **The web build's limiter is the page's.** A web export in sample playback mode does not run bus effects, so the Master limiter does nothing there; the catalogue levels and the trim, which are per voice, still apply, and `addons/dot_audio/web/dot_audio_ceiling.js`, loaded before the engine, puts a limiter in front of the page's speakers. See [the browser's ceiling](#the-browsers-ceiling).
+- **The web build's limiter is the page's.** A web export in sample playback mode does not run bus effects, so the Master limiter does nothing there; the catalogue levels and the trim, which are per voice, still apply, and `addons/gs_audio/web/gs_audio_ceiling.js`, loaded before the engine, puts a limiter in front of the page's speakers. See [the browser's ceiling](#the-browsers-ceiling).
 
-## Measuring: `addons/dot_audio/tools/loudness.sh`
+## Measuring: `addons/gs_audio/tools/loudness.sh`
 
 Run from any game's root (the addon is linked into every game):
 
 ```bash
-addons/dot_audio/tools/loudness.sh --seconds=40 --warmup=6 --fire [--scene=res://x.tscn] [--keep=mix.wav] [-- game args]
+addons/gs_audio/tools/loudness.sh --seconds=40 --warmup=6 --fire [--scene=res://x.tscn] [--keep=mix.wav] [-- game args]
 ```
 
-It plays the game under `xvfb-run` with `dot_audio_capture.gd` as the main loop: the main scene (or `--scene`), a stand-in player that walks, sprints, jumps and turns through `Input.parse_input_event` (so every game's own bindings see it), and an `AudioEffectRecord` on Master. It prints one line: integrated loudness, true peak, loudness range, the minimum, median and maximum RMS of 3 s windows, how many windows were digital silence, and a verdict.
+It plays the game under `xvfb-run` with `gs_audio_capture.gd` as the main loop: the main scene (or `--scene`), a stand-in player that walks, sprints, jumps and turns through `Input.parse_input_event` (so every game's own bindings see it), and an `AudioEffectRecord` on Master. It prints one line: integrated loudness, true peak, loudness range, the minimum, median and maximum RMS of 3 s windows, how many windows were digital silence, and a verdict.
 
 Before that line it prints how far the camera went while recording (`capture camera:`). In every game here the camera rides the local player, so a camera that stayed put is a recording of somebody standing still, whatever the stand-in pressed: the bots' steps, their guns and the bed, and a trim set from it is set against the wrong mix. That is how the levels of three games were wrong on 2026-10-12. `--web` takes the limiter off Master before recording: what a browser's engine puts out before the page's ceiling.
 
@@ -44,7 +44,7 @@ A game whose main scene is a menu or a lobby that waits for a click records the 
 
 A web build in sample playback runs no bus effects, so nothing held the ceiling there. Measured 2026-10-12 in headless Chromium on a web export of game-fatal-contact (its offline match, the recording tapped between the engine and the speakers): **+3.4 dBFS in float, 187 clipped samples in 40 s.** The same game on desktop, recorded with `loudness.sh --web` (the limiter taken off Master), reads +0.7 dBTP and 1.5 LU louder than with it: the desktop limiter was doing real work at the family level, and the browser had none.
 
-`addons/dot_audio/web/dot_audio_ceiling.js` is the browser's limiter. The engine's Web Audio graph cannot be reached from a script once it exists, so the file wraps the page's `AudioContext` before the engine makes one and hands it a `destination` that is a chain: a `DynamicsCompressorNode` above -3 dBFS (ratio 20, 2 ms attack, 100 ms release), a gain that takes off the makeup gain the Web Audio spec adds to every compressor (otherwise a browser would be about 1.7 dB louder than a desktop), and a `WaveShaperNode` soft clip, oversampled 4x, whose curve never passes -1.5 dBFS. A page loads it before `index.js` (GameSpice Server Deploy's `export-web` copies it beside the build and puts it in both pages).
+`addons/gs_audio/web/gs_audio_ceiling.js` is the browser's limiter. The engine's Web Audio graph cannot be reached from a script once it exists, so the file wraps the page's `AudioContext` before the engine makes one and hands it a `destination` that is a chain: a `DynamicsCompressorNode` above -3 dBFS (ratio 20, 2 ms attack, 100 ms release), a gain that takes off the makeup gain the Web Audio spec adds to every compressor (otherwise a browser would be about 1.7 dB louder than a desktop), and a `WaveShaperNode` soft clip, oversampled 4x, whose curve never passes -1.5 dBFS. A page loads it before `index.js` (GameSpice Server Deploy's `export-web` copies it beside the build and puts it in both pages).
 
 | Run (FC, 2026-10-12) | Integrated | Peak |
 | --- | --- | --- |
@@ -54,7 +54,7 @@ A web build in sample playback runs no bus effects, so nothing held the ceiling 
 | The same 3 dB hotter | -12.8 -> -14.1 LUFS | +1.1 -> -1.9 dBTP |
 | The same 10 dB quieter | -25.6 -> -25.6 LUFS | -9.4 -> -9.4 dBFS (unity below the threshold) |
 
-The two live runs are different stretches of play (the local player does not move under Chromium's software renderer), so compare their peaks, not their loudness; the offline rows are the same signal both ways. A script-side guard was tried first and dropped: summing what each voice GameSpice Audio starts could reach (file peak, gain, bus chain, distance) cut 150 voices a run by up to 12 dB and still let +0.1 dBTP through, because the estimate is the worst case for every voice at once and the loudest sounds in two games (zee-dot-weapons' reports) never pass through GameSpice Audio at all. The page sees everything the engine plays.
+The two live runs are different stretches of play (the local player does not move under Chromium's software renderer), so compare their peaks, not their loudness; the offline rows are the same signal both ways. A script-side guard was tried first and dropped: summing what each voice GameSpice Audio starts could reach (file peak, gain, bus chain, distance) cut 150 voices a run by up to 12 dB and still let +0.1 dBTP through, because the estimate is the worst case for every voice at once and the loudest sounds in two games (zee-gs-weapons' reports) never pass through GameSpice Audio at all. The page sees everything the engine plays.
 
 ## Footsteps: `GSAudioFootsteps`
 
@@ -63,7 +63,7 @@ One node per game; `track(body)` for the player, other players and bots.
 - **A step is distance, not time or animation.** Every 1.5 m at a walk to 2.3 m at a run, measured on the ground plane, so a body moved by netcode interpolation or a navigation agent steps at the rate it really moves.
 - **Slow is silent.** Under `quiet_speed` (1.4 m/s) nothing plays; sneaking is a mechanic in a hiding game.
 - **A landing after `landing_air_time` in the air is one full step**, a teleport (over 4 m in a frame) is nothing.
-- **The surface comes from the ground collider**: the hit shape's or its `surface` meta (or GameSpice Player Controller's `dot_fps_surface`), or a parent's, a `surface_<name>` group, or a surface word in the node name, folded through `GSAudioStock.surface_of` (so `stone`, `asphalt` and `Floor_Tile` are concrete). Anything else is `default_surface`, which a game sets per map.
+- **The surface comes from the ground collider**: the hit shape's or its `surface` meta (or GameSpice Player Controller's `gs_fps_surface`), or a parent's, a `surface_<name>` group, or a surface word in the node name, folded through `GSAudioStock.surface_of` (so `stone`, `asphalt` and `Floor_Tile` are concrete). Anything else is `default_surface`, which a game sets per map.
 - **`stepped(body, surface, loudness)`** is what a listening bot hears, so a game needs no second footstep system for its AI.
 
 ## Ambience: `GSAudioAmbience`
@@ -72,13 +72,13 @@ One node per game; `track(body)` for the player, other players and bots.
 
 ## The stock set
 
-`addons/dot_audio/stock/`, every file CC0 (`stock/CREDITS.md`), as defs from `GSAudioStock`:
+`addons/gs_audio/stock/`, every file CC0 (`stock/CREDITS.md`), as defs from `GSAudioStock`:
 
 - **Footsteps**: Kenney's Impact Sounds, five each of concrete, wood, grass, snow and carpet, and five light metal impacts for metal; mono, levelled against each other in `_FOOTSTEP_GAIN`.
 - **Beds**: nine seamless loops (wind and outdoor are Thimras's CC0 park recordings cut by `tools/make_real_beds.sh`; the other seven are 32 s stereo, synthesised by `tools/make_ambience.py` from fixed seeds: night, city, indoor, eerie, industrial, cave, rain), each normalised to −24 LUFS, about seven units under the target so a bed sits under the action at mixer level 1.0. Kenney's packs have no ambience; a bed is filtered noise and sparse events, which arithmetic does well, and a generated file is ours to license.
 
 **Why an addon that ships no audio ships these**: the rule is about the catalogue (a def names a path, never holds a stream), and it still holds. These are the same thirty-nine files in every game, and thirteen vendored copies would be thirteen places to fix one level. A game that wants its own defines the same id before `GSAudioStock.add_to` and wins.
 
-**And why they still play when they arrive in an addon pack.** An addon release reaches players as an overlay over the build's `res://addons/dot_audio/` (dot-cloud's addon packs), made from the release zip: tracked files only, so `x.ogg` and `x.ogg.import` with no `.godot/imported/` output behind the marker. On a shell exported before the stock set existed, the importer follows the marker to nothing. `GSAudioSinkGodot.stream_at` reads the marker first and, when its output is missing and the source file is there, decodes the file from its own bytes (Ogg Vorbis, WAV, MP3) once per path. A shell exported with the stock set carries all 39 imported outputs and markers (checked in the Linux and Web exports, 2026-10-12) and never takes that path.
+**And why they still play when they arrive in an addon pack.** An addon release reaches players as an overlay over the build's `res://addons/gs_audio/` (gs-cloud's addon packs), made from the release zip: tracked files only, so `x.ogg` and `x.ogg.import` with no `.godot/imported/` output behind the marker. On a shell exported before the stock set existed, the importer follows the marker to nothing. `GSAudioSinkGodot.stream_at` reads the marker first and, when its output is missing and the source file is there, decodes the file from its own bytes (Ogg Vorbis, WAV, MP3) once per path. A shell exported with the stock set carries all 39 imported outputs and markers (checked in the Linux and Web exports, 2026-10-12) and never takes that path.
 
 The beds play on the `Ambience` bus, whose level is `GSAudioMixer.ambience * sfx` (`ambience_follows_sfx`, on by default): the Effects slider and an Ambience slider both reach them, and either at zero silences them.

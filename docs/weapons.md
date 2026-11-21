@@ -1,18 +1,18 @@
 # Weapon sounds
 
-The stock weapon sounds in `addons/dot_audio/stock/weapons/` (84 sounds, 387 files), what each weapon pack played before, and what it plays now. Sources, authors and licences are in [stock/CREDITS.md](../addons/dot_audio/stock/CREDITS.md). Built by `tools/make_weapon_stock.py` from the downloads listed there; never edit an `.ogg` by hand.
+The stock weapon sounds in `addons/gs_audio/stock/weapons/` (84 sounds, 387 files), what each weapon pack played before, and what it plays now. Sources, authors and licences are in [stock/CREDITS.md](../addons/gs_audio/stock/CREDITS.md). Built by `tools/make_weapon_stock.py` from the downloads listed there; never edit an `.ogg` by hand.
 
 ## Audit (2026-10-27, before this change)
 
-83 weapons: zee-dot-weapons 27, zed-dot-weapons 16, zz-modern-weapons 28, zz-medieval-weapons 10, game-airdrift's own deagle and knife 2.
+83 weapons: zee-gs-weapons 27, zed-gs-weapons 16, zz-modern-weapons 28, zz-medieval-weapons 10, game-airdrift's own deagle and knife 2.
 
 | Pack | Weapons | What played | Silent | Shared |
 | --- | --- | --- | --- | --- |
 | zz-modern-weapons | 28 | nothing: `ZzWeaponSound.TABLE` empty, fire/reload/draw/dry all null | 28 of 28, every kind | n/a |
 | zz-medieval-weapons | 10 | nothing: `ZzWeaponAnim.cue` names, no player | 10 of 10 | n/a |
 | game-airdrift own weapons | 2 | nothing (its `audio/` has landing and jump only) | 2 of 2 | n/a |
-| zee-dot-weapons | 27 | one synthesised stream per class (`ZeeWeaponSound`), pitch jitter only | none, but no dry, no equip, no casing, no shell reload | one reload_out and one reload_in for every gun; one impact for every surface; 9 melee and throws on 3 swing/bash/throw streams |
-| zed-dot-weapons | 16 | zee's synth by class; uzi and tactical SMG on the pistol class, flamethrower on the minigun's, 3 throwables on the default | none | silenced pistol is the same stream as the service pistol |
+| zee-gs-weapons | 27 | one synthesised stream per class (`ZeeWeaponSound`), pitch jitter only | none, but no dry, no equip, no casing, no shell reload | one reload_out and one reload_in for every gun; one impact for every surface; 9 melee and throws on 3 swing/bash/throw streams |
+| zed-gs-weapons | 16 | zee's synth by class; uzi and tactical SMG on the pistol class, flamethrower on the minigun's, 3 throwables on the default | none | silenced pistol is the same stream as the service pistol |
 
 Games that use a pack (FC, playlot, zombie-zone and the mg- games through `ZeeShotFx` or `ZzViewModel`) have exactly their pack's sounds. GameSpice Weapon itself plays nothing and says so (`used` signals only).
 
@@ -44,7 +44,7 @@ Every class below has 2 to 5 real variants, picked at random per shot, with a pi
 
 - `GSAudioWeaponStock` (GameSpice Audio): the sounds as `weapon_<name>` defs for a game's `GSAudioManager` catalogue (`add_to`). `COUNTS` is compared with the disk by the suite.
 - `GSWeaponSound` (GameSpice Weapon): reads the same files by path with no dependency on GameSpice Audio, so packs that do not link it fall back to their own stand-in (or silence).
-- zee-dot-weapons: `ZeeWeaponSound.stream` prefers the stock for every class, the synth is the fallback. A new `smg` class (zee machine pistol and SMG, zed uzi and tactical SMG).
+- zee-gs-weapons: `ZeeWeaponSound.stream` prefers the stock for every class, the synth is the fallback. A new `smg` class (zee machine pistol and SMG, zed uzi and tactical SMG).
 - zz-modern-weapons: `ZzWeaponSound.CLASSES` maps all 28 ids; fire, reload, draw and dry come from the stock.
 - zz-medieval-weapons: `ZzMedievalSound` maps each `ZzWeaponAnim.cue` name; `ZzMedievalHeld` plays it (`play_builtin_sounds`).
 
@@ -99,7 +99,7 @@ Per-class reloads: `reload_out/in_<light|smg|rifle|heavy|magnum|sniper>` (2 each
 
 Changed 2026-10-31: nine more fire classes so guns the FC pack made sound alike no longer do: `lmg`, `battle`, `marksman`, `carbine`, `derringer`, `mpistol`, `autoshot`, `grenade`, `rail`, plus new `beam_fire` and `charge_fire` recordings, per-class reloads `reload_out/in_<lmg|launcher|energy>` and a new sniper bolt, and `dry_<light|heavy|energy>` / `equip_<light|heavy|energy>` picked by `GSWeaponSound.pick_feel`. Measured with ffmpeg on the decoded files: every new fire file is within its `GSWeaponSound.BOUNDS` length and peaks between -0.9 and -6.7 dBFS (under the -0.5 clip check). Lengths: lmg 0.31-0.39 s, battle 1.21, marksman 1.38-1.39, carbine 0.54, derringer 0.42-0.53, mpistol 0.20-0.26, autoshot 1.08, grenade 0.26-0.42, rail 0.86-1.46, charge 0.80, beam 0.29-0.45. `autoshot_fire` has 2 variants and `carbine_fire` 3: their source recordings hold that many usable shots. `_far` for seven of them was added 2026-11-10 (below). Nothing was heard by a person.
 
-Added 2026-11-01: layered shots (`GSShotDef`, `GSShotPlayer`, `GSAudioEnclosure`, stock in `stock/shots/`). A game plays `shots.fire(GSAudioShotStock.id_of(class), position)` and keeps its single `fire_*` sound as the fallback when `fire` fails (layers off). `ZeeShotFx` in zee-dot-weapons plays them through `ZeeShotLayers`. Checked as spectrograms of close, tight-room, hall and far shots; nothing was heard by a person.
+Added 2026-11-01: layered shots (`GSShotDef`, `GSShotPlayer`, `GSAudioEnclosure`, stock in `stock/shots/`). A game plays `shots.fire(GSAudioShotStock.id_of(class), position)` and keeps its single `fire_*` sound as the fallback when `fire` fails (layers off). `ZeeShotFx` in zee-gs-weapons plays them through `ZeeShotLayers`. Checked as spectrograms of close, tight-room, hall and far shots; nothing was heard by a person.
 
 ## Reload cues and level pass (2026-11-08)
 

@@ -4,8 +4,8 @@ Game audio for Godot 4.7+ that decides what is heard, how loud, how many sounds 
 
 ## Install
 
-1. Copy `addons/dot_audio/` and `addons/dot_core/` into your project.
-2. Enable dot-audio in *Project > Project Settings > Plugins*.
+1. Copy `addons/gs_audio/` and `addons/gs_core/` into your project.
+2. Enable gs-audio in *Project > Project Settings > Plugins*.
 
 ## Quick start
 
@@ -44,7 +44,7 @@ var bank := GSAudioSynth.bank(catalogue, {
 
 ## Headless and sinks
 
-In a headless run Godot reports a 44100 Hz mix rate and a "Default" device, as if a sound card existed. Only `AudioServer.get_driver_name()` says `"Dummy"`. dot-audio therefore picks its sink by driver name. `GSAudioSinkNull` runs the real catalogue, culling, cooldowns, concurrency limits and music state machine, and replaces only the code that would create an `AudioStreamPlayer`. A dedicated server can use it to decide what clients should play.
+In a headless run Godot reports a 44100 Hz mix rate and a "Default" device, as if a sound card existed. Only `AudioServer.get_driver_name()` says `"Dummy"`. gs-audio therefore picks its sink by driver name. `GSAudioSinkNull` runs the real catalogue, culling, cooldowns, concurrency limits and music state machine, and replaces only the code that would create an `AudioStreamPlayer`. A dedicated server can use it to decide what clients should play.
 
 ## Volume
 
@@ -75,13 +75,13 @@ When the pool is full the lowest-priority voice is stolen. If nothing has lower 
 | `GSShotDef` / `GSShotPlayer` | Shots played as layers (attack, body, tail, far, suppressed), crossfaded and delayed by distance. |
 | `GSAudioEnclosure` | Casts rays to estimate room size and openness, picks a tail class and drives one reverb bus. |
 | `GSShotRules` | The `snd_shot_*` cvars for the shot system. |
-| Loudness | Target of -17 LUFS integrated and -1 dBTP with a master limiter on by default. `addons/dot_audio/tools/loudness.sh` measures a game. See [docs/loudness.md](docs/loudness.md). |
+| Loudness | Target of -17 LUFS integrated and -1 dBTP with a master limiter on by default. `addons/gs_audio/tools/loudness.sh` measures a game. See [docs/loudness.md](docs/loudness.md). |
 
 ## Stock sounds
 
 `GSAudioStock.add_to(catalogue)` adds the bundled sounds as ordinary definitions. A game's own definition with the same id wins. Weapon sounds are added with `GSAudioWeaponStock.add_to(catalogue)`; see [docs/weapons.md](docs/weapons.md).
 
-Full per-file credits are in [addons/dot_audio/stock/CREDITS.md](addons/dot_audio/stock/CREDITS.md). Everything in `stock/` is CC0.
+Full per-file credits are in [addons/gs_audio/stock/CREDITS.md](addons/gs_audio/stock/CREDITS.md). Everything in `stock/` is CC0.
 
 | Sounds | Source | Licence |
 | --- | --- | --- |

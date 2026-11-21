@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Builds dot-audio's stock landing thumps (stock/landing/landing_{light,medium,hard}.ogg).
+"""Builds gs-audio's stock landing thumps (stock/landing/landing_{light,medium,hard}.ogg).
 
     python3 -I tools/make_landing_stock.py
 
@@ -15,7 +15,7 @@ import numpy as np
 from scipy import signal
 
 RATE = 44100
-OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "addons", "dot_audio", "stock", "landing")
+OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "addons", "gs_audio", "stock", "landing")
 
 
 def thump(seed, f0, f1, body_ms, scuff_ms, scuff_cut, crunch, length_ms):

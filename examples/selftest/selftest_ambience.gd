@@ -327,7 +327,7 @@ func _creepy_config_and_votes(amb: GSAmbience) -> void:
 	var cfg := GSAmbienceConfig.new()
 	var applied := cfg.apply_dictionary({"enabled": false, "volume": 0.2, "frequency": 2.0, "mood": "swamp", "allowed_moods": "swamp,cave_tunnel", "sound_dir": "/x"})
 	_check(not cfg.enabled and is_equal_approx(cfg.volume, 0.2) and cfg.allowed() == PackedStringArray(["swamp", "cave_tunnel"]) and cfg.sound_dir == "/x", "the config is a GSConfig: a dictionary layer sets every field (%s)" % str(applied))
-	_check(cfg.env_prefix() == "DOT_AMBIENCE_" and cfg.cli_prefix() == "--ambience-", "with its own environment and command-line prefixes")
+	_check(cfg.env_prefix() == "GS_AMBIENCE_" and cfg.cli_prefix() == "--ambience-", "with its own environment and command-line prefixes")
 
 	_check(GSAmbienceMoods.vote(["d1_town.Street", "canals_slime_outside", "storm_rain"]) == GSAmbienceMoods.CITY_RUINS, "soundscape names vote for a mood")
 	_check(GSAmbienceMoods.vote(["prison.general_dripping_tunnel", "coast.util_windgusts"]) == GSAmbienceMoods.INTERIOR_HORROR, "the first table row breaks a tie")

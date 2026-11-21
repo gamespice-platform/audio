@@ -37,15 +37,15 @@ var _probe_answers: Array = [[], []]
 
 func _ready() -> void:
 	GSLog.set_level(GSLog.Level.ERROR)
-	_line("dot-audio native step, slide and surf parity")
+	_line("gs-audio native step, slide and surf parity")
 	# The native path is off by default (slower than the script); this suite is what it is kept honest by.
 	GSAudioFootsteps.native_enabled = true
 	GSAudioSlide.native_enabled = true
 	GSAudioSurfRules.native_enabled = true
 	_native = ClassDB.class_exists(&"GSSimAudioSteps") and ClassDB.class_exists(&"GSSimSurfProbe")
 	if not _native:
-		var required := (OS.get_environment("GS_SIM_REQUIRE_NATIVE") if OS.has_environment("GS_SIM_REQUIRE_NATIVE") else OS.get_environment("DOT_SIM_REQUIRE_NATIVE")) == "1"
-		_line("dot-sim's library is not loaded: the native half is skipped")
+		var required := (OS.get_environment("GS_SIM_REQUIRE_NATIVE") if OS.has_environment("GS_SIM_REQUIRE_NATIVE") else OS.get_environment("GS_SIM_REQUIRE_NATIVE")) == "1"
+		_line("gs-sim's library is not loaded: the native half is skipped")
 		_check(not required, "GS_SIM_REQUIRE_NATIVE=1 needs the library")
 		_check(not GSAudioFootsteps.native_available(), "and the script says so (native_available false)")
 		_finish()

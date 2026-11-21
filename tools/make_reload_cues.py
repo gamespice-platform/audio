@@ -2,10 +2,10 @@
 """Synthesises the reload/handling cues the FC reload sequence plays at its phase boundaries
 (fc-weapons view/aw_reload_cues.gd maps phase names to these). Self-synthesised from tools/foley.py: no recordings.
 
-    python3 -I tools/make_reload_cues.py [--out addons/dot_audio/stock/weapons] [--previews DIR]
+    python3 -I tools/make_reload_cues.py [--out addons/gs_audio/stock/weapons] [--previews DIR]
 
 Writes cue_<name>_<i>.ogg (VARIANTS each), every one levelled to the same K-weighted active loudness so a quiet
-rustle and a loud slide-lock sit where a person would put them, then prints the COUNTS line for dot_audio_shot_stock.gd.
+rustle and a loud slide-lock sit where a person would put them, then prints the COUNTS line for gs_audio_shot_stock.gd.
 """
 import argparse, sys
 from pathlib import Path
@@ -233,7 +233,7 @@ def render(name, i):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--out", default=str(Path(__file__).resolve().parent.parent / "addons/dot_audio/stock/weapons"))
+    ap.add_argument("--out", default=str(Path(__file__).resolve().parent.parent / "addons/gs_audio/stock/weapons"))
     ap.add_argument("--previews", help="also write a wav per cue here")
     a = ap.parse_args()
     out = Path(a.out)

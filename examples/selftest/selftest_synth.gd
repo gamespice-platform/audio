@@ -132,7 +132,7 @@ func _test_synth_sink(bank: Dictionary) -> void:
 	# A real file has to win, or the bank is a placeholder somebody has to remember to
 	# remove. user:// rather than res://, because a suite cannot write into its own build.
 	var real := GSAudioSynth.bake(300.0, 300.0, 0.05, 0.2, 0.0)
-	var probe_path := "user://dot_audio_probe.tres"
+	var probe_path := "user://gs_audio_probe.tres"
 	var saved := ResourceSaver.save(real, probe_path) == OK
 	sink.bank[probe_path] = GSAudioSynth.voice(GSAudioSynth.Voice.BOOM)
 
@@ -140,7 +140,7 @@ func _test_synth_sink(bank: Dictionary) -> void:
 	var handle := sink.play(over)
 	var played: AudioStream = null
 	for child in host.get_children():
-		if int(child.get_meta(&"dot_audio_handle", 0)) == handle:
+		if int(child.get_meta(&"gs_audio_handle", 0)) == handle:
 			played = child.get("stream") as AudioStream
 
 	_check(saved and handle != 0, "a def whose path really exists plays")
@@ -158,7 +158,7 @@ func _test_synth_loop(host: Node, sink: GSAudioSinkGodot, bank: Dictionary) -> v
 	# Assert on the stream the player was handed; the dummy driver's clock is not one to wait on.
 	var stream_of := func(h: int) -> AudioStream:
 		for child in host.get_children():
-			if int(child.get_meta(&"dot_audio_handle", 0)) == h:
+			if int(child.get_meta(&"gs_audio_handle", 0)) == h:
 				return child.get("stream") as AudioStream
 		return null
 
@@ -191,7 +191,7 @@ func _test_synth_loop(host: Node, sink: GSAudioSinkGodot, bank: Dictionary) -> v
 	var gen_handle := sink.play(gen)
 	var gen_player: Node = null
 	for child in host.get_children():
-		if int(child.get_meta(&"dot_audio_handle", 0)) == gen_handle:
+		if int(child.get_meta(&"gs_audio_handle", 0)) == gen_handle:
 			gen_player = child
 	if gen_player != null:
 		gen_player.emit_signal("finished")

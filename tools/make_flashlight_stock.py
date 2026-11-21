@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Builds dot-audio's stock flashlight clicks (stock/flashlight/flashlight_{on,off}.ogg).
+"""Builds gs-audio's stock flashlight clicks (stock/flashlight/flashlight_{on,off}.ogg).
 
     python3 -I tools/make_flashlight_stock.py
 
@@ -15,7 +15,7 @@ import numpy as np
 from scipy import signal
 
 RATE = 44100
-OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "addons", "dot_audio", "stock", "flashlight")
+OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "addons", "gs_audio", "stock", "flashlight")
 
 
 def burst(rng, n, centre, q, decay_ms):

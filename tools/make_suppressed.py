@@ -15,7 +15,7 @@ import numpy as np
 from scipy import signal
 
 RATE = 44100
-DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "addons", "dot_audio", "stock", "weapons")
+DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "addons", "gs_audio", "stock", "weapons")
 PEAK_DB = -9.0
 
 

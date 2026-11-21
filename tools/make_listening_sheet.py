@@ -15,7 +15,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
 RATE = 44100
-ROOT = Path(__file__).resolve().parent.parent / "addons/dot_audio/stock"
+ROOT = Path(__file__).resolve().parent.parent / "addons/gs_audio/stock"
 DURATION = {"magazine": 2.4, "pistol": 1.8, "cell": 2.2, "revolver": 3.0, "launcher": 3.0, "tube": 1.8, "bolt": 3.4, "belt": 5.5}
 TAIL_DB = -6.0
 

@@ -1,6 +1,6 @@
 # Design
 
-Why dot-audio is shaped the way it is. The one-line rules are in [CLAUDE.md](../CLAUDE.md).
+Why gs-audio is shaped the way it is. The one-line rules are in [CLAUDE.md](../CLAUDE.md).
 
 ## Why it exists
 
@@ -8,7 +8,7 @@ The obvious implementation (`AudioStreamPlayer.new()`, `play()`, `queue_free()` 
 
 ## The sink is a seam, because the engine lies
 
-**`AudioServer` reports a working sound card when there is none.** Headless, `get_mix_rate()` is 44100, `get_input_device_list()` is `["Default"]` and `get_output_latency()` is 0.0; only `get_driver_name()` says `"Dummy"`. dot-voice found that ([its design](../../dot-voice/docs/design.md#audioserver-lies-about-having-a-sound-card)), and the suite's first section asserts it so this addon cannot regress into believing a plausible answer.
+**`AudioServer` reports a working sound card when there is none.** Headless, `get_mix_rate()` is 44100, `get_input_device_list()` is `["Default"]` and `get_output_latency()` is 0.0; only `get_driver_name()` says `"Dummy"`. gs-voice found that ([its design](../../gs-voice/docs/design.md#audioserver-lies-about-having-a-sound-card)), and the suite's first section asserts it so this addon cannot regress into believing a plausible answer.
 
 `GSAudioSink.device_present()` is the only honest question, asked once in `GSAudioManager.setup()`. Below it:
 
@@ -50,7 +50,7 @@ When the pool is full, the lowest-priority voice below the incoming one is stopp
 
 ### Variation belongs in the document
 
-`variants` is on the def rather than in the caller, because a caller that picks the variant has to hold the list, and then the list is in two places. Both the variant and the pitch come from a roll, so setting `roll_source` to dot-core's `GSRandomStream` (anything with `unit_at(index)`) makes them reproducible: the same shot sounds the same on the server and every client, and an audio bug that cannot be reproduced is one nobody fixes.
+`variants` is on the def rather than in the caller, because a caller that picks the variant has to hold the list, and then the list is in two places. Both the variant and the pitch come from a roll, so setting `roll_source` to gs-core's `GSRandomStream` (anything with `unit_at(index)`) makes them reproducible: the same shot sounds the same on the server and every client, and an audio bug that cannot be reproduced is one nobody fixes.
 
 ### A missing sound is silence, not an error
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Builds dot-audio's stock slide loops (stock/slides/slide_<surface>.ogg) from CC0 scrapes.
+"""Builds gs-audio's stock slide loops (stock/slides/slide_<surface>.ogg) from CC0 scrapes.
 
     python3 -I tools/make_slide_stock.py SCRAPES_DIR
 
@@ -15,7 +15,7 @@ import numpy as np
 from scipy import signal
 
 RATE = 44100
-OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "addons", "dot_audio", "stock", "slides")
+OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "addons", "gs_audio", "stock", "slides")
 XFADE = int(0.18 * RATE)
 TARGET_RMS_DB = -24.0
 

@@ -1,0 +1,130 @@
+# Stock sounds
+
+Every file here is CC0 1.0 (public domain dedication). Nothing here needs attribution; it is recorded so anybody can trace a file to its source.
+
+## footsteps/
+
+From **Impact Sounds** (1.0) by [Kenney](https://www.kenney.nl), CC0 1.0 ([licence](http://creativecommons.org/publicdomain/zero/1.0/)). Converted to mono Ogg Vorbis, otherwise unchanged except where noted.
+
+| File | Original |
+| --- | --- |
+| `footstep_carpet_0..4.ogg` | `footstep_carpet_000..004.ogg` |
+| `footstep_concrete_0..4.ogg` | `footstep_concrete_000..004.ogg` |
+| `footstep_grass_0..4.ogg` | `footstep_grass_000..004.ogg` |
+| `footstep_snow_0..4.ogg` | `footstep_snow_000..004.ogg` |
+| `footstep_wood_0..4.ogg` | `footstep_wood_000..004.ogg` |
+| `footstep_metal_0..4.ogg` | `impactMetal_light_000..004.ogg`, 6 dB quieter |
+
+## ambience/
+
+`amb_wind.ogg` and `amb_outdoor.ogg` are real field recordings; the other seven beds are synthesised by gs-audio's own `tools/make_ambience.py` (in the repository, not the addon) from fixed seeds: filtered noise, oscillators and scattered synthesised events, no recordings and no third-party samples. Dedicated to the public domain under CC0 1.0 by the Gamespice audio authors. Each bed is a 32 s seamless stereo loop normalised to −24 LUFS integrated.
+
+| File | What it is |
+| --- | --- |
+| `amb_wind.ogg` | steady open-air wind (recording) |
+| `amb_outdoor.ogg` | daytime birdsong in a park (recording) |
+| `amb_night.ogg` | crickets and a low breeze |
+| `amb_city.ogg` | traffic rumble, passing cars, a far horn |
+| `amb_indoor.ogg` | room tone, ventilation, mains hum |
+| `amb_eerie.ogg` | beating drone, breath-like swells, creaks, knocks |
+| `amb_industrial.ogg` | machinery hum, air, metal settling |
+| `amb_cave.ogg` | deep rumble, dripping water with echoes |
+| `amb_rain.ogg` | steady rain |
+
+### Recorded beds
+
+`amb_wind.ogg` and `amb_outdoor.ogg` are cut from the park field recordings `park_ambience_wind.wav` and `park_ambience_birds.wav` by **Thimras**, [OpenGameArt "Park Ambiences"](https://opengameart.org/content/park-ambiences), CC0 1.0. A 36 s excerpt of each, mono, tail crossfaded into the head for a seamless loop, normalised to about -24 LUFS and encoded as Ogg Vorbis by `tools/make_real_beds.sh`.
+
+## moods/
+
+The ambience mood set (`moods.json`): CC0 recordings from OpenGameArt, converted and normalised. Per-file sources and authors are in `moods/CREDITS.md`.
+
+## weapons/
+
+Slices of CC0 recordings, cut, pitched, layered with a synthesised sub-bass thump (heavy classes) and peak-levelled by `tools/make_weapon_stock.py`, written as mono Ogg Vorbis. Most sources are CC0 1.0 (attribution not required, given anyway); the rows marked CC-BY require the credit given here.
+
+| Source | Author | URL | Used for |
+| --- | --- | --- | --- |
+| The Free Firearm Sound Library (Prepared SFX Library) | Ben Jaszczak, Brian Nelson, Kevin Heras, Matthew Nanney (Still North Media; uploaded by bart) | https://opengameart.org/content/the-free-firearm-sound-library | `*_fire`, `*_far` (also `lmg_far`, `battle_far`, `marksman_far`, `carbine_far`, `derringer_far`, `mpistol_far`, `autoshot_far`, added 2026-11-10 from mid-distance takes; Marlin 336, Model 1894, Ruger Single Six, Nova and Mossberg are used there as well; CC0 1.0), `minigun_fire` (1911, Walther PPQ, Bersa, S&W 642, Carl Gustav M45, PPSh, AR-15, SKS, AK-47, Model 1894, Marlin 336, Savage 10, Mosin Nagant, Tikka T3, Arisaka, Springfield 1917, CD, Model 12, Nova, Mossberg) |
+| Medieval sound effects - Weapon Textures (parts 1 and 2) | Ben Jaszczak and Brian Nelson (uploaded by MedicineStorm) | https://opengameart.org/content/medieval-sound-effects-weapon-textures | `swing*`, `throw`, `draw_blade`, `bow_*`, `crossbow_*`, `arrow_pass` |
+| 25 CC0 bang / firework SFX | rubberduck | https://opengameart.org/content/25-cc0-bang-firework-sfx | `launcher_fire`, `explosion` (cannon shots) |
+| Gun reload sounds | SpringySpringo | https://opengameart.org/content/gun-reload-sounds | `reload_*`, `equip` |
+| 2 Gun Reloads | StarNinjas | https://opengameart.org/content/2-gun-reloads | `reload_*` |
+| Shotgun Reload Sound effects | zer0sol | https://opengameart.org/content/shotgun-reload-sound-effects | `reload_shell`, `rack` |
+| Gun Reload Sound Effects (CC0) | BMacZero | https://opengameart.org/content/gun-reload-sound-effects | `reload_out_*`, `reload_in_*` (clipload1/2, singlebullet1) |
+| Handgun Reload Sound Effect (CC0) | zer0sol | https://opengameart.org/content/handgun-reload-sound-effect | `reload_out_light`, `reload_in_light` |
+| equipment clicks III | LFA | https://opengameart.org/content/equipment-clicks-iii | `dry`, `pin_pull` (pitched up 3 semitones) |
+| Impact Sounds 1.0 | Kenney | https://kenney.nl/assets/impact-sounds | `bash`, `impact*`, `melee_*`, `casing` |
+| Sci-fi Sounds 1.0 | Kenney | https://kenney.nl/assets/sci-fi-sounds | `explosion` layer |
+| Light Machine Gun (CC-BY 4.0) | KuraiWolf | https://opengameart.org/content/light-machine-gun | `lmg_fire` |
+| Gunshot Sounds (sks, mosin, cz; the page now says CC0, the text bundled with the download says CC-BY 3.0; credited as CC-BY 3.0 to be safe) | Tabasco, text by Vincent Sevedge | https://opengameart.org/content/gunshot-sounds | `battle_fire`, `marksman_fire`, `lmg_fire` layers, `reload_*_sniper` (bolt) |
+| Chaingun, pistol, rifle and shotgun shots (CC-BY 3.0) | Michel Baradari | http://apollo-music.de (hosted on opengameart.org; the pack's info.txt names the licence) | `carbine_fire`, `derringer_fire`, `mpistol_fire`, `autoshot_fire` |
+| Alien Blaster (CC0) | cyklon698 | https://opengameart.org/content/alien-blaster | `beam_fire` |
+| Laser weapon burst fire (CC0) | celestialghost8 | https://opengameart.org/content/laser-weapon-burst-fire | `beam_fire` |
+| Theremin Laser SFX (CC0) | Zane Little Music | https://opengameart.org/content/theremin-laser-sfx | `beam_fire` |
+| Doomsday Laser Cannon Sound Effect (CC0) | TAD | https://opengameart.org/content/doomsday-laser-cannon-sound-effect | `rail_fire` |
+| JC Sounds Sci-Fi Pack Vol 1 (CC-BY 4.0) | jc-sounds | https://opengameart.org/content/jc-sounds-sci-fi-pack-vol-1 | `charge_fire`, `rail_fire`, `*_energy` reloads, `dry_energy`, `equip_energy` |
+
+`suppressed_fire` is derived from the stock's own `light_fire` files by `tools/make_suppressed.py` (low-passed, softened, shortened, with a synthesised action clack), so it adds no source.
+
+## slides/
+
+Seven looping slide scrapes (`slide_generic`, `slide_concrete`, `slide_metal`, `slide_wood`, `slide_grass`, `slide_snow`, `slide_carpet`), built by `tools/make_slide_stock.py`: scrapes joined with equal-power crossfades into a seamless loop, filtered per surface and levelled. Source is CC0 1.0; attribution is not required and is given here.
+
+| Source | Author | URL | Used for |
+| --- | --- | --- | --- |
+| Scrapes (scrape-1 to scrape-8) | AntumDeluge | https://opengameart.org/content/scrapes | every `slide_*` loop |
+
+## flashlight/
+
+`flashlight_on.ogg` and `flashlight_off.ogg` are synthesised by `tools/make_flashlight_stock.py` (in the repository, not the addon) from fixed seeds: filtered noise bursts and damped resonances, no recordings and no third-party samples. Dedicated to the public domain under CC0 1.0 by the Gamespice audio authors.
+
+## landing/
+
+`landing_light.ogg`, `landing_medium.ogg` and `landing_hard.ogg` are synthesised by `tools/make_landing_stock.py` (in the repository, not the addon) from fixed seeds: a falling sine body thump and low-passed noise, no recordings and no third-party samples. Dedicated to the public domain under CC0 1.0 by the Gamespice audio authors.
+
+## surf/
+
+`surf_glide.ogg` is synthesised by `tools/make_surf_stock.py` (in the repository, not the addon) from a fixed seed: band-shaped noise around 3 kHz with a slow shimmer, joined into a seamless loop, no recordings and no third-party samples. Dedicated to the public domain under CC0 1.0 by the Gamespice audio authors. The game plays it quieter and higher the faster a body surfs.
+
+## shots/
+
+The layered shots (`attack`, `body`, `tail_*`, `far` per weapon class, plus `suppressed/`) are cut and processed by `tools/make_shot_layers.py` (in the repository, not the addon) from these CC0 recordings. The room tails (small, medium, large, hall) are the same shot convolved with a generated room (dense early reflections, a size-scaled comb, a noise decay), and the outdoor tail is the shot's late energy as two low-passed slap-back echoes; no further source is used.
+
+| Source | Author | URL | Licence | Used for |
+| --- | --- | --- | --- | --- |
+| The Free Firearm Sound Library | (see page) | https://opengameart.org/content/the-free-firearm-sound-library | CC0 | the stock `weapons/*_fire_N` recordings every class is cut from |
+| Gunshot Sounds | Tabasco | https://opengameart.org/content/gunshot-sounds | CC0 | consulted as a candidate source; no file from it is in this set |
+| Gunshots | kurt | https://opengameart.org/content/gunshots | CC0 | `22 Pistol` (light), `22 Magnum` (magnum), `Unkown` (sniper) |
+| Launcher, minigun and beam sets (2026-11-03) | as the `weapons/` rows above: `launcher_fire_N` (rubberduck, 25 CC0 bang / firework SFX, cannon shots), `minigun_fire_N` (The Free Firearm Sound Library), `beam_fire_N` (cyklon698 Alien Blaster, celestialghost8 Laser weapon burst fire, Zane Little Music Theremin Laser SFX) | https://opengameart.org/content/25-cc0-bang-firework-sfx , https://opengameart.org/content/the-free-firearm-sound-library , https://opengameart.org/content/alien-blaster | CC0 | `launcher/`, `minigun/`, `beam/` (5 variants each, `make_shot_layers.py --only launcher minigun beam`) |
+| Charge, swing and throw sets (2026-11-03) | charge: Kenney (`laserLarge_000-004`); swing, throw: the stock `swing_N` and `throw_N` (Medieval sound effects, Ben Jaszczak and Brian Nelson, as the `weapons/` row above). The charge set uses no `charge_fire` file, whose source needs attribution | https://kenney.nl/assets/sci-fi-sounds , https://opengameart.org/content/medieval-sound-effects-weapon-textures | CC0 | `charge/`, `swing/`, `throw/` (5 variants each, `make_shot_layers.py --only charge swing throw`; swing and throw tails are 9 and 7 dB lower, a whoosh excites a room less than a shot) |
+| Eldritch Grim impacts and gun FX | Eldritch Grim | https://opengameart.org/content/impactsgunsfx | CC0 | `Pistol 1-3` (light, magnum), `Shotgun 1-3` (shotgun) |
+
+## weapons/cue_*
+
+The 37 reload and handling cues (`cue_mag_out`, `cue_bolt_back`, `cue_cyl_open`, `cue_pump_back` and so on, three variants each) are synthesised by `tools/make_reload_cues.py` using `tools/foley.py` from a fixed seed: damped-resonance strikes, filtered-noise bursts, friction slides and thuds. No recording and no third-party sample is used. Dedicated to the public domain under CC0 1.0 by the Gamespice audio authors. They are levelled to three loudness tiers (loud -21, mid -24, soft -29 LUFS active, ceiling -2 dB).
+
+## Level pass (2026-11-08)
+
+`tools/polish_weapon_stock.py` removed DC offset, trimmed leading silence, faded unfaded tails, levelled `weapons/` per category and soft-limited true-peak overs in `weapons/` and `shots/`. `tools/audit_weapon_audio.py` measures peak, true peak, K-weighted loudness, DC, head, tail and duplicates: 318 of 814 files flagged before, 24 of 925 after (the rest are very quiet outdoor tails by design).
+
+## voices/* (2026-11-08)
+
+`shot`, `shot_heavy`, `shot_tight`, `impact`, `blip`, `hurt`, `die`, `boom`, three variants each (24 files, about 190 KB). Self-synthesised by `tools/make_voice_stock.py` (numpy/scipy through `tools/foley.py`: noise bursts, falling-sine thuds, modal strikes, a formant-filtered falling pitch for hurt/die). No recordings, no third-party material: CC0 as the rest of this pack. Levelled by K-weighted active loudness, ceiling -2 dBFS. Used when `GSAudioSynth.bank(..., stock = true)`.
+
+Retuned 2026-11-08 (owner feedback: the hurt grunt was weird and too loud, the hit confirm too high and harsh): `blip` is now a dull modal wood tick near 1.1 kHz with a low knock, lowpassed at 3.5 kHz (was a 2.7 kHz aluminium ping, spectral centroid about 4.7 kHz, now about 0.9 kHz) at -25 LUFS active (was -21); `hurt` is a short breathy male-range "uh" (175 falling to 80 Hz, formants near 550 Hz and 1.1 kHz, 14 ms attack, centroid about 0.8 kHz, was 1.0 kHz and a bright 300 Hz start) at -27 LUFS (was -22). Same generator, still self-synthesised and CC0.
+
+## interface/, announcer/, body/ (2026-11-10)
+
+Kenney packs, CC0 1.0 ([licence](http://creativecommons.org/publicdomain/zero/1.0/)), from the Kenney Game Assets All-in-1 3.7.0 bundle. Renamed; files that were stereo were converted to mono Ogg Vorbis (q6), otherwise unchanged. Interface cues, a spoken announcer and body hits for a game's hit marker, medals, flag and vote cues, spawn, hurt and death; which file plays for what is each game's decision.
+
+| File | Pack | Original |
+| --- | --- | --- |
+| `interface/tick_0..2.ogg` | [Interface Sounds](https://kenney.nl/assets/interface-sounds) | `tick_001`, `tick_002`, `tick_004` |
+| `interface/confirm_0..1.ogg` | Interface Sounds | `confirmation_001`, `confirmation_003` |
+| `interface/confirm_long.ogg`, `confirm_bright.ogg` | Interface Sounds | `confirmation_002`, `confirmation_004` |
+| `interface/question.ogg`, `bong.ogg`, `pluck.ogg`, `drop.ogg` | Interface Sounds | `question_001`, `bong_001`, `pluck_001`, `drop_002` |
+| `interface/phase_jump_0..2.ogg` | [Digital Audio](https://kenney.nl/assets/digital-audio) | `phaseJump1..3` |
+| `body/punch_0..4.ogg` | [Impact Sounds](https://kenney.nl/assets/impact-sounds) | `impactPunch_medium_000..004` |
+| `body/punch_heavy_0..4.ogg` | Impact Sounds | `impactPunch_heavy_000..004` |
+| `announcer/<name>.ogg` | Synth Voice 2 (1.0, [kenney.nl](https://www.kenney.nl)) | the same phrase in camelCase: `target_eliminated` is `targetEliminated`, likewise `perfect`, `combo`, `multikill`, `godlike`, `eliminated`, `combo_breaker`, `target_destroyed`, `fantastic`, `sniper`, `untouchable`, `lets_go`, `go_go_go`, `enemy_captured`, `target_lost`, `point_captured` |
