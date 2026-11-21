@@ -113,9 +113,24 @@ static func moods_directory() -> String:
 	return resolve("moods/moods.json").get_base_dir()
 
 
+## Answers by name, so the per-step collider lookup stops rescanning every alias.
+static var _surface_memo: Dictionary = {}
+
+
 ## A surface name from anything: a canonical one, an alias, or a longer name containing one
 ## ("Floor_Wood_02", "snowbank"). Empty when nothing matches.
 static func surface_of(name: String) -> StringName:
+	var hit: Variant = _surface_memo.get(name)
+	if hit != null:
+		return hit
+	var found := _surface_scan(name)
+	if _surface_memo.size() >= 4096:
+		_surface_memo.clear()
+	_surface_memo[name] = found
+	return found
+
+
+static func _surface_scan(name: String) -> StringName:
 	var low := name.to_lower()
 	if low.is_empty():
 		return &""
