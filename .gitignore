@@ -22,3 +22,11 @@ Thumbs.db
 
 # Raw candidate source audio (hundreds of MB of WAVs), kept local while sounds are picked.
 /source-candidates/
+
+# Sibling addons linked for local suites (absolute links must never be tracked; CI resolves them from addons.lock):
+/addons/godot-sqlite
+/addons/gs_bot
+/addons/gs_bot_record
+/addons/gs_net
+/addons/gs_profile
+/addons/gs_sql
