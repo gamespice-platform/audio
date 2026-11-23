@@ -256,12 +256,8 @@ static func _wav_native(frames: PackedVector2Array, rate: int) -> AudioStreamWAV
 	return wav
 
 
-## Queues [param items] (an [AudioStream] with a resource path, or a path String that [param resolver]
-## turns into one) so each is loaded and its PCM copy decoded before it is first played, a frame at a time
-## within [member warm_usec]: the first shot, reload or footstep then finds both ready instead of paying the
-## load and the decoder start on the frame it is heard. Nothing is capped; a decode the pool has no room for
-## waits its turn. Returns the items queued (repeats and streams already copied do not count). Poll
-## [method warm_pending] for the end.
+## Queues [param items] (an [AudioStream] with a resource path, or a path String that [param resolver] turns into one) so each is loaded and its PCM copy decoded before it is first played, a frame at a time within [member warm_usec].
+## Nothing is capped; a decode the pool has no room for waits its turn. Returns the items queued (repeats and streams already copied do not count). Poll [method warm_pending] for the end.
 static func warm(items: Array, resolver: Callable = Callable(), max_seconds: float = 4.0, budget_bytes: int = 64 * 1024 * 1024) -> int:
 	var queued := 0
 	for item: Variant in items:

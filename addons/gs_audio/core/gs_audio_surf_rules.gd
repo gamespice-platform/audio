@@ -188,11 +188,8 @@ func is_surfing(body: Node3D) -> bool:
 	return yes
 
 
-## What a ray straight down from 0.3 m above [param at] to [param depth] below it, seeing [param ray_mask] and
-## not [param body], hits, read from the longer ray [method is_surfing] cast for [param body] at [param at] this
-## physics frame: the same hit when it lies within [param depth], empty when it lies past it or there is none.
-## Null when no such ray was cast (another frame, the body moved, the native probe answered, another mask, or
-## [member probe] shorter than [param depth]). [GSAudioFootsteps] reads its ground from it instead of a second ray.
+## What a ray straight down from 0.3 m above [param at] to [param depth] below it, seeing [param ray_mask] and not [param body], hits, read from the longer ray [method is_surfing] cast for [param body] at [param at] this physics frame.
+## The same hit when it lies within [param depth], empty when past it or none; null when no such ray was cast (another frame, the body moved, the native probe answered, another mask, or [member probe] shorter than [param depth]). [GSAudioFootsteps] reads its ground from it.
 func frame_hit(body: Node3D, at: Vector3, depth: float, ray_mask: int) -> Variant:
 	var cached: Variant = _seen.get(body.get_instance_id())
 	if cached == null:
