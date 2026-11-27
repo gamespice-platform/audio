@@ -2,6 +2,8 @@
 
 Game audio for Godot 4.7+ that decides what is heard, how loud, how many sounds at once, and what happens when there is no sound card. Part of the [GameSpice](https://github.com/gamespice-platform) family. It needs only [GameSpice Core](https://github.com/gamespice-platform/core).
 
+GameSpice Audio is an MIT licensed GameSpice addon, written with Claude Code, with a headless suite you run as `res://examples/audio_selftest.tscn`. Sound in the games of [Zee's Games](https://zeesgames.com) comes through it, and those games run on live servers.
+
 ## Install
 
 1. Copy `addons/gs_audio/` and `addons/gs_core/` into your project.
@@ -98,9 +100,26 @@ godot --headless --path . --import
 godot --headless --path . res://examples/audio_selftest.tscn
 ```
 
-## Status
+## Used by
 
-Built and maintained with Claude Code. The test suites pass, but little of this has been in front of real players yet. Please report rough edges by opening an issue.
+Every game in the collection vendors it:
+
+- [Fatal Contact](https://zeesgames.com/fatal-contact)
+- [Airdrift](https://zeesgames.com/airdrift)
+- [Playlot](https://zeesgames.com/playlot)
+- [Hungario](https://zeesgames.com/hungario)
+- [Buses From Hell](https://zeesgames.com/buses-from-hell)
+- [Smash Copter](https://zeesgames.com/smash-copter)
+- [Zombie Zone](https://zeesgames.com/zombie-zone)
+- [Hide n Seek](https://zeesgames.com/hide-n-seek)
+- [Prop Hunt](https://zeesgames.com/prop-hunt)
+- [Murder Mystery](https://zeesgames.com/murder-mystery)
+- [Deathrun](https://zeesgames.com/deathrun)
+- [Wipeout](https://zeesgames.com/wipeout)
+- [Dangerous Delivery](https://zeesgames.com/dangerous-delivery)
+- [Look At Me](https://zeesgames.com/look-at-me)
+
+The whole collection is at [zeesgames.com](https://zeesgames.com).
 
 ## Licence
 
