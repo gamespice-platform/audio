@@ -192,3 +192,15 @@ func _test_shot_tail_cap() -> void:
 	var crack := p.fire(gun.id, Vector3(3, 0, 0))
 	_check(crack.ok and int(crack.value) >= 2, "a capped round still plays its crack and body")
 	_check(p.rules.set_cvar("snd_shot_tail_voices", "99") and p.rules.tail_voices == 99 and not p.rules.set_cvar("snd_shot_tail_voices", "x") and not p.rules.set_cvar("snd_shot_tail_voices", "-1"), "the cap cvar has no upper bound and a negative is refused")
+
+
+func _test_pool_prewarm() -> void:
+	_section("Pool prewarm: idle players made a few a frame, never past capacity")
+	var m := _manager(GSAudioCatalogue.new(), 8)
+	m.sink = GSAudioSinkGodot.new(m, 8)
+	var sink := m.sink as GSAudioSinkGodot
+	_check(sink.prewarm_players(GSAudioDef.Kind.POSITIONAL_3D, 6, 2) == 2, "a call makes at most its limit")
+	_check(sink.prewarm_players(GSAudioDef.Kind.POSITIONAL_3D, 6, 10) == 4, "and then only up to the wanted count")
+	_check(sink.prewarm_players(GSAudioDef.Kind.FLAT, 20, 20) == 2, "never past capacity (8 in all)")
+	_check(m.prewarm_pool({GSAudioDef.Kind.POSITIONAL_3D: 8}, 2) == 0, "a full pool makes none")
+	m.queue_free()

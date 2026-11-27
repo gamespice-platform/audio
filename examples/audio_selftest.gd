@@ -12,8 +12,8 @@ extends "selftest/selftest_synth.gd"
 ## godot --headless --path . res://examples/audio_selftest.tscn
 ## [/codeblock]
 
-const SECTIONS := 26
-const CHECKS := 366
+const SECTIONS := 27
+const CHECKS := 370
 
 func _ready() -> void:
 	GSLog.set_level(GSLog.Level.ERROR)
@@ -41,6 +41,7 @@ func _run() -> void:
 	_test_slide()
 	_test_surf()
 	_test_shots()
+	_test_pool_prewarm()
 	_test_shot_tail_cap()
 	_test_ambience_and_loudness()
 	_test_creepy_ambience()
