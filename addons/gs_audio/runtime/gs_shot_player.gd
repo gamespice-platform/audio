@@ -121,6 +121,43 @@ func advance(delta: float) -> void:
 
 func _process(delta: float) -> void:
 	advance(delta)
+	if not _warm_paths.is_empty():
+		_warm_slice()
+
+
+## Files of shots queued by [method warm_shot], loaded a slice per frame.
+var _warm_paths: Array[String] = []
+## Milliseconds of loading one frame may spend on [member _warm_paths].
+var warm_msec := 3.0
+
+
+## Queues every layer file of [param shot] to be loaded and decoded ahead of its first fire (a first
+## remote shot loaded its files in one frame: hundreds of ms on the web), a few milliseconds a frame.
+## Call it after [method register]. Returns how many files were queued.
+func warm_shot(shot: GSShotDef) -> int:
+	if manager == null or manager.sink == null or shot == null:
+		return 0
+	var queued_now := 0
+	for name in shot.layer_names():
+		for path in shot.layer(name):
+			if not _warm_paths.has(path):
+				_warm_paths.append(path)
+				queued_now += 1
+	return queued_now
+
+
+func _warm_slice() -> void:
+	if manager == null or manager.sink == null:
+		_warm_paths.clear()
+		return
+	var until := Time.get_ticks_usec() + int(warm_msec * 1000.0)
+	while not _warm_paths.is_empty() and Time.get_ticks_usec() < until:
+		var _n := manager.sink.warm([_warm_paths.pop_front()])
+
+
+## Files still waiting to be loaded by [method warm_shot].
+func warm_pending() -> int:
+	return _warm_paths.size()
 
 
 ## Tail voices still sounding at the player's clock, for tests and [method describe].

@@ -86,6 +86,12 @@ func voice(_handle: int) -> Dictionary:
 	return {}
 
 
+## Creates up to [param limit] idle players of [param kind] toward [param want], so the first plays
+## find a pool. Returns how many it made; a sink with no players makes none.
+func prewarm_players(_kind: int, _want: int, _limit: int = 4) -> int:
+	return 0
+
+
 ## How many voices are in use, and how many there are.
 func usage() -> Dictionary:
 	return {"playing": 0, "capacity": 0}

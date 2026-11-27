@@ -332,6 +332,10 @@ func _take(kind: int, priority: int) -> Node:
 		if _kind_of(_free[i]) == kind:
 			return _free.pop_at(i)
 
+	if _free.size() + _busy.size() >= capacity and not _free.is_empty():
+		# Full of idle players of other kinds (a prewarmed pool): swap one for this kind.
+		var idle: Node = _free.pop_back()
+		idle.queue_free()
 	if _free.size() + _busy.size() < capacity:
 		return _make(kind)
 
@@ -352,6 +356,27 @@ func _take(kind: int, priority: int) -> Node:
 	_busy.erase(worst)
 	stolen.call("stop")
 	return stolen
+
+
+## Creates up to [param limit] idle players of [param kind] now, until [param want] of that kind
+## exist and never past [member capacity] in all, so the first plays find a pool and not a node
+## creation (an AudioStreamPlayer3D costs several ms on the web and arrived one per sound).
+## Call it a few per frame from a loading screen. Returns how many it made.
+func prewarm_players(kind: int, want: int, limit: int = 4) -> int:
+	if host == null or not is_instance_valid(host):
+		return 0
+	var have := 0
+	for p: Node in _free:
+		if _kind_of(p) == kind:
+			have += 1
+	for h in _busy.keys():
+		if _kind_of((_busy[h] as Dictionary)["player"]) == kind:
+			have += 1
+	var made := 0
+	while made < limit and have + made < want and _free.size() + _busy.size() < capacity:
+		_free.append(_make(kind))
+		made += 1
+	return made
 
 
 func _make(kind: int) -> Node:

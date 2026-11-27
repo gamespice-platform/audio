@@ -36,5 +36,7 @@ extends RefCounted
 # 21: GSAudioSurfRules.cvar_specs has no upper bound ("max" INF) on volume, speeds and pitches; apply_cvar refuses an out-of-range value with an error instead of clamping it.
 # 22: GSShotRules.cvar_specs has no upper bound ("max" INF) on rays, near, far, reverb and tail_voices; set_cvar refuses an out-of-range value with an error instead of clamping it.
 # 23: GSAudioPcm.warm, GSAudioSinkGodot.warm_streams, GSAudioSink.warm and GSAudioManager.warm(ids): load and decode the files behind ids before their first play, a slice per frame, nothing dropped.
-const LEVEL := 23
+# 24: GSAudioManager.prewarm_pool(kinds, per_frame) and GSAudioSink.prewarm_players: create the sink's idle players ahead of the first sounds, a few a frame.
+# 25: GSShotPlayer.warm_shot(shot) and warm_pending(): load and decode a shot's layer files a few ms a frame before its first fire.
+const LEVEL := 25
 const OLDEST := 1

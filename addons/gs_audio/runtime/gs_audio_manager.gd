@@ -359,8 +359,39 @@ func warm(ids: Array) -> int:
 	return sink.warm(paths)
 
 
+## Fills the sink's player pool, [param per_frame] players a frame from [method _process], so no
+## sound pays for creating its player. [param kinds] is [code]{GSAudioDef.Kind: count}[/code];
+## empty means three quarters of the capacity positional 3D and an eighth flat. Call it from a
+## loading screen. Returns how many players the first slice made.
+func prewarm_pool(kinds: Dictionary = {}, per_frame: int = 2) -> int:
+	if sink == null:
+		return 0
+	if kinds.is_empty():
+		var cap := int(sink.usage().get("capacity", 0))
+		kinds = {GSAudioDef.Kind.POSITIONAL_3D: cap * 3 / 4, GSAudioDef.Kind.FLAT: cap / 8}
+	_prewarm_kinds = kinds
+	_prewarm_per_frame = maxi(1, per_frame)
+	return _prewarm_step()
+
+
+var _prewarm_kinds: Dictionary = {}
+var _prewarm_per_frame := 2
+
+
+func _prewarm_step() -> int:
+	var budget := _prewarm_per_frame
+	for kind: Variant in _prewarm_kinds:
+		budget -= sink.prewarm_players(int(kind), int(_prewarm_kinds[kind]), budget)
+		if budget <= 0:
+			return _prewarm_per_frame
+	_prewarm_kinds = {}
+	return _prewarm_per_frame - budget
+
+
 func _process(_delta: float) -> void:
 	_reap()
+	if not _prewarm_kinds.is_empty():
+		_prewarm_step()
 
 
 ## Drops the book-keeping for anything the sink has finished on its own.
