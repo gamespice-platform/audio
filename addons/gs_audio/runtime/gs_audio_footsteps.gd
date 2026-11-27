@@ -65,6 +65,8 @@ var surface_metas: Array[StringName] = [&"surface", &"gs_fps_surface"]
 var surf_rules: GSAudioSurfRules = null
 
 var _bodies: Dictionary = {}
+## The read-only empty state a missing body looks up as (no fresh dictionary per call).
+const _NONE := {}
 var _ground_query: PhysicsRayQueryParameters3D = null
 var _ground_query_body: int = 0
 
@@ -186,7 +188,7 @@ func _native_pass(delta: float) -> void:
 			if at >= 0:
 				_native_keys.remove_at(at)
 			continue
-		var st: Dictionary = _bodies.get(body, {})
+		var st: Dictionary = _bodies.get(body, _NONE)
 		if not st.is_empty() and is_instance_valid(body):
 			_step(body, st, loudness)
 
@@ -241,7 +243,7 @@ func _native_release() -> void:
 ## One body, one physics frame. Public so a suite can step it with no physics running.
 func advance(body: Node3D, delta: float) -> void:
 	_native_release()
-	var st: Dictionary = _bodies.get(body, {})
+	var st: Dictionary = _bodies.get(body, _NONE)
 	if st.is_empty():
 		return
 	var pos := body.global_position
@@ -362,7 +364,7 @@ static func surface_of_collider(
 func _ground_hit(body: Node3D) -> Dictionary:
 	var world := body.get_world_3d()
 	if world == null:
-		return {}
+		return _NONE
 	var pos := body.global_position
 	# The surf probe's ray this frame starts at the same point and reaches further: its hit is this ray's.
 	if surf_rules != null:

@@ -33,6 +33,11 @@ var reach_margin: float = 4.0
 
 # body -> {last, handle, surface, sliding: Callable, opts}
 var _bodies: Dictionary = {}
+## The read-only empty state a missing body looks up as (no fresh dictionary per call).
+const _NONE := {}
+## One ray query reused by [method surface_under], its exclude list rebuilt only when the body changes.
+var _ground_query: PhysicsRayQueryParameters3D = null
+var _ground_query_body: int = 0
 
 ## GameSpice Sim's native gate ([code]GSSimAudioSteps[/code]) settles out-of-reach, off, slow or non-sliding bodies natively,
 ## to the bit (examples/steps_native_parity); the rest advance here. Used when the extension is loaded, [member native_enabled]
@@ -93,7 +98,7 @@ func keep(bodies: Array, sliding_of: Callable) -> void:
 ## A freed owner can't ride the typed [signal slide_stopped], so its loop stops and no signal fires.
 func _drop_freed(body: Variant) -> void:
 	_native_release()
-	var st: Dictionary = _bodies.get(body, {})
+	var st: Dictionary = _bodies.get(body, _NONE)
 	if manager != null and int(st.get("handle", 0)) != 0:
 		manager.stop(int(st["handle"]))
 	_bodies.erase(body)
@@ -106,7 +111,7 @@ func untrack(body: Node3D) -> void:
 
 
 func is_sliding(body: Node3D) -> bool:
-	return bool(_bodies.get(body, {}).get("on", false))
+	return bool(_bodies.get(body, _NONE).get("on", false))
 
 
 func _physics_process(delta: float) -> void:
@@ -184,7 +189,7 @@ func _native_pass(delta: float, reach_sq: float, ear: Vector3) -> void:
 				_native_release()
 				_bodies.erase(body)
 			continue
-		var st: Dictionary = _bodies.get(body, {})
+		var st: Dictionary = _bodies.get(body, _NONE)
 		if st.is_empty():
 			continue
 		var b := body as Node3D
@@ -275,7 +280,7 @@ func out_of_reach(body: Node3D) -> void:
 
 
 func _out_of_reach(body: Node3D) -> void:
-	var st: Dictionary = _bodies.get(body, {})
+	var st: Dictionary = _bodies.get(body, _NONE)
 	if st.is_empty():
 		return
 	st["last"] = body.global_position
@@ -291,7 +296,7 @@ func advance(body: Node3D, delta: float) -> void:
 
 ## [method advance]; [param asked]: the body was already asked this tick and slides.
 func _advance(body: Node3D, delta: float, asked: bool) -> void:
-	var st: Dictionary = _bodies.get(body, {})
+	var st: Dictionary = _bodies.get(body, _NONE)
 	if st.is_empty():
 		return
 	var pos := body.global_position
@@ -364,7 +369,7 @@ func _shape(speed: float, loudness: float) -> Vector2:
 
 
 func _stop(body: Node3D) -> void:
-	var st: Dictionary = _bodies.get(body, {})
+	var st: Dictionary = _bodies.get(body, _NONE)
 	if st.is_empty() or not bool(st.get("on", false)):
 		return
 	if manager != null and int(st["handle"]) != 0:
@@ -378,10 +383,16 @@ func _stop(body: Node3D) -> void:
 func surface_under(body: Node3D) -> StringName:
 	var world := body.get_world_3d()
 	if world != null:
-		var q := PhysicsRayQueryParameters3D.create(
-			body.global_position + Vector3.UP * 0.3, body.global_position + Vector3.DOWN * ground_probe, ground_mask)
-		if body is CollisionObject3D:
-			q.exclude = [(body as CollisionObject3D).get_rid()]
+		if _ground_query == null:
+			_ground_query = PhysicsRayQueryParameters3D.new()
+		var q := _ground_query
+		q.from = body.global_position + Vector3.UP * 0.3
+		q.to = body.global_position + Vector3.DOWN * ground_probe
+		q.collision_mask = ground_mask
+		var id := body.get_instance_id()
+		if _ground_query_body != id:
+			_ground_query_body = id
+			q.exclude = [(body as CollisionObject3D).get_rid()] if body is CollisionObject3D else []
 		var hit := world.direct_space_state.intersect_ray(q)
 		if not hit.is_empty():
 			var s := GSAudioFootsteps.surface_of_collider(hit.get("collider"), int(hit.get("shape", -1)), surface_metas)
